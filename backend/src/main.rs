@@ -8,7 +8,7 @@ use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 // A scrapped queuing rewrite using an api
 //mod auth;
-//mod model;
+mod model;
 mod ws;
 
 #[tokio::main]

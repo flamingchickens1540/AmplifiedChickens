@@ -9,15 +9,14 @@ use axum::{
 };
 use axum_extra::{extract::PrivateCookieJar, TypedHeader};
 use cookie::Cookie;
-use dotenv::dotenv;
-use dotenv::var;
-use oauth2::reqwest::async_http_client;
+use dotenv::{dotenv, var};
 use oauth2::{
-    basic::BasicClient, reqwest::http_client, AuthUrl, AuthorizationCode, ClientId, ClientSecret,
-    CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl, RevocationUrl, Scope,
-    TokenResponse, TokenUrl,
+    basic::BasicClient, reqwest::async_http_client, reqwest::http_client, AuthUrl,
+    AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier,
+    RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde_json::json;
+use sqlx::PgConnection;
 use std::env;
 use tracing::{error, info};
 
@@ -86,17 +85,20 @@ pub async fn google_callback(
 
     let max_age = chrono::Local::now() + chrono::Duration::seconds(secs);
 
-    let cookie = cookie::Cookie::build(("sid", token.access_token().secret().to_owned()))
-        .domain(".app.localhost")
+    let cookie = Cookie::build(("sid", token.access_token().secret().to_owned()))
+        .domain(".app.localhost") // change to production url
         .path("/")
         .secure(true)
         .http_only(true)
         .max_age(cookie::time::Duration::seconds(secs));
 
-    if let Err(e) = sqlx::query("")
-        .bind(profile.id) // TODO: Make specific SQL request
-        .execute(&state.db)
-        .await
+    if let Err(e) =
+        query("INSERT INTO users (id, pw_hash, coins) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+            .bind(profile.id.clone())
+            .bind(profile.pw_hash.clone())
+            .bind(profile.coins.clone())
+            .execute(&state.db)
+            .await
     {
         error!("Error while trying to make account: {e}");
         return Err((
@@ -105,8 +107,8 @@ pub async fn google_callback(
         ));
     }
 
-    if let Err(e) = sqlx::query("")
-        .bind(profile.id) // TODO: Actual SQL request here
+    if let Err(e) = query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
+        .bind(profile.id.clone())
         .bind(token.access_token().secret().to_owned())
         .bind(max_age)
         .execute(&state.db)
@@ -119,7 +121,7 @@ pub async fn google_callback(
         ));
     }
 
-    Ok((jar.add(cookie), Redirect::to("/protected")))
+    Ok((jar.add(cookie), Redirect::to("/")))
 }
 
 fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {

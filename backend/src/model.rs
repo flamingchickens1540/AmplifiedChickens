@@ -1,23 +1,23 @@
-use serde::Deserialize;
-use std::collections::HashMap;
-
 use axum::{extract::FromRef, middleware, routing::get, Extension, Router};
 use axum_login::{AuthUser, AuthnBackend, UserId};
+use cookie::{Cookie, Key};
+use serde::Deserialize;
 use sqlx::{
     postgres::{PgPool, PgPoolOptions, PgRow},
     FromRow, Row,
 };
+use std::collections::HashMap;
 
 use reqwest::Client as ReqwestClient;
 #[derive(Clone)]
 pub struct AppState {
     pub db: PgPool,
     pub ctx: ReqwestClient,
-    pub key: cookie::Key,
+    pub key: Key,
 }
 // implementing FromRef is required here so we can extract substate in Axum
 // read more here: https://docs.rs/axum/latest/axum/extract/trait.FromRef.html
-impl FromRef<AppState> for cookie::Key {
+impl FromRef<AppState> for Key {
     fn from_ref(state: &AppState) -> Self {
         state.key.clone()
     }
@@ -27,6 +27,7 @@ impl FromRef<AppState> for cookie::Key {
 pub struct User {
     pub id: i64,
     pub pw_hash: Vec<u8>,
+    pub coins: i64,
 }
 
 #[derive(Debug, Deserialize)]
