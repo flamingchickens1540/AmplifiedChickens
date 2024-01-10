@@ -1,0 +1,11 @@
+# rust
+Cargo.lock
+/target
+
+# svelte
+/frontend/node_modules
+/frontend/dist/
+/frontend/package-lock.json
+
+# editor
+.vscode/*
