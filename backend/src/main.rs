@@ -13,9 +13,11 @@ mod ws;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv().ok();
-    let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    //dotenv().ok();
+    let server_host = "0.0.0.0"; //std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let server_port = "3000"; //std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    info!("{}", server_host);
+    info!("{}", server_port);
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     let (ws_layer, io) = ws::create_layer();
 
@@ -58,7 +60,7 @@ fn init_router(layer: SocketIoLayer) -> Router {
 // FrontEnd Routing
 // FrontEnd to server svelte build bundle, css and index.html from public folder
 pub fn front_public_route() -> Router {
-    let front_public = std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
+    let front_public = "./frontend/dist"; //std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
     Router::new()
         .fallback_service(
             ServeDir::new(front_public).not_found_service(handle_error.into_service()),
