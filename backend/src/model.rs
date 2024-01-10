@@ -3,7 +3,7 @@ use axum_login::{AuthUser, AuthnBackend, UserId};
 use cookie::{Cookie, Key};
 use serde::Deserialize;
 use sqlx::{
-    postgres::{PgPool, PgPoolOptions, PgRow},
+    postgres::{types::Oid, PgPool, PgPoolOptions, PgRow},
     FromRow, Row,
 };
 use std::collections::HashMap;
@@ -25,9 +25,13 @@ impl FromRef<AppState> for Key {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct User {
-    pub id: i64,
-    pub pw_hash: Vec<u8>,
+    pub id: Oid,
+    pub name: String,
+    pub avatar_url: String,
+    pub scout: i64,
     pub coins: i64,
+    pub points: i64,
+    pub is_admin: bool,
 }
 
 #[derive(Debug, Deserialize)]

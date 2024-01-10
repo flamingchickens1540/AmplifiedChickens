@@ -79,7 +79,7 @@ pub async fn google_callback(
         }
     };
 
-    let profile = profile.json::<model::User>().await.unwrap();
+    let profile: mode::User = profile.json::<model::User>().await.unwrap();
 
     let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
 
@@ -93,10 +93,13 @@ pub async fn google_callback(
         .max_age(cookie::time::Duration::seconds(secs));
 
     if let Err(e) =
-        query("INSERT INTO users (id, pw_hash, coins) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+        query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
             .bind(profile.id.clone())
-            .bind(profile.pw_hash.clone())
-            .bind(profile.coins.clone())
+            .bind(profile.name.clone())
+            .bind(profile.avatar_url.clone())
+            .bind(profile.coins)
+            .bind(profile.points)
+            .bind(profile.is_admin)
             .execute(&state.db)
             .await
     {
@@ -122,27 +125,6 @@ pub async fn google_callback(
     }
 
     Ok((jar.add(cookie), Redirect::to("/")))
-}
-
-fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {
-    // TODO: Replace with production url
-    let frontend_host = var("FRONT_HOST").expect("fronthost not set");
-    let frontend_port = var("FRONT_PORT").expect("frontport not set");
-    let redirect_url = format!("https://{frontend_host}:{frontend_port}/");
-    println!("redirect_url: {redirect_url}");
-
-    let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
-        .expect("Invalid authorization endpoint URL");
-    let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string())
-        .expect("Invalid token endpoint URL");
-
-    BasicClient::new(
-        ClientId::new(client_id),
-        Some(ClientSecret::new(client_secret)),
-        auth_url,
-        Some(token_url),
-    )
-    .set_redirect_uri(RedirectUrl::new(redirect_url).unwrap())
 }
 
 // Standard auth :)
