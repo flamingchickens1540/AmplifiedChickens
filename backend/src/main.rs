@@ -1,54 +1,67 @@
-use axum::{
-    Router, http::StatusCode, handler::HandlerWithoutStateExt
-};
-use tower_http::{
-    services::ServeDir, 
-    trace::TraceLayer 
-};
-
-
-const FRONT_PUBLIC: &str = "./frontend/dist";
-const SERVER_PORT: &str = "8080";
-const SERVER_HOST: &str = "0.0.0.0";
-
-// #[tokio::main]
-// async fn main() {
-//     let app = init_router();
-//         // .route("/", get(hello_world()));
-//     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap(); // 0.0.0.0 makes it compatable with docker images
-//     axum::serve(listener, app).await.unwrap();
-// }
-
-// fn hello_world() -> &'static str {
-//     "Hello World!"
-// }
+use axum::{handler::HandlerWithoutStateExt, http::StatusCode, Router};
+use dotenv::dotenv;
+use reqwest::Client as ReqwestClient;
+use socketioxide::layer::SocketIoLayer;
+use tower::ServiceBuilder;
+use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
+use tracing::{error, info};
+use tracing_subscriber::FmtSubscriber;
+// A scrapped queuing rewrite using an api
+mod auth;
+mod model;
+mod ws;
 
 #[tokio::main]
-async fn main() {
-    let router = init_router();
-    let listener = tokio::net::TcpListener::bind(format!("{}:{}", SERVER_HOST, SERVER_PORT).as_str()).await.unwrap();
-    axum::serve(listener, router).await.unwrap()
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenv().ok();
+    let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    tracing::subscriber::set_global_default(FmtSubscriber::default())?;
+    let (ws_layer, io) = ws::create_layer();
+
+    io.ns("/", ws::on_connect);
+
+    let oauth_id = dotenv::var("GOOGLE_OAUTH_CLIENT_ID").unwrap();
+    let oauth_secret = dotenv::var("GOOGLE_OAUTH_CLIENT_SECRET").unwrap();
+
+    let ctx = ReqwestClient::new();
+
+    let state = model::AppState {
+        db, // Database
+        ctx,
+        key: Key::generate(), // Cookie key
+    };
+
+    let router = init_router(ws_layer);
+
+    info!("Starting Server");
+
+    let listener =
+        tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
+            .await
+            .unwrap();
+    axum::serve(listener, router).await.unwrap();
+    Ok(())
 }
 
-fn init_router() -> Router {
+fn init_router(layer: SocketIoLayer) -> Router<model::AppState> {
     Router::new()
+        .nest("/auth", auth::create_api_router())
         .merge(front_public_route())
-        // .merge(backend(session_layer, shared_state))
-    // Router::new().nest_service("/", 
-    //     ServeDir::new("../../frontend/dist")
-    //     .not_found_service(ServeFile::new("../../frontend/dist/index.html")) // fallback
-    // )
+        .layer(
+            ServiceBuilder::new()
+                .layer(CorsLayer::permissive()) // Enable CORS policy
+                .layer(layer),
+        )
 }
 
-// *********
-// FRONT END
-// *********
-// Front end to server svelte build bundle, css and index.html from public folder
+// FrontEnd Routing
+// FrontEnd to server svelte build bundle, css and index.html from public folder
 pub fn front_public_route() -> Router {
+    let front_public = std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
     Router::new()
         .fallback_service(
-            ServeDir::new(FRONT_PUBLIC)
-            .not_found_service(handle_error.into_service()),
+            ServeDir::new(front_public).not_found_service(handle_error.into_service()),
         )
         .layer(TraceLayer::new_for_http())
 }

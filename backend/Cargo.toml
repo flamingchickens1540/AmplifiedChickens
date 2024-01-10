@@ -6,6 +6,19 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = { version = "0.7.2", features = ["ws"] }
+anyhow = "1.0.79"
+axum = { version = "0.7.2", features = ["ws", "multipart", "macros"] }
+axum-extra = { version = "0.9.1", features = ["cookie-private"] }
+chrono = { version = "0.4.31", features = ["clock"] }
+oauth2 = "4.4.2"
+reqwest = "0.11.23"
+rust-s3 = "0.33.0"
+serde = "1.0.195"
+serde_json = "1.0.111"
+shuttle-secrets = "0.36.0"
+shuttle-shared-db = { version = "0.36.0", features = ["postgres", "sqlx"] }
+shuttle-static-folder = "0.28.0"
+sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "macros", "chrono"] }
 tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
-tower-http = { version = "0.5.0", features = ["fs", "trace"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace", "cors"] }
+tracing = "0.1.40"
