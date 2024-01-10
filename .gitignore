@@ -1,6 +1,7 @@
 # rust
 Cargo.lock
 /target
+.env
 
 # svelte
 /frontend/node_modules

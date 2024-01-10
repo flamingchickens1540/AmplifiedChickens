@@ -7,8 +7,8 @@ use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 // A scrapped queuing rewrite using an api
-mod auth;
-mod model;
+//mod auth;
+//mod model;
 mod ws;
 
 #[tokio::main]
@@ -21,16 +21,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     io.ns("/", ws::on_connect);
 
-    let oauth_id = dotenv::var("GOOGLE_OAUTH_CLIENT_ID").unwrap();
-    let oauth_secret = dotenv::var("GOOGLE_OAUTH_CLIENT_SECRET").unwrap();
+    //let _oauth_id = dotenv::var("GOOGLE_OAUTH_CLIENT_ID").unwrap();
+    //let _oauth_secret = dotenv::var("GOOGLE_OAUTH_CLIENT_SECRET").unwrap();
 
-    let ctx = ReqwestClient::new();
+    let _ctx = ReqwestClient::new();
 
-    let state = model::AppState {
-        db, // Database
-        ctx,
-        key: Key::generate(), // Cookie key
-    };
+    //    let state = model::AppState {
+    //      db, // Database
+    //    ctx,
+    //  key: Key::generate(), // Cookie key
+    //};
 
     let router = init_router(ws_layer);
 
@@ -44,9 +44,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn init_router(layer: SocketIoLayer) -> Router<model::AppState> {
+fn init_router(layer: SocketIoLayer) -> Router {
     Router::new()
-        .nest("/auth", auth::create_api_router())
+        //.nest("/auth", auth::create_api_router())
         .merge(front_public_route())
         .layer(
             ServiceBuilder::new()
