@@ -1,5 +1,12 @@
-use axum::{handler::HandlerWithoutStateExt, http::StatusCode, Router};
+use axum::{
+    handler::HandlerWithoutStateExt,
+    http::StatusCode,
+    routing::{get, post},
+    Extension, Router,
+};
+use cookie::Key;
 use dotenv::dotenv;
+use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
 use socketioxide::layer::SocketIoLayer;
 use tower::ServiceBuilder;
@@ -7,53 +14,63 @@ use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 // A scrapped queuing rewrite using an api
-//mod auth;
+mod auth;
 mod model;
 mod ws;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    //dotenv().ok();
-    let server_host = "0.0.0.0"; //std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let server_port = "3000"; //std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
-    info!("{}", server_host);
-    info!("{}", server_port);
+    let db_uri = std::env::var("DATABASE_URI").expect("DATABASE_URI is not set");
+    let db = sqlx::PgPool::connect_lazy(db_uri.as_str()).unwrap();
+    sqlx::migrate!()
+        .run(&db)
+        .await
+        .expect("Failed migrations :(");
+
+    dotenv().ok();
+    let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     let (ws_layer, io) = ws::create_layer();
 
     io.ns("/", ws::on_connect);
 
-    //let _oauth_id = dotenv::var("GOOGLE_OAUTH_CLIENT_ID").unwrap();
-    //let _oauth_secret = dotenv::var("GOOGLE_OAUTH_CLIENT_SECRET").unwrap();
+    let ctx = ReqwestClient::new();
 
-    let _ctx = ReqwestClient::new();
-
-    //    let state = model::AppState {
-    //      db, // Database
-    //    ctx,
-    //  key: Key::generate(), // Cookie key
-    //};
-
-    let router = init_router(ws_layer);
-
-    info!("Starting Server");
-
+    let state = model::AppState {
+        db, // Database
+        ctx,
+        key: Key::generate(), // Cookie key
+    };
+    let oauth_client = auth::build_oauth_client();
+    let router = init_router(ws_layer, oauth_client);
     let listener =
         tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
             .await
             .unwrap();
+
+    info!("Starting Server");
+    info!("Listening on port {}", server_port);
+
     axum::serve(listener, router).await.unwrap();
     Ok(())
 }
 
-fn init_router(layer: SocketIoLayer) -> Router {
+fn init_router(ws: SocketIoLayer, oauth_client: BasicClient) -> Router {
+    let auth = Router::new().route("/auth/scout", get(auth::google_callback));
+    //let protected_router = Router::new().route("/", get(oauth::protected)).route_layer(
+    //    middleware::from_fn_with_state(state.clone(), oauth::check_authenticated),
+    //);
+
+    let frontend = front_public_route().layer(Extension(oauth_client));
     Router::new()
         //.nest("/auth", auth::create_api_router())
-        .merge(front_public_route())
+        .merge(frontend)
         .layer(
             ServiceBuilder::new()
                 .layer(CorsLayer::permissive()) // Enable CORS policy
-                .layer(layer),
+                .layer(ws),
         )
 }
 

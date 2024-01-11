@@ -1,17 +1,21 @@
 {
-    "name": "flaming-framework-frontend",
-    "description": "testing for 1540",
-    "author": "Azalea Colburn",
-    "version": "0.4.2",
-    "type": "module",
-    "scripts": {
-      "dev": "vite",
-      "build": "vite build",
-      "preview": "vite preview"
-    },
-    "devDependencies": {
-      "@sveltejs/vite-plugin-svelte": "^2.4.2",
-      "svelte": "^4.0.5",
-      "vite": "^4.4.5"
-    }
+  "name": "flaming-framework-frontend",
+  "description": "testing for 1540",
+  "author": "Azalea Colburn",
+  "version": "0.4.2",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.2",
+    "svelte": "^4.0.5",
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@types/cookie": "^0.6.0",
+    "svelte-router-spa": "^7.0.1"
   }
+}

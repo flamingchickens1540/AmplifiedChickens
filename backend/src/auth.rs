@@ -7,7 +7,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_extra::{extract::PrivateCookieJar, TypedHeader};
+use axum_extra::extract::PrivateCookieJar;
 use cookie::Cookie;
 use dotenv::{dotenv, var};
 use oauth2::{
@@ -16,11 +16,10 @@ use oauth2::{
     RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde_json::json;
-use sqlx::PgConnection;
 use std::env;
 use tracing::{error, info};
 
-pub fn create_api_router() -> Router<model::AppState> {
+pub fn build_oauth_client() -> BasicClient {
     let google_client_id =
         ClientId::new(env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env"));
     let google_client_secret = ClientSecret::new(
@@ -30,19 +29,15 @@ pub fn create_api_router() -> Router<model::AppState> {
         .expect("Invalid authorization endpoint URL");
     let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string())
         .expect("Invalid token endpoint URL");
-    let redirect_url = "";
-    let client = BasicClient::new(
+    let redirect_url = "http://localhost:8000/api/auth/google_callback";
+
+    BasicClient::new(
         google_client_id,
         Some(google_client_secret),
         auth_url,
         Some(token_url),
     )
-    .set_redirect_uri(RedirectUrl::new(redirect_url.to_string()).unwrap());
-
-    Router::new()
-        .route("/health", get(health_checker_handler))
-        .route("/admin_auth", post(google_callback))
-        .route("/scout_auth", post(google_callback))
+    .set_redirect_uri(RedirectUrl::new(redirect_url.to_string()).unwrap())
 }
 
 pub async fn google_callback(
@@ -79,7 +74,7 @@ pub async fn google_callback(
         }
     };
 
-    let profile: mode::User = profile.json::<model::User>().await.unwrap();
+    let profile: model::User = profile.json::<model::User>().await.unwrap();
 
     let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
 
@@ -93,7 +88,7 @@ pub async fn google_callback(
         .max_age(cookie::time::Duration::seconds(secs));
 
     if let Err(e) =
-        query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
             .bind(profile.avatar_url.clone())
@@ -110,7 +105,7 @@ pub async fn google_callback(
         ));
     }
 
-    if let Err(e) = query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
+    if let Err(e) = sqlx::query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
         .bind(profile.id.clone())
         .bind(token.access_token().secret().to_owned())
         .bind(max_age)
@@ -134,7 +129,8 @@ async fn admin_auth_handler(Json(auth_data): Json<model::User>) -> impl IntoResp
     dotenv().ok();
     let admin_password = var("ADMIN_PASSWORD").expect("ADMIN_PASSWORD is not set");
     let response;
-    if admin_password == auth_data.password {
+    if admin_password == auth_data.name {
+        // just to compile
         let session: String = String::from("");
         response = json!({
             "code": 200,
@@ -154,7 +150,7 @@ async fn scout_auth_handler(Json(auth_data): Json<model::User>) -> impl IntoResp
     dotenv().ok();
     let scout_password = var("SCOUT_PASSWORD").expect("SCOUT_PASSWORD is not set");
     let response;
-    if scout_password == auth_data.password {
+    if scout_password == auth_data.name {
         let session: String = String::from("");
         response = json!({
             "authed": true,
