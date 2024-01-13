@@ -1,12 +1,11 @@
-use axum::{extract::FromRef, middleware, routing::get, Extension, Router};
-use axum_login::{AuthUser, AuthnBackend, UserId};
-use cookie::{Cookie, Key};
+use axum::extract::FromRef;
+use axum_login::AuthUser;
+use cookie::Key;
 use serde::Deserialize;
 use sqlx::{
-    postgres::{types::Oid, PgPool, PgPoolOptions, PgRow},
-    FromRow, Pool, Postgres, Row,
+    postgres::{types::Oid, PgPoolOptions},
+    Pool, Postgres, Row,
 };
-use std::collections::HashMap;
 
 use reqwest::Client as ReqwestClient;
 
@@ -16,8 +15,7 @@ pub struct Db {
 }
 
 impl Db {
-    pub async fn new() -> Result<Self, sqlx::Error> {
-        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
+    pub async fn new(db_url: String) -> Result<Self, sqlx::Error> {
         let pool = PgPoolOptions::new().connect(&db_url).await?;
 
         let migrator = sqlx::migrate!();
@@ -41,7 +39,7 @@ impl FromRef<AppState> for Key {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
     pub id: Oid,
     pub name: String,

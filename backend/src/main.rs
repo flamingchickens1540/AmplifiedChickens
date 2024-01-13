@@ -1,7 +1,5 @@
 use axum::{
-    handler::HandlerWithoutStateExt,
-    http::StatusCode,
-    routing::{get, post},
+    handler::HandlerWithoutStateExt, http::StatusCode, middleware, response::Html, routing::get,
     Extension, Router,
 };
 use cookie::Key;
@@ -9,22 +7,28 @@ use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
 use socketioxide::layer::SocketIoLayer;
-use tower::ServiceBuilder;
-use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
+
+use tower_http::{services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
-// A scrapped queuing rewrite using an api
+
 mod auth;
+mod error;
 mod model;
 mod ws;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db: model::Db = model::Db::new().await.unwrap();
-
     dotenv().ok();
     let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
     let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+
+    let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
+    let client_secret =
+        std::env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
+
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
+    let db: model::Db = model::Db::new(db_url).await.unwrap();
 
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
     let (ws_layer, io) = ws::create_layer();
@@ -38,8 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ctx,
         key: Key::generate(), // Cookie key
     };
-    let oauth_client = auth::build_oauth_client();
-    let router = init_router(state, ws_layer, oauth_client);
+    let oauth_client = auth::build_oauth_client(client_id.clone(), client_secret);
+    let router = init_router(state, ws_layer, oauth_client, client_id);
     let listener =
         tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
             .await
@@ -52,19 +56,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn init_router(state: model::AppState, ws: SocketIoLayer, oauth_client: BasicClient) -> Router {
+fn init_router(
+    state: model::AppState,
+    _ws: SocketIoLayer,
+    oauth_client: BasicClient,
+    oauth_id: String,
+) -> Router {
     // this router has state
-    let auth = Router::new()
-        .route("/", get(auth::google_callback))
-        .with_state(state);
-    let frontend = front_public_route().layer(Extension(oauth_client));
+    let auth = Router::new().route("/", get(auth::google_callback));
+
+    let unprotected: Router<model::AppState> = Router::new()
+        .route("/", get(homepage))
+        .layer(Extension(oauth_id));
+
+    let protected =
+        Router::new()
+            .route("/", get(protected))
+            .route_layer(middleware::from_fn_with_state(
+                state.clone(),
+                auth::user_auth,
+            ));
+
+    let admin = Router::new()
+        .route("/", get(admin))
+        .route_layer(middleware::from_fn_with_state(
+            state.clone(),
+            auth::admin_auth,
+        ));
+
+    //let frontend = front_public_route().layer(Extension(oauth_client));
 
     // this router doesn't
-    Router::new().merge(frontend).nest("/auth", auth).layer(
-        ServiceBuilder::new()
-            .layer(CorsLayer::permissive()) // Enable CORS policy
-            .layer(ws),
-    )
+    Router::new()
+        .nest("/auth", auth)
+        .nest("/protected", protected)
+        .nest("/admin", admin)
+        .nest("/", unprotected)
+        .layer(Extension(oauth_client))
+        .with_state(state)
+    //.layer(
+    //    ServiceBuilder::new()
+    //        .layer(CorsLayer::permissive()) // Enable CORS policy
+    //        .layer(ws),
+    //)
 }
 
 // FrontEnd Routing
@@ -78,12 +112,30 @@ pub fn front_public_route() -> Router {
         .layer(TraceLayer::new_for_http())
 }
 
-#[allow(clippy::unused_async)]
 async fn handle_error() -> (StatusCode, &'static str) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         "Something went wrong accessing static files...",
     )
+}
+
+#[axum::debug_handler]
+async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
+    Html(format!("<p>Welcome!</p>
+    
+    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:8000/api/auth/google_callback\">
+    Click here to sign into Google!
+     </a>"))
+}
+
+#[axum::debug_handler]
+async fn protected(Extension(user): Extension<model::User>) -> Html<String> {
+    Html(format!("<p>Welcome {}<p>", user.name))
+}
+
+#[axum::debug_handler]
+async fn admin(Extension(user): Extension<model::User>) -> Html<String> {
+    Html(format!("<p>Welcome Admin {}<p>", user.name))
 }
 
 // With a form of auth

@@ -1,39 +1,32 @@
 use crate::model;
 use axum::{
-    debug_handler,
-    extract::{Extension, Host, Query, State},
+    extract::{Extension, Query, Request, State},
     http::StatusCode,
-    response::{IntoResponse, Json, Redirect},
-    routing::{get, post},
-    Router,
+    middleware::Next,
+    response::{IntoResponse, Redirect},
 };
 use axum_extra::extract::PrivateCookieJar;
 use cookie::Cookie;
-use dotenv::{dotenv, var};
-use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, reqwest::http_client, AuthUrl,
-    AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier,
-    RedirectUrl, RevocationUrl, Scope, TokenResponse, TokenUrl,
-};
-use serde_json::json;
-use std::env;
-use tracing::{error, info};
 
-pub fn build_oauth_client() -> BasicClient {
-    let google_client_id =
-        ClientId::new(env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env"));
-    let google_client_secret = ClientSecret::new(
-        env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env"),
-    );
+use oauth2::{
+    basic::BasicClient, reqwest::async_http_client, AuthUrl,
+    AuthorizationCode, ClientId, ClientSecret,
+    RedirectUrl, TokenResponse, TokenUrl,
+};
+
+
+use tracing::{error};
+
+pub fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {
     let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
         .expect("Invalid authorization endpoint URL");
     let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string())
         .expect("Invalid token endpoint URL");
-    let redirect_url = "http://localhost:8000/api/auth/google_callback";
+    let redirect_url = "http://localhost:3007/auth/";
 
     BasicClient::new(
-        google_client_id,
-        Some(google_client_secret),
+        ClientId::new(client_id),
+        Some(ClientSecret::new(client_secret)),
         auth_url,
         Some(token_url),
     )
@@ -66,7 +59,7 @@ pub async fn google_callback(
         .await
     {
         Ok(res) => res,
-        Err(e) => {
+        Err(_e) => {
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 String::from("Reqwest Error"),
@@ -122,72 +115,70 @@ pub async fn google_callback(
     Ok((jar.add(cookie), Redirect::to("/")))
 }
 
-//async fn admin_auth(
-//   State(state): State<model::AppState>,
-// Json(user_id): Json<String>,
-//) -> impl IntoResponse {
-//   let user: model::User =
-//     match sqlx::query_as!(model::User, "SELECT FROM users WHERE id = $1 LIMIT 1")
-//       .bind(user_id)
-//     .fetch_one(&state.db)
-//   .await
-//{
-//   Err(e) => {
-//      return Err((
-//        StatusCode::INTERNAL_SERVER_ERROR,
-//      format!("Error trying to get user data {e}"),
-//));
-//}
-//Ok(user) => user,
-//};
-//if !user.is_admin {
-//  return Ok(StatusCode::UNAUTHORIZED);
-//} else {
-//   Ok((StatusCode::OK))
-//}
-//}
-// Standard auth :)
+pub async fn admin_auth(
+    State(state): State<model::AppState>,
+    jar: PrivateCookieJar,
+    mut req: Request,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
+    let user: model::User = match get_user(&jar, &state.db).await {
+        Ok(user) => user,
+        Err(e) => return Err(e),
+    };
 
-// FIXME: Use same password hashing funtion on both to check
-async fn admin_auth_handler(Json(auth_data): Json<model::User>) -> impl IntoResponse {
-    dotenv().ok();
-    let admin_password = var("ADMIN_PASSWORD").expect("ADMIN_PASSWORD is not set");
-    let response;
-    if admin_password == auth_data.name {
-        // just to compile
-        let session: String = String::from("");
-        response = json!({
-            "code": 200,
-            "authed": true,
-            "session": session
-        });
-    } else {
-        response = json!({
-            "code": 200,
-            "authed": false
-        });
+    if !user.is_admin {
+        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/protected")));
     }
-    return Json(response);
+
+    req.extensions_mut().insert(user);
+    Ok(next.run(req).await)
 }
 
-async fn scout_auth_handler(Json(auth_data): Json<model::User>) -> impl IntoResponse {
-    dotenv().ok();
-    let scout_password = var("SCOUT_PASSWORD").expect("SCOUT_PASSWORD is not set");
-    let response;
-    if scout_password == auth_data.name {
-        let session: String = String::from("");
-        response = json!({
-            "authed": true,
-            "session": session
-        });
-    } else {
-        response = json!({
-            "authed": false
-        });
-    }
-    return Json(response);
+pub async fn user_auth(
+    State(state): State<model::AppState>,
+    jar: PrivateCookieJar,
+    mut req: Request,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
+    let user: model::User = match get_user(&jar, &state.db).await {
+        Ok(user) => user,
+        Err(e) => return Err(e),
+    };
+
+    req.extensions_mut().insert(user);
+    Ok(next.run(req).await)
 }
 
-async fn health_checker_handler() -> StatusCode {
-    StatusCode::OK
+async fn get_user(
+    jar: &PrivateCookieJar,
+    db: &model::Db,
+) -> Result<model::User, (StatusCode, Redirect)> {
+    let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
+        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+    };
+    let res = match sqlx::query_as::<_, model::User>(
+        "SELECT 
+        users
+        FROM sessions 
+        LEFT JOIN USERS ON sessions.user_id = users.id
+        WHERE sessions.session_id = $1 
+        LIMIT 1",
+    )
+    .bind(cookie)
+    .fetch_one(&(db.pool))
+    .await
+    {
+        Ok(res) => res,
+        Err(_e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Redirect::to("/"))),
+    };
+
+    Ok(model::User {
+        id: res.id,
+        name: res.name,
+        avatar_url: res.avatar_url,
+        scout: res.scout,
+        coins: res.coins,
+        points: res.points,
+        is_admin: res.is_admin,
+    })
 }
