@@ -95,7 +95,7 @@ pub async fn google_callback(
             .bind(profile.coins)
             .bind(profile.points)
             .bind(profile.is_admin)
-            .execute(&state.db)
+            .execute(&state.db.pool)
             .await
     {
         error!("Error while trying to make account: {e}");
@@ -109,7 +109,7 @@ pub async fn google_callback(
         .bind(profile.id.clone())
         .bind(token.access_token().secret().to_owned())
         .bind(max_age)
-        .execute(&state.db)
+        .execute(&state.db.pool)
         .await
     {
         error!("Error while trying to make session: {e}");
@@ -122,6 +122,30 @@ pub async fn google_callback(
     Ok((jar.add(cookie), Redirect::to("/")))
 }
 
+//async fn admin_auth(
+//   State(state): State<model::AppState>,
+// Json(user_id): Json<String>,
+//) -> impl IntoResponse {
+//   let user: model::User =
+//     match sqlx::query_as!(model::User, "SELECT FROM users WHERE id = $1 LIMIT 1")
+//       .bind(user_id)
+//     .fetch_one(&state.db)
+//   .await
+//{
+//   Err(e) => {
+//      return Err((
+//        StatusCode::INTERNAL_SERVER_ERROR,
+//      format!("Error trying to get user data {e}"),
+//));
+//}
+//Ok(user) => user,
+//};
+//if !user.is_admin {
+//  return Ok(StatusCode::UNAUTHORIZED);
+//} else {
+//   Ok((StatusCode::OK))
+//}
+//}
 // Standard auth :)
 
 // FIXME: Use same password hashing funtion on both to check

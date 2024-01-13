@@ -20,12 +20,7 @@ mod ws;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let db_uri = std::env::var("DATABASE_URI").expect("DATABASE_URI is not set");
-    let db = sqlx::PgPool::connect_lazy(db_uri.as_str()).unwrap();
-    sqlx::migrate!()
-        .run(&db)
-        .await
-        .expect("Failed migrations :(");
+    let db: model::Db = model::Db::new().await.unwrap();
 
     dotenv().ok();
     let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
@@ -44,7 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         key: Key::generate(), // Cookie key
     };
     let oauth_client = auth::build_oauth_client();
-    let router = init_router(ws_layer, oauth_client);
+    let router = init_router(state, ws_layer, oauth_client);
     let listener =
         tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
             .await
@@ -57,21 +52,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn init_router(ws: SocketIoLayer, oauth_client: BasicClient) -> Router {
-    let auth = Router::new().route("/auth/scout", get(auth::google_callback));
-    //let protected_router = Router::new().route("/", get(oauth::protected)).route_layer(
-    //    middleware::from_fn_with_state(state.clone(), oauth::check_authenticated),
-    //);
-
+fn init_router(state: model::AppState, ws: SocketIoLayer, oauth_client: BasicClient) -> Router {
+    // this router has state
+    let auth = Router::new()
+        .route("/", get(auth::google_callback))
+        .with_state(state);
     let frontend = front_public_route().layer(Extension(oauth_client));
-    Router::new()
-        //.nest("/auth", auth::create_api_router())
-        .merge(frontend)
-        .layer(
-            ServiceBuilder::new()
-                .layer(CorsLayer::permissive()) // Enable CORS policy
-                .layer(ws),
-        )
+
+    // this router doesn't
+    Router::new().merge(frontend).nest("/auth", auth).layer(
+        ServiceBuilder::new()
+            .layer(CorsLayer::permissive()) // Enable CORS policy
+            .layer(ws),
+    )
 }
 
 // FrontEnd Routing

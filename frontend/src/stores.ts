@@ -1,3 +1,3 @@
 import { type Writable, writable } from "svelte/store"
 
-export const session = writable();
+export const user_id: string | null = null; 

@@ -4,14 +4,32 @@ use cookie::{Cookie, Key};
 use serde::Deserialize;
 use sqlx::{
     postgres::{types::Oid, PgPool, PgPoolOptions, PgRow},
-    FromRow, Row,
+    FromRow, Pool, Postgres, Row,
 };
 use std::collections::HashMap;
 
 use reqwest::Client as ReqwestClient;
+
+#[derive(Debug, Clone)]
+pub struct Db {
+    pub pool: Pool<Postgres>,
+}
+
+impl Db {
+    pub async fn new() -> Result<Self, sqlx::Error> {
+        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
+        let pool = PgPoolOptions::new().connect(&db_url).await?;
+
+        let migrator = sqlx::migrate!();
+        migrator.run(&pool).await?;
+
+        Ok(Db { pool })
+    }
+}
+
 #[derive(Clone)]
 pub struct AppState {
-    pub db: PgPool,
+    pub db: Db,
     pub ctx: ReqwestClient,
     pub key: Key,
 }

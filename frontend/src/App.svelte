@@ -1,15 +1,18 @@
 <script lang="ts">
     import { Router } from "svelte-router-spa";
-    import { session, password, admin_password } from "./stores";
-    import Scout from "./pages/scout/Scout.svelte";
-    import Admin from "./pages/admin/Admin.svelte";
-    import Homepage from "./pages/homepage/Homepage.svelte";
-    import { CookieParseOptions } from "cookie";
+    import { user_id } from "./stores";
+    //import Scout from "./pages/scout/Scout.svelte";
+    //import Admin from "./pages/admin/Admin.svelte";
+    //import Homepage from "./pages/homepage/Homepage.svelte";
 
     function userIsAdmin() {
         
     }
 
+    function userIsAuthed() {
+        
+    }
+    
     let routes = [
         { name: "/", component: Homepage },
         {
