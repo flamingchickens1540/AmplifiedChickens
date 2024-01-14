@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: 'Poppins-Medium';
+        src: url('$lib/fonts/Poppins-Medium.eot');
+        src: url('$lib/fonts/Poppins-Medium.eot?#iefix') format('embedded-opentype'),
+            url('$lib/fonts/Poppins-Medium.woff2') format('woff2'),
+            url('$lib/fonts/Poppins-Medium.woff') format('woff'),
+            url('$lib/fonts/Poppins-Medium.ttf')  format('truetype'),
+            url('$lib/fonts/Poppins-Medium.svg#svgFontName') format('svg');
+        font-weight: 400;
+        font-style: normal;
+}
+@font-face {
+    font-family: 'Poppins-Bold';
+        src: url('$lib/fonts/Poppins-Bold.eot');
+        src: url('$lib/fonts/Poppins-Bold.eot?#iefix') format('embedded-opentype'),
+            url('$lib/fonts/Poppins-Bold.woff2') format('woff2'),
+            url('$lib/fonts/Poppins-Bold.woff') format('woff'),
+            url('$lib/fonts/Poppins-Bold.ttf')  format('truetype'),
+            url('$lib/fonts/Poppins-Bold.svg#svgFontName') format('svg');
+        font-weight: 400;
+        font-style: normal;
+}
+h1 {
+    font-family: "Poppins-Bold", sans-serif;
+}
+p {
+    font-family: "Poppins-Medium", sans-serif;
+}
