@@ -1,6 +1,11 @@
-# 1540's Flaming Framework
-Axum + Svelte
+# SQUAWK
 
-# Install with Cargo 
-```cargo generate Ewie21/flaming-framework -n <project-name>```
+## Db setup
+1. Install postgres
+``brew install postgresql``
 
+2. Start postgres
+``brew services start postgresql``
+
+3. Start db(make sure to update .env accordingly, default is postgres)
+``psql <db-name>``

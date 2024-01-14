@@ -88,7 +88,7 @@ fn init_router(
 
     // this router doesn't
     Router::new()
-        .nest("/auth", auth)
+        .nest("/auth/", auth)
         .nest("/protected", protected)
         .nest("/admin", admin)
         .nest("/", unprotected)
@@ -123,7 +123,7 @@ async fn handle_error() -> (StatusCode, &'static str) {
 async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
     Html(format!("<p>Welcome!</p>
     
-    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:8000/api/auth/google_callback\">
+    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:3007/auth/\">
     Click here to sign into Google!
      </a>"))
 }

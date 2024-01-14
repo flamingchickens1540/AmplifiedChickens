@@ -9,20 +9,18 @@ use axum_extra::extract::PrivateCookieJar;
 use cookie::Cookie;
 
 use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, AuthUrl,
-    AuthorizationCode, ClientId, ClientSecret,
-    RedirectUrl, TokenResponse, TokenUrl,
+    basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
+    ClientSecret, RedirectUrl, TokenResponse, TokenUrl,
 };
 
-
-use tracing::{error};
+use tracing::{error, info};
 
 pub fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {
     let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
         .expect("Invalid authorization endpoint URL");
     let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string())
         .expect("Invalid token endpoint URL");
-    let redirect_url = "http://localhost:3007/auth/";
+    let redirect_url = "http://localhost:3007/auth";
 
     BasicClient::new(
         ClientId::new(client_id),
@@ -67,6 +65,7 @@ pub async fn google_callback(
         }
     };
 
+    // FIXME: Google doens't have a complete model of user; create a sub-model
     let profile: model::User = profile.json::<model::User>().await.unwrap();
 
     let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
