@@ -20,14 +20,14 @@ mod ws;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    let server_host = dotenv::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let server_port = dotenv::var("SERVER_PORT").expect("SERVER_PORT is not set");
 
-    let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
+    let client_id = dotenv::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
     let client_secret =
-        std::env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
+        dotenv::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
 
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
+    let db_url = dotenv::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
@@ -63,7 +63,9 @@ fn init_router(
     oauth_id: String,
 ) -> Router {
     // this router has state
-    let auth = Router::new().route("/", get(auth::google_callback));
+    let auth = Router::new()
+        .route("/google", get(auth::google_callback))
+        .route("/slack", get(auth::slack_callback));
 
     let unprotected: Router<model::AppState> = Router::new()
         .route("/", get(homepage))
@@ -104,7 +106,7 @@ fn init_router(
 // FrontEnd Routing
 // FrontEnd to server svelte build bundle, css and index.html from public folder
 pub fn front_public_route() -> Router {
-    let front_public = "./frontend/dist"; //std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
+    let front_public = "./frontend/dist"; //dotenv::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
     Router::new()
         .fallback_service(
             ServeDir::new(front_public).not_found_service(handle_error.into_service()),
@@ -121,11 +123,16 @@ async fn handle_error() -> (StatusCode, &'static str) {
 
 #[axum::debug_handler]
 async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
+    let client_id = dotenv::var("CLIENT_ID").expect("CLIENT_ID not set");
+    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").expect("REDIRECT_URL not set");
+    let scopes = "identity.basic,identity.email";
+
+    let url = format!(
+        "https://slack.com/oauth/v2/authorize?client_id={}&user_scope={}&redirect_uri={}",
+        client_id, scopes, redirect_url
+    );
     Html(format!("<p>Welcome!</p>
-    
-    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:3007/auth/\">
-    Click here to sign into Google!
-     </a>"))
+    <a href={url}><img alt=\"Add to Slack\" height=\"40\" width=\"139\" src=\"https://platform.slack-edge.com/img/add_to_slack.png\" srcSet=\"https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x\"/></a>"))
 }
 
 #[axum::debug_handler]

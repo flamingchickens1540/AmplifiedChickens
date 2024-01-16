@@ -14,6 +14,8 @@ bimap = { version = "0.6.3", features = ["serde"] }
 chrono = { version = "0.4.31", features = ["clock"] }
 cookie = "0.18.0"
 dotenv = "0.15.0"
+hyper = "1.1.0"
+hyper-tls = "0.6.0"
 oauth2 = "4.4.2"
 reqwest = "0.11.23"
 rust-s3 = "0.33.0"
