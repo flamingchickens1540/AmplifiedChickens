@@ -10,7 +10,7 @@
 <!-- add the team color and number with "team" (as a string) and "teamcolor" (red or blue, as a string) -->
 <Toggleleave/>
 <!-- get the result using buttonon -->
-<div class="grid grid-cols-2 gap-3" style="margin: 1rem">
+<div class="grid grid-cols-2 gap-3 m-4">
     <button on:click={() => {speaker += 1;}}>
     <svg viewBox="0 0 178 316" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_857_1659)">
