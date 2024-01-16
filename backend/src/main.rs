@@ -8,7 +8,7 @@ use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
 use socketioxide::layer::SocketIoLayer;
 
-use tower_http::{services::ServeDir, trace::TraceLayer};
+use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
@@ -23,9 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server_host = dotenv::var("SERVER_HOST").expect("SERVER_HOST is not set");
     let server_port = dotenv::var("SERVER_PORT").expect("SERVER_PORT is not set");
 
-    let client_id = dotenv::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
+    let client_id = dotenv::var("SLACK_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
     let client_secret =
-        dotenv::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
+        dotenv::var("SLACK_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
 
     let db_url = dotenv::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ctx,
         key: Key::generate(), // Cookie key
     };
-    let oauth_client = auth::build_oauth_client(client_id.clone(), client_secret);
+    let oauth_client = auth::build_slack_oauth_client(client_id.clone(), client_secret);
     let router = init_router(state, ws_layer, oauth_client, client_id);
     let listener =
         tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
@@ -63,9 +63,7 @@ fn init_router(
     oauth_id: String,
 ) -> Router {
     // this router has state
-    let auth = Router::new()
-        .route("/google", get(auth::google_callback))
-        .route("/slack", get(auth::slack_callback));
+    let auth = Router::new().route("/slack", get(auth::slack_callback));
 
     let unprotected: Router<model::AppState> = Router::new()
         .route("/", get(homepage))
@@ -90,17 +88,15 @@ fn init_router(
 
     // this router doesn't
     Router::new()
-        .nest("/auth/", auth)
+        .nest("/auth", auth)
         .nest("/protected", protected)
         .nest("/admin", admin)
         .nest("/", unprotected)
         .layer(Extension(oauth_client))
         .with_state(state)
-    //.layer(
-    //    ServiceBuilder::new()
-    //        .layer(CorsLayer::permissive()) // Enable CORS policy
-    //        .layer(ws),
-    //)
+        .layer(
+            tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
+        )
 }
 
 // FrontEnd Routing
@@ -123,16 +119,15 @@ async fn handle_error() -> (StatusCode, &'static str) {
 
 #[axum::debug_handler]
 async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
-    let client_id = dotenv::var("CLIENT_ID").expect("CLIENT_ID not set");
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL").expect("REDIRECT_URL not set");
     let scopes = "identity.basic,identity.email";
 
     let url = format!(
         "https://slack.com/oauth/v2/authorize?client_id={}&user_scope={}&redirect_uri={}",
-        client_id, scopes, redirect_url
+        oauth_id, scopes, redirect_url
     );
     Html(format!("<p>Welcome!</p>
-    <a href={url}><img alt=\"Add to Slack\" height=\"40\" width=\"139\" src=\"https://platform.slack-edge.com/img/add_to_slack.png\" srcSet=\"https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x\"/></a>"))
+    <a href={url}><img alt=\"Login with Slack\" height=\"40\" width=\"139\" src=\"https://platform.slack-edge.com/img/add_to_slack.png\" srcSet=\"https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x\"/></a>"))
 }
 
 #[axum::debug_handler]

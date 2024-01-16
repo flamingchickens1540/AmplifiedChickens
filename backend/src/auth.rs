@@ -9,8 +9,10 @@ use axum_extra::extract::PrivateCookieJar;
 use cookie::Cookie;
 
 use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
-    ClientSecret, RedirectUrl, TokenResponse, TokenUrl,
+    basic::{BasicClient, BasicTokenType},
+    reqwest::async_http_client,
+    AuthUrl, AuthorizationCode, ClientId, ClientSecret, EmptyExtraTokenFields, RedirectUrl,
+    StandardTokenResponse, TokenResponse, TokenType, TokenUrl,
 };
 
 use tracing::{error, info};
@@ -69,7 +71,7 @@ pub async fn google_callback(
         }
     };
 
-    let profile = match state
+    let identity = match state
         .ctx
         .get("https://openidconnect.googleapis.com/v1/userinfo")
         .bearer_auth(token.access_token().secret().to_owned())
@@ -85,51 +87,20 @@ pub async fn google_callback(
         }
     };
 
-    // FIXME: Google doens't have a complete model of user; create a sub-model
-    let profile: model::User = profile.json::<model::User>().await.unwrap();
+    let oauth_data = identity.json::<model::OauthUser>().await.unwrap();
 
-    let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
+    // TODO: Check if it's valid to assume they only log in once ever, so we can set scouting stats to default
+    let profile = model::User::new(
+        oauth_data.id,
+        oauth_data.name,
+        false,
+        false,
+        None,
+        None,
+        None,
+    );
 
-    let max_age = chrono::Local::now() + chrono::Duration::seconds(secs);
-
-    let cookie = Cookie::build(("sid", token.access_token().secret().to_owned()))
-        .domain(".app.localhost") // change to production url
-        .path("/")
-        .secure(true)
-        .http_only(true)
-        .max_age(cookie::time::Duration::seconds(secs));
-
-    if let Err(e) =
-        sqlx::query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
-            .bind(profile.id.clone())
-            .bind(profile.name.clone())
-            .bind(profile.avatar_url.clone())
-            .bind(profile.coins)
-            .bind(profile.points)
-            .bind(profile.is_admin)
-            .execute(&state.db.pool)
-            .await
-    {
-        error!("Error while trying to make account: {e}");
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error trying to create account: {e}"),
-        ));
-    }
-
-    if let Err(e) = sqlx::query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
-        .bind(profile.id.clone())
-        .bind(token.access_token().secret().to_owned())
-        .bind(max_age)
-        .execute(&state.db.pool)
-        .await
-    {
-        error!("Error while trying to make session: {e}");
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error trying to create session: {e}"),
-        ));
-    }
+    let cookie = insert_user(profile, &state.db, token).await?;
 
     Ok((jar.add(cookie), Redirect::to("/")))
 }
@@ -154,14 +125,17 @@ pub async fn slack_callback(
 
     let access_token = token.access_token();
 
-    let identity = match state
+    let identity_response = match state
         .ctx
         .get("https://slack.com/api/users.identity")
         .header("Authorization", format!("Bearer {}", access_token.secret()))
         .send()
         .await
     {
-        Ok(res) => res,
+        Ok(res) => res
+            .json::<model::SlackIdRes>()
+            .await
+            .expect("Slack Response did not match expected model"),
         Err(_e) => {
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -170,11 +144,29 @@ pub async fn slack_callback(
         }
     };
 
-    // FIXME: Slack does not have full user model, create sub-model
-    let profile: model::User = identity.json::<model::User>().await.unwrap();
+    let oauth_data: model::OauthUser = identity_response.user;
 
-    info!("Authorized user: {}", profile.name);
+    // TODO: Check if it's valid to assume they only log in once ever, so we can set scouting stats to default
+    let profile = model::User::new(
+        oauth_data.id,
+        oauth_data.name,
+        false,
+        false,
+        None,
+        None,
+        None,
+    );
 
+    let cookie = insert_user(profile, &state.db, token).await?;
+
+    Ok((jar.add(cookie), Redirect::to("/")))
+}
+
+async fn insert_user(
+    profile: model::User,
+    db: &model::Db,
+    token: StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+) -> Result<Cookie<'static>, (StatusCode, String)> {
     let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
 
     let max_age = chrono::Local::now() + chrono::Duration::seconds(secs);
@@ -184,17 +176,17 @@ pub async fn slack_callback(
         .path("/")
         .secure(true)
         .http_only(true)
-        .max_age(cookie::time::Duration::seconds(secs));
+        .max_age(cookie::time::Duration::seconds(secs))
+        .build();
 
     if let Err(e) =
         sqlx::query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
-            .bind(profile.avatar_url.clone())
-            .bind(profile.coins)
-            .bind(profile.points)
-            .bind(profile.is_admin)
-            .execute(&state.db.pool)
+            .bind(profile.is_notify)
+    .bind(profile.is_admin)
+            .bind(profile.endpoint).bind(profile.p256dh).bind(profile.auth)
+            .execute(&db.pool)
             .await
     {
         error!("Error while trying to make account: {e}");
@@ -208,7 +200,7 @@ pub async fn slack_callback(
         .bind(profile.id.clone())
         .bind(token.access_token().secret().to_owned())
         .bind(max_age)
-        .execute(&state.db.pool)
+        .execute(&db.pool)
         .await
     {
         error!("Error while trying to make session: {e}");
@@ -218,7 +210,9 @@ pub async fn slack_callback(
         ));
     }
 
-    Ok((jar.add(cookie), Redirect::to("/")))
+    info!("Authorized user: {}", profile.name);
+
+    Ok(cookie)
 }
 
 pub async fn admin_auth(
@@ -281,10 +275,10 @@ async fn get_user(
     Ok(model::User {
         id: res.id,
         name: res.name,
-        avatar_url: res.avatar_url,
-        scout: res.scout,
-        coins: res.coins,
-        points: res.points,
+        is_notify: res.is_notify,
         is_admin: res.is_admin,
+        endpoint: res.endpoint,
+        p256dh: res.p256dh,
+        auth: res.auth,
     })
 }
