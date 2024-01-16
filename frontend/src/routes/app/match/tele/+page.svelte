@@ -1,11 +1,11 @@
 <script>
-    import Header from "./components/header.svelte";
+    import Header from "$lib/components/header.svelte";
     export let amp = 0
     export let speaker = 0
     export let trap = 0
 </script>
 
-<Header/>
+<Header phase = "Teleop"/>
 <!-- add the team color and number with "team" (as a string) and "teamcolor" (red or blue, as a string) -->
 <div class="grid grid-cols-2 gap-3 m-4">
     <button on:click={() => {speaker += 1;}}>

@@ -1,9 +1,9 @@
 <script>
-    import Header from "./components/header.svelte"
-    import Position from "./components/togglefielded.svelte"
-    import Location from "./components/where.svelte"
+    import Header from "$lib/components/Header.svelte"
+    import Position from "$lib/components/Toggle.svelte"
+    import Location from "$lib/components/where.svelte"
 </script>
 
-<Header/>
+<Header phase = "Pre Match"/>
 <Location/>
-<Position/>
+<Position text1 = "Fielded" text2 = "Missed Match"/>

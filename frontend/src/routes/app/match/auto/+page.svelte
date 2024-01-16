@@ -6,9 +6,9 @@
     export let piece = 0
 </script>
 
-<Header/>
+<Header phase = "Auto"/>
 <!-- add the team color and number with "team" (as a string) and "teamcolor" (red or blue, as a string) -->
-<Toggleleave/>
+<Toggleleave text1 = "Stayed Home" text2 = "Left Home"/>
 <!-- get the result using buttonon -->
 <div class="grid grid-cols-2 gap-3 m-4">
     <button on:click={() => {speaker += 1;}}>

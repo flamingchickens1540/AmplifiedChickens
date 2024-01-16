@@ -84,8 +84,6 @@ fn init_router(
             auth::admin_auth,
         ));
 
-    //let frontend = front_public_route().layer(Extension(oauth_client));
-
     // this router doesn't
     Router::new()
         .nest("/auth/", auth)
