@@ -1,9 +1,5 @@
-<head>
-    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
-</head>
-
 <script>
-    import Header from "./app/match/tele/components/header.svelte";
+    import Header from "./components/header.svelte";
     export let amp = 0
     export let speaker = 0
     export let trap = 0
