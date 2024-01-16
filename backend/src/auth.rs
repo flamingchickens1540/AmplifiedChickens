@@ -15,6 +15,7 @@ use oauth2::{
     StandardTokenResponse, TokenResponse, TokenType, TokenUrl,
 };
 
+use reqwest::Method;
 use tracing::{error, info};
 
 pub fn build_google_oauth_client(client_id: String, client_secret: String) -> BasicClient {
@@ -36,9 +37,9 @@ pub fn build_google_oauth_client(client_id: String, client_secret: String) -> Ba
 }
 
 pub fn build_slack_oauth_client(client_id: String, client_secret: String) -> BasicClient {
-    let auth_url = AuthUrl::new("https://slack.com/oauth/v2/authorize".to_string())
+    let auth_url = AuthUrl::new("https://slack.com/openid/connect/authorize".to_string())
         .expect("Invalid authorization endpoint URL");
-    let token_url = TokenUrl::new("https://slack.com/api/oauth.v2.access".to_string())
+    let token_url = TokenUrl::new("https://slack.com/oauth.connect.token".to_string())
         .expect("Invalid token endpoint URL");
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL")
         .expect("SLACK_REDIRECT_URL not set")
@@ -111,24 +112,50 @@ pub async fn slack_callback(
     Query(query): Query<model::AuthRequest>,
     Extension(oauth_client): Extension<BasicClient>,
 ) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
-    let token = match oauth_client
-        .exchange_code(AuthorizationCode::new(query.code))
-        .request_async(async_http_client)
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            error!("An error occurred while exchanging the code: {e}");
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
-        }
-    };
+    info!("THIS");
 
-    let access_token = token.access_token();
+    let auth_req_url = format!("https://slack.com/openid/connect/authorize?response_type=code&scope=openid&client_id={}&state=af0ifjsldkj&team=team1540.slack.com&nonce=abcd&redirect_uri={}", oauth_client.client_id().as_str(), oauth_client.redirect_url().unwrap().as_str());
+    let auth_response = state.ctx.get(auth_req_url).send().await.unwrap();
+
+    let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
+
+    let token_res: serde_json::Value = state
+        .ctx
+        .post("https://slack.com/api/openid.connect.token")
+        .query(&[
+            ("client_id", oauth_client.client_id().as_str()),
+            ("client_secret", client_secret.as_str()),
+            ("code", query.code.as_str()),
+            (
+                "redirect_uri",
+                oauth_client.redirect_url().unwrap().as_str(),
+            ),
+        ])
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    let access_token = token_res.get("access_token");
+
+    //let token = match oauth_client
+    //   .exchange_code(AuthorizationCode::new(query.code))
+    //   .request_async(async_http_client)
+    //  .await
+    //{
+    //   Ok(res) => res,
+    //  Err(e) => {
+    //     error!("An error occurred while exchanging the code: {e}");
+    //    return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+    //}
+    //};
 
     let identity_response = match state
         .ctx
-        .get("https://slack.com/api/users.identity")
-        .header("Authorization", format!("Bearer {}", access_token.secret()))
+        .get("https://slack.com/openid.connect.userInfo")
+        .header("Authorization", access_token.unwrap())
         .send()
         .await
     {
@@ -157,7 +184,7 @@ pub async fn slack_callback(
         None,
     );
 
-    let cookie = insert_user(profile, &state.db, token).await?;
+    let cookie = insert_user(profile, &state.db, token_res).await?;
 
     Ok((jar.add(cookie), Redirect::to("/")))
 }
@@ -165,13 +192,13 @@ pub async fn slack_callback(
 async fn insert_user(
     profile: model::User,
     db: &model::Db,
-    token: StandardTokenResponse<EmptyExtraTokenFields, BasicTokenType>,
+    token: serde_json::Value,
 ) -> Result<Cookie<'static>, (StatusCode, String)> {
-    let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
+    let secs: i64 = token.get("exp").unwrap().to_string().parse().unwrap();
 
     let max_age = chrono::Local::now() + chrono::Duration::seconds(secs);
 
-    let cookie = Cookie::build(("sid", token.access_token().secret().to_owned()))
+    let cookie = Cookie::build(("sid", token.get("access_token").unwrap().to_string()))
         .domain(".app.localhost") // change to production url
         .path("/")
         .secure(true)
@@ -198,7 +225,7 @@ async fn insert_user(
 
     if let Err(e) = sqlx::query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
         .bind(profile.id.clone())
-        .bind(token.access_token().secret().to_owned())
+        .bind(token.get("access_token").unwrap().to_string())
         .bind(max_age)
         .execute(&db.pool)
         .await
