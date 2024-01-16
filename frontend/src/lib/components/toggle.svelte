@@ -1,5 +1,7 @@
 <script lang=ts>
     export let buttonon = true
+    export let text1 = "Text1"
+    export let text2 = "Text2"
     function toggleon(){
     buttonon = true
     buttonon = buttonon
@@ -11,13 +13,13 @@
     </script>
     {#if buttonon == true}
     <div class="grid grid-cols-2 grid-rows-1 place-items-center">
-    <h3 class="grid col-start-1 col-span-1 row-start-1 text-center" style="background-color: #00D586; color: #353839; border-top-left-radius: 0.4rem; border-bottom-left-radius: 0.4rem">✓Fielded</h3>
-    <h3 class="grid col-start-2 col-span-1 row-start-1 text-center" style="color: #FFFFFF;" on:click={toggleoff}>Missed Match</h3>
+    <h3 class="grid col-start-1 col-span-1 row-start-1 text-center" style="background-color: #00D586; color: #353839; border-top-left-radius: 0.4rem; border-bottom-left-radius: 0.4rem">✓{text1}</h3>
+    <h3 class="grid col-start-2 col-span-1 row-start-1 text-center" style="color: #FFFFFF;" on:click={toggleoff}>{text2}</h3>
     </div>
     {:else}
     <div class="grid grid-cols-2 grid-rows-1 place-items-center">
-        <h3 class="grid col-start-1 col-span-1 row-start-1 text-center" style="color: #FFFFFF;" on:click={toggleon}>Fielded</h3>
-        <h3 class="grid col-start-2 col-span-1 row-start-1 text-center" style="background-color: #00D586; color: #353839; border-top-right-radius: 0.4rem; ; border-bottom-right-radius: 0.4rem">✓Missed Match</h3>
+        <h3 class="grid col-start-1 col-span-1 row-start-1 text-center" style="color: #FFFFFF;" on:click={toggleon}>{text1}</h3>
+        <h3 class="grid col-start-2 col-span-1 row-start-1 text-center" style="background-color: #00D586; color: #353839; border-top-right-radius: 0.4rem; ; border-bottom-right-radius: 0.4rem">✓{text2}</h3>
         </div>
     {/if}
     
@@ -30,7 +32,6 @@
     letter-spacing: 0.5px;
     margin: 0;
     width: 100%;
-    padding: 0.1rem;
     }
     div{
             margin: 25px;

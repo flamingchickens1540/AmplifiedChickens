@@ -1,6 +1,6 @@
 <script>
-    import Header from "./components/header.svelte";
-    import Toggleleave from "./components/toggleleave.svelte";
+    import Header from "$lib/components/Header.svelte";
+    import Toggleleave from "../../../../lib/components/toggle.svelte";
     export let amp = 0
     export let speaker = 0
     export let piece = 0

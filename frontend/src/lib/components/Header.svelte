@@ -1,10 +1,11 @@
 <script>
     export let team = "1540";
     export let teamcolor = "red";
+    export let phase = "Auto"
 </script>
 <div class="header grid justify-items-center">
     <h1 style="margin: 1rem; color: {teamcolor}; font-size: 4.5rem">{team}</h1>
-    <h2 style="margin: 0rem; font-size: 3rem">Pre Match</h2>
+    <h2 style="margin: 0rem; font-size: 3rem">{phase}</h2>
 </div>
 
 <style>
