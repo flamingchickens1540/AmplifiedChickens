@@ -108,8 +108,6 @@ fn init_router(state: model::AppState, oauth_client: BasicClient, oauth_id: Stri
             auth::admin_auth,
         ));
 
-    //let frontend = front_public_route().layer(Extension(oauth_client));
-
     // this router doesn't
     Router::new()
         .nest("/auth", auth)

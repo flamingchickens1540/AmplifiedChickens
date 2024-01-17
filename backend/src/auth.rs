@@ -14,7 +14,6 @@ use oauth2::{
     AuthUrl, AuthorizationCode, ClientId, ClientSecret, EmptyExtraTokenFields, RedirectUrl,
     StandardTokenResponse, TokenResponse, TokenType, TokenUrl,
 };
-
 use reqwest::Method;
 use serde_json::Value;
 use tracing::{error, info};
