@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Confirm from "./app/match/postmatch/+page.svelte"
+  import Confirm from "$lib/components/Confirm.svelte"
 </script>
 
 <Confirm/>

@@ -1,5 +1,5 @@
 <script>
-    import Header from "$lib/components/header.svelte";
+    import Header from "$lib/components/Header.svelte";
     export let amp = 0
     export let speaker = 0
     export let trap = 0

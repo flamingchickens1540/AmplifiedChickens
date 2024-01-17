@@ -1,5 +1,5 @@
-<div>
-<textarea rows="5" placeholder="Notes"></textarea>
+<div class="border border-outline_gray rounded mt-[-9px] visible ">
+<textarea rows="3" placeholder="Notes"></textarea>
 </div>
 
 <style>
@@ -10,10 +10,6 @@
     }
     div {
         margin: 25px;
-        border-style: solid;
-        border-width: 0.2rem;
-        border-color: grey;
-        border-radius: 10px;
         padding:0.2rem;
 
        
