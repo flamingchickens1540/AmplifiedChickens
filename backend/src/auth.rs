@@ -16,6 +16,7 @@ use oauth2::{
 };
 
 use reqwest::Method;
+use serde_json::Value;
 use tracing::{error, info};
 
 pub fn build_google_oauth_client(client_id: String, client_secret: String) -> BasicClient {
@@ -101,35 +102,49 @@ pub async fn google_callback(
         None,
     );
 
-    let cookie = insert_user(profile, &state.db, token).await?;
+    // TODO: Update this callback to be manual if that works
+    //let cookie = insert_user(profile, &state.db, token).await?;
 
-    Ok((jar.add(cookie), Redirect::to("/")))
+    //Ok((jar.add(cookie), Redirect::to("/")))
+    Ok((jar, Redirect::to("/")))
 }
 
 pub async fn slack_callback(
     State(state): State<model::AppState>,
     jar: PrivateCookieJar,
     Query(query): Query<model::AuthRequest>,
-    Extension(oauth_client): Extension<BasicClient>,
 ) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
     info!("THIS");
-
-    let auth_req_url = format!("https://slack.com/openid/connect/authorize?response_type=code&scope=openid&client_id={}&state=af0ifjsldkj&team=team1540.slack.com&nonce=abcd&redirect_uri={}", oauth_client.client_id().as_str(), oauth_client.redirect_url().unwrap().as_str());
-    let auth_response = state.ctx.get(auth_req_url).send().await.unwrap();
-
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
+    let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
+    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
+    info!("{}", redirect_url);
+    //let nonce = "test_nonce";
+
+    //let auth_response = state
+    //    .ctx
+    //   .get("https://slack.com/openid/connect/authorize")
+    //  .query(&[
+    //       ("response_type", "code"),
+    //       ("scope", "openid,email,profile"),
+    //       ("cliend_id", client_id),
+    //      ("state",),
+    //      ("nonce", test_nonce),
+    //       ("redirect_uri", )
+    //   ])
+    //  .send()
+    // .await
+    //.unwrap();
 
     let token_res: serde_json::Value = state
         .ctx
         .post("https://slack.com/api/openid.connect.token")
         .query(&[
-            ("client_id", oauth_client.client_id().as_str()),
-            ("client_secret", client_secret.as_str()),
-            ("code", query.code.as_str()),
-            (
-                "redirect_uri",
-                oauth_client.redirect_url().unwrap().as_str(),
-            ),
+            ("client_id", client_id),
+            ("client_secret", client_secret),
+            ("code", query.code),
+            ("redirect_uri", redirect_url),
+            ("grant_type", "authorization_code".to_string()),
         ])
         .send()
         .await
@@ -137,8 +152,10 @@ pub async fn slack_callback(
         .json()
         .await
         .unwrap();
+    info!("Token Response ;{:?}", token_res);
 
-    let access_token = token_res.get("access_token");
+    let access_token = token_res.get("access_token").unwrap().to_string();
+    info!("Access Token: {}", access_token);
 
     //let token = match oauth_client
     //   .exchange_code(AuthorizationCode::new(query.code))
@@ -154,39 +171,73 @@ pub async fn slack_callback(
 
     let identity_response = match state
         .ctx
-        .get("https://slack.com/openid.connect.userInfo")
-        .header("Authorization", access_token.unwrap())
+        .get("https://slack.com/api/openid.connect.userInfo")
+        .header("content_type", "application/x-www-form-urlencoded")
+        .header("Authorization", format!("Bearer {}", access_token))
         .send()
         .await
     {
-        Ok(res) => res
-            .json::<model::SlackIdRes>()
-            .await
-            .expect("Slack Response did not match expected model"),
-        Err(_e) => {
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Reqwest Error"),
-            ))
+        Ok(res) => res.json::<serde_json::Value>().await,
+        Err(e) => {
+            return Err::<(PrivateCookieJar, Redirect), (axum::http::StatusCode, std::string::String)>(
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Reqwest Error: {e}"),
+                ),
+            )
         }
     };
 
-    let oauth_data: model::OauthUser = identity_response.user;
+    match identity_response {
+        Ok(res) => match res {
+            Value::Object(obj) => {
+                info!("{:?}", obj) // happening "invalid_auth"
+            }
+            _ => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Identity request return unexpected json".to_string(),
+                ))
+            }
+        },
+        Err(e) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Incorrectly Authed, Identity response failed: {}", e),
+            ))
+        }
+    };
+    //if id.get("ok").unwrap().as_bool().unwrap() {
+    //  let user = identity_response.get("user").unwrap();
+    //let oauth_data: model::OauthUser = model::OauthUser {
+    //    id: user.get("id").unwrap().to_string(),
+    //    name: user.get("name").unwrap().to_string(),
+    //};
 
     // TODO: Check if it's valid to assume they only log in once ever, so we can set scouting stats to default
-    let profile = model::User::new(
-        oauth_data.id,
-        oauth_data.name,
-        false,
-        false,
-        None,
-        None,
-        None,
-    );
+    //let profile = model::User::new(
+    //    oauth_data.id,
+    //   oauth_data.name,
+    //  false,
+    // false,
+    //None,
+    //None,
+    //None,
+    //);
 
-    let cookie = insert_user(profile, &state.db, token_res).await?;
+    //let cookie = insert_user(profile, &state.db, token_res).await?;
 
-    Ok((jar.add(cookie), Redirect::to("/")))
+    //Ok((jar.add(cookie), Redirect::to("/")));
+    // } else {
+    //error!(
+    //   "Received error response from identity request:\n{:?}",
+    //  identity_response
+    //);
+    return Err((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "Error in slack identity query response".to_string(),
+    ));
+    //}
 }
 
 async fn insert_user(

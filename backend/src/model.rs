@@ -41,7 +41,7 @@ impl FromRef<AppState> for Key {
 
 #[derive(Debug, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
-    pub id: Oid,
+    pub id: String,
     pub name: String,
     pub is_notify: bool,
     pub is_admin: bool,
@@ -52,7 +52,7 @@ pub struct User {
 
 impl User {
     pub fn new(
-        id: Oid,
+        id: String,
         name: String,
         is_notify: bool,
         is_admin: bool,
@@ -74,7 +74,7 @@ impl User {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct OauthUser {
-    pub id: Oid,
+    pub id: String,
     pub name: String,
 }
 
