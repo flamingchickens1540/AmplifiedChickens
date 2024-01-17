@@ -1,16 +1,21 @@
-<textarea cols="30" rows="10" placeholder="Notes"></textarea>
-
+<div>
+<textarea rows="5" placeholder="Notes"></textarea>
+</div>
 
 <style>
-    textarea {
+    textarea{
+        background-color: #353839;
+        width: 100%; 
+        color: lightgrey;
+    }
+    div {
         margin: 25px;
         border-style: solid;
         border-width: 0.2rem;
         border-color: grey;
         border-radius: 10px;
-        padding: 1rem;
+        padding:0.2rem;
 
-        color: lightgrey;
-        background-color: #353839;
+       
     }
 </style>
