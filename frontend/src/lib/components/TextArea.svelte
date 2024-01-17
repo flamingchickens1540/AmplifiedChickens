@@ -1,16 +1,17 @@
-<textarea cols="30" rows="10" placeholder="Notes"></textarea>
-
+<div class="border border-outline_gray rounded mt-[-9px] visible ">
+<textarea rows="3" placeholder="Notes"></textarea>
+</div>
 
 <style>
-    textarea {
-        margin: 25px;
-        border-style: solid;
-        border-width: 0.2rem;
-        border-color: grey;
-        border-radius: 10px;
-        padding: 1rem;
-
-        color: lightgrey;
+    textarea{
         background-color: #353839;
+        width: 100%; 
+        color: lightgrey;
+    }
+    div {
+        margin: 25px;
+        padding:0.2rem;
+
+       
     }
 </style>
