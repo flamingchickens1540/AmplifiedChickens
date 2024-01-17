@@ -31,7 +31,7 @@
         color: #c2c2c2;
     }
     .header {
-        margin: 25px;
+        margin: 17px;
         padding: 1rem;
 
         color: lightgrey;

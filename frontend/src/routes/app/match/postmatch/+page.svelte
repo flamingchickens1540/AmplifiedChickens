@@ -5,7 +5,7 @@
     import TextArea from "$lib/components/TextArea.svelte"
     import Rating from "$lib/components/Rating.svelte"
 </script>
-<Header let phase = "Post Match"/>
+<Header phase = "Post Match"/>
 <Stage/>
 <Rating name = "Driver Skill"/>
 <Toggle text1="Undamaged" text2="Broken"/>
@@ -18,7 +18,7 @@
 </div>
 <style>
     h3{
-        margin: 25px;
+        margin: 17px;
         color: lightgrey;
         background-color: #5c5c5c;
         font-size: 2rem;

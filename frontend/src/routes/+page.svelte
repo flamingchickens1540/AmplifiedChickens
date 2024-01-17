@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Confirm from "$lib/components/Confirm.svelte"
+  import Pit from "./app/pit/+page.svelte"
 </script>
 
-<Confirm/>
+<Pit/>

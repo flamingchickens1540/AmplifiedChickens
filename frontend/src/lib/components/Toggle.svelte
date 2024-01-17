@@ -1,14 +1,19 @@
 <script lang=ts>
-    export let buttonon = true
+    let buttonon = true
     export let text1 = "Text1"
     export let text2 = "Text2"
+    export let value = text1
     function toggleon(){
+    value = text1
+    value = value
     buttonon = true
     buttonon = buttonon
     }
     function toggleoff(){
+    value = text2
     buttonon = false
     buttonon = buttonon
+    value = value
     }
     </script>
     {#if buttonon == true}
@@ -32,9 +37,10 @@
     margin: 0;
     width: 100%;
     padding: 0.3rem;
+
     }
     div{
-            margin: 25px;
+            margin: 17px;
             color: lightgrey;
             background-color: #353839;
         }

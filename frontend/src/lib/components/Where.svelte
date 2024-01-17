@@ -30,9 +30,10 @@
     margin: 0;
     width: 100%;
     padding: 0.1rem;
+    padding-left:0.8rem
     }
     div{
-            margin: 25px;
+            margin: 17px;
             color: lightgrey;
             background-color: #353839;
         }

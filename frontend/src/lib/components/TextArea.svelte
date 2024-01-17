@@ -1,5 +1,9 @@
+<script>
+    export let value = ""
+</script>
+
 <div class="border border-outline_gray rounded mt-[-9px] visible ">
-<textarea rows="3" placeholder="Notes"></textarea>
+<textarea bind:value={value} rows="4" placeholder="Notes"></textarea>
 </div>
 
 <style>
@@ -7,9 +11,10 @@
         background-color: #353839;
         width: 100%; 
         color: lightgrey;
+        font-family: Poppins;
     }
     div {
-        margin: 25px;
+        margin: 17px;
         padding:0.2rem;
 
        

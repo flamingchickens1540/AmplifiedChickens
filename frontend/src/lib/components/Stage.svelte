@@ -41,9 +41,10 @@
     margin: 0;
     width: 100%;
     padding: 0.3rem;
+    padding-left: 0.8rem;
     }
     div{
-            margin: 25px;
+            margin: 17px;
             background-color: #353839;
         }
     </style>
