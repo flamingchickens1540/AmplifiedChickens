@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let lastmatch = "(qm4)"
+    export let lastmatch = "qm4"
     import type { Scout } from "$src/lib/types.ts"
     let robots:Scout[] = [] 
     robots.push({
@@ -28,7 +28,7 @@
     })
     robots = robots.slice(0, 6)
 </script>
-<h3>Last Match {lastmatch}</h3>
+<h3>Last Match ({lastmatch})</h3>
 {#each robots as robot}
 {#if robot.status == "Complete"}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 17px">
@@ -43,7 +43,7 @@
 {:else}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 17px">
     <h3 class="self-center">{robot.name}</h3>
-    <h2 class="rounded col-start-5" style="background-color: #EE3C42; padding: 0.80rem; padding-top: 1rem; padding-bottom: 1rem;">Unassigned</h2>
+    <h2 class="rounded col-start-5" style="background-color: #EE3C42; padding: 0.8rem; padding-top: 1rem; padding-bottom: 1rem;">Unassigned</h2>
     </div>
 {/if}
 {/each}

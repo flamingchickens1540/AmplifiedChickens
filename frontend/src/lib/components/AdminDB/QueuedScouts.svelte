@@ -1,5 +1,6 @@
-<script>
-    export let queued = ["Rex", "Azalea", "Jack", "Blaze", "Charlie", "Domnic", "Jackson"]
+<script lang="ts">
+    // import type { Scout } from "$lib/types.ts"
+    export let queued/*:Scout[] */= ["Rex", "Azalea", "Jack", "Blaze", "Charlie", "Domnic", "Jackson"]
     queued = queued.slice(0, 6)
 </script>
 <h3>Queued Scouts</h3>
