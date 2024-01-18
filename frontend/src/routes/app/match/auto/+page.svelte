@@ -16,12 +16,10 @@
 {#if speaker == true}
 <Confirm title = "Speaker (Auto)" bind:notover = {speaker} bind:valuesuc = {speaksuc} bind:valuefail = {speakfail}/>
 {:else if amp == true}
-<Confirm title = "Speaker (Amp)" bind:notover = {amp} bind:valuesuc = {ampsuc} bind:valuefail = {ampfail}/>
+<Confirm title = "Amp (Auto)" bind:notover = {amp} bind:valuesuc = {ampsuc} bind:valuefail = {ampfail}/>
 {:else if piece == true}
-<Confirm title = "Speaker (Pickup)" bind:notover = {piece} bind:valuesuc = {piecesuc} bind:valuefail = {piecefail}/>
+<Confirm title = "Pickup (Auto)" bind:notover = {piece} bind:valuesuc = {piecesuc} bind:valuefail = {piecefail}/>
 {:else}
-<h3>{speaksuc}</h3>
-<h3>{speakfail}</h3>
 <Header phase = "Auto"/>
 <Toggle text1 = "Stayed Home" text2 = "Left Home" bind:value = {leavestatus}/>
 <div class="grid grid-cols-2 gap-3 m-4">

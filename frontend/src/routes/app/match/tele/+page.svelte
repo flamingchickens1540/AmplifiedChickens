@@ -1,14 +1,26 @@
 <script>
     import Header from "$lib/components/Header.svelte";
-    export let amp = 0
-    export let speaker = 0
-    export let trap = 0
+    import Confirm from "$lib/components/Confirm.svelte"
+    let amp = false
+    let ampsuc = 0
+    let ampfail = 0
+    let speaker = false
+    let speaksuc = 0
+    let speakfail = 0
+    let trap = false
+    let trapfail = 0
+    let trapsuc = 0
 </script>
-
+{#if speaker == true}
+<Confirm title = "Speaker (Tele)" bind:notover = {speaker} bind:valuesuc = {speaksuc} bind:valuefail = {speakfail}/>
+{:else if amp == true}
+<Confirm title = "Amp (Tele)" bind:notover = {amp} bind:valuesuc = {ampsuc} bind:valuefail = {ampfail}/>
+{:else if trap == true}
+<Confirm title = "Trap (Tele)" bind:notover = {trap} bind:valuesuc = {trapsuc} bind:valuefail = {trapfail}/>
+{:else}
 <Header phase = "Teleop"/>
-<!-- add the team color and number with "team" (as a string) and "teamcolor" (red or blue, as a string) -->
 <div class="grid grid-cols-2 gap-3 m-4">
-    <button on:click={() => {speaker += 1;}}>
+    <button on:click={() => {speaker = true;}}>
         <svg viewBox="0 0 178 384" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g filter="url(#filter0_d_857_1659)">
             <rect x="4" width="170" height="376" rx="5" fill="#5C5C5C"/>
@@ -30,7 +42,7 @@
             </svg>
             
     </button>
-    <button on:click={() => {amp += 1;}}>
+    <button on:click={() => {amp = true;}}>
         <svg viewBox="0 0 177 384" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g filter="url(#filter0_d_857_1659)">
             <rect x="4" width="169" height="376" rx="5" fill="#5C5C5C"/>
@@ -53,8 +65,7 @@
             
         </button>
 
-        <button on:click={() => {trap += 1;}}>
-        <div class="row-start-2 col-span-2">
+        <button class="col-span-2" on:click={() => {trap = true;}}>
             <svg viewBox="0 0 365 229" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g filter="url(#filter0_d_1202_2637)">
                 <rect x="4" width="357" height="221" rx="5" fill="#5C5C5C"/>
@@ -75,9 +86,6 @@
                 </defs>
                 </svg>
                 
-        </div>
         </button>
-        
-
-
 </div>
+{/if} 
