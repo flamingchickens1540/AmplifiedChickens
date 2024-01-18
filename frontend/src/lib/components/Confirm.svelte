@@ -1,12 +1,26 @@
 <script>
     import Header from "./Header.svelte"
-    export let button = "Trap"
-    export let status = ""
+    export let title = "Trap"
+    export let notover = true
+    export let valuesuc = 0
+    export let valuefail = 0
+    function Success(){
+    valuesuc += 1
+    notover = false
+    valuesuc = valuesuc
+    notover = notover
+    }
+    function Fail(){
+    valuefail += 1
+    notover = false
+    valuefail = valuefail
+    notover = notover
+    }
 </script>
 
-<Header phase = {button}/>
-<div class="grid grid-cols-2">
-<div class="col-span-2 justify-items-center justify-center gap-3">
+<Header phase = {title}/>
+<div class="grid grid-cols-2 gap-3">
+<button class="col-span-2" on:click={() => notover = false}>
     <svg viewBox="0 0 365 152" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_1212_799)">
         <g filter="url(#filter1_d_1212_799)">
@@ -38,7 +52,8 @@
         </filter>
         </defs>
         </svg>  
-</div>
+</button>
+<button class="grid col-start-1" on:click={Success}>
 <svg viewBox="0 0 178 466" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g filter="url(#filter0_d_857_1659)">
     <rect x="4" width="170" height="458" rx="5" fill="#00D586"/>
@@ -58,7 +73,8 @@
     </filter>
     </defs>
     </svg>
-    
+</button>
+<button on:click={Fail}>
     <svg viewBox="0 0 177 466" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_857_1659)">
         <rect x="4" width="169" height="458" rx="5" fill="#EE3C42"/>
@@ -78,6 +94,7 @@
         </filter>
         </defs>
         </svg>
+</button>
            
 </div>
 

@@ -15,9 +15,6 @@
   let polish = 3
   let notes = ""
 </script>
-{teamnumber}
-{width}
-{height}{weight}{wheredrive}{drivetrain}{intake}{polish}{notes}
 <SubmitButton text="Teams Remaining"/>
 <TextInput name="Team Number" bind:value = {teamnumber}/>
 <TextInput name="Width" bind:value = {width}/>
