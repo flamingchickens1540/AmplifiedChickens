@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Pit from "./app/image/+page.svelte"
+  import Pit from "$lib/components/AdminDB/LastMatch.svelte"
 </script>
 
 <Pit/>

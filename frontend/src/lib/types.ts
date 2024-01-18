@@ -59,3 +59,8 @@ export type TeamEvent = {
 export type StageEnum = "onstage" | "park" | "not attempted" | "failed"
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"
+
+export type Scout = {
+    number: string
+    status: string
+}
