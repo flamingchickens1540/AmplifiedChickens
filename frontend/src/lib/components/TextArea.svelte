@@ -11,7 +11,7 @@
         background-color: #353839;
         width: 100%; 
         color: lightgrey;
-        font-family: Poppins;
+        font-family: Poppins-medium;
     }
     div {
         margin: 17px;

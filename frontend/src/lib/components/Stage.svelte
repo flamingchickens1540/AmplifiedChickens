@@ -34,7 +34,7 @@
     
     <style>
     h3{
-    font-family: 'Poppins';
+    font-family: 'Poppins-medium';
     font-style: normal;
     font-size: 1.3rem;
     letter-spacing: 0.5px;

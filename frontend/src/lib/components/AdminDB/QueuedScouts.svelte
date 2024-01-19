@@ -9,7 +9,7 @@
 {/each}
 <style>
 h3{
-font-family: 'Poppins';
+font-family: 'Poppins-medium';
 font-style: normal;
 font-weight: 700;
 font-size: 40px;

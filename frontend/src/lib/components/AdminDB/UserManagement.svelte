@@ -25,10 +25,9 @@
     hasnotifs: false,
     numscouted: 99999999
     })
-    
-
 </script>
 <h3>User Management</h3>
+<div class="main">
 {#each scouts as scout}
 {#if scout.hasnotifs == true}
 {#if scout.admin == true}
@@ -112,7 +111,7 @@
 {/if}
 {/if}
 {/each}
-
+</div>
 <style>
  h3{
     font-family: 'Poppins-bold';
@@ -121,4 +120,8 @@
     color: #FFFFFF;
     margin:1rem
     }
+.main{
+    overflow-y: scroll;
+    max-height: 100%;
+}
 </style>

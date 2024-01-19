@@ -10,7 +10,7 @@
 
 <style>
     h1 {
-        font-family: "Poppins";
+        font-family: "Poppins-medium";
         font-style: normal;
         font-size: 60px;
         line-height: 45px;
@@ -21,7 +21,7 @@
     h2 {
         /* Teleop */
 
-        font-family: "Poppins";
+        font-family: "Poppins-medium";
         font-style: normal;
         font-size: 36px;
         line-height: 45px;

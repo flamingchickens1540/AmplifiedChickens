@@ -16,7 +16,7 @@
             padding: 1rem;
             text-align: center;
             /* Teams Remaining */
-font-family: 'Poppins';
+font-family: 'Poppins-medium';
 font-style: bold;
 
         }
