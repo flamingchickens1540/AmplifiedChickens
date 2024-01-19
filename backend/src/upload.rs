@@ -14,10 +14,8 @@ use std::{
 };
 use uuid::Uuid;
 
-const IMAGE_DIR: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
-
 #[derive(Deserialize)]
-struct ResizeOptions {
+pub struct ResizeOptions {
     #[serde(default, deserialize_with = "empty_string_as_none")]
     width: Option<u32>,
     height: Option<u32>,
@@ -30,29 +28,32 @@ pub async fn upload(
     mut multipart: Multipart,
 ) -> impl IntoResponse {
     let mut tasks = Vec::new();
+    let image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
 
     while let Some(field) = multipart.next_field().await.unwrap() {
         let data = field.bytes().await.unwrap();
 
         let new_keys = keys.clone();
         let new_db = state.db.pool.clone();
+        let new_image_dir = image_dir.clone();
 
         let task = tokio::spawn(async move {
             let name = Uuid::new_v4().to_string();
             let img = image::load_from_memory(&data).unwrap();
 
-            let path = format!("{IMAGE_DIR}/{name}.png");
+            let path = format!("{new_image_dir}/{name}.png");
             let file = File::create(&path).unwrap();
             let mut writer = BufWriter::new(file);
             img.write_to(&mut writer, image::ImageOutputFormat::Png)
                 .unwrap();
-            sqlx::query("INSERT INTO images ($1, $2, $3, $4, $5)")
+            let _ = sqlx::query("INSERT INTO images ($1, $2, $3, $4, $5)")
                 .bind(name)
                 .bind(new_keys.event_key)
                 .bind(new_keys.team_key)
                 .bind(path) // FIXME: Make this the correct url
                 .bind(new_keys.scout_id)
-                .execute(&new_db);
+                .execute(&new_db)
+                .await;
         });
 
         tasks.push(task);
@@ -73,7 +74,9 @@ pub async fn image(
     Path(image): Path<String>,
     options: Query<ResizeOptions>,
 ) -> impl IntoResponse {
-    let image = image::open(format!("{IMAGE_DIR}/{image}")).unwrap();
+    let image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
+
+    let image = image::open(format!("{image_dir}/{image}")).unwrap();
 
     let image = match (options.width, options.height, options.scale) {
         (Some(width), Some(height), _) => {

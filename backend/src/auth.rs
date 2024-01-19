@@ -13,10 +13,6 @@ use serde_json::Value;
 
 use tracing::{error, info};
 
-pub fn build_router() -> Router<model::AppState> {
-    Router::new().route("/slack", get(slack_callback))
-}
-
 pub async fn slack_callback(
     State(state): State<model::AppState>,
     jar: PrivateCookieJar,
@@ -91,11 +87,9 @@ pub async fn slack_callback(
                         None,
                     );
 
-                    let new_db = state.db.clone();
-
                     let cookie = insert_user(
                         profile,
-                        new_db,
+                        &state.db,
                         (
                             obj.get("expires_in").unwrap().as_i64().unwrap(),
                             access_token,
@@ -122,10 +116,74 @@ pub async fn slack_callback(
     }
 }
 
+pub async fn fake_callback(
+    State(state): State<model::AppState>,
+    jar: PrivateCookieJar,
+    Query(query): Query<model::AuthRequest>,
+) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
+    let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
+    let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
+    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
+    info!("Redirect URL: {}", redirect_url);
+    //let nonce = "test_nonce";
+
+    let token_res: serde_json::Value = state
+        .ctx
+        .post("https://slack.com/api/openid.connect.token")
+        .query(&[
+            ("client_id", client_id),
+            ("client_secret", client_secret),
+            ("code", query.code),
+            ("redirect_uri", redirect_url),
+            ("grant_type", "authorization_code".to_string()),
+        ])
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    info!("Token Response: {:?}", token_res);
+
+    let access_token = token_res.get("access_token").unwrap().to_string();
+    info!("Access Token: {}", access_token);
+
+    let id =
+        sqlx::query("SELECT user_id FROM users ORDER BY id ASC LIMIT 1").fetch_one(&state.db.pool);
+
+    let profile = model::User::new(
+        "".to_string(),
+        "TestUser".to_string(),
+        false,
+        false,
+        None,
+        None,
+        None,
+    );
+
+    let cookie = insert_user(profile, &state.db, (300000, access_token)).await?;
+    Ok((jar.add(cookie), Redirect::to("/")))
+}
+
+pub async fn user_auth(
+    State(state): State<model::AppState>,
+    jar: PrivateCookieJar,
+    mut req: Request,
+    next: Next,
+) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
+    let user: model::User = match get_user(&jar, &state.db).await {
+        Ok(user) => user,
+        Err(e) => return Err(e),
+    };
+
+    req.extensions_mut().insert(user);
+    Ok(next.run(req).await)
+}
+
 // token_res: (expires_in, access_token)
 async fn insert_user(
     profile: model::User,
-    db: model::Db,
+    db: &model::Db,
     token_res: (i64, String),
 ) -> Result<Cookie<'static>, (StatusCode, String)> {
     let secs: i64 = token_res.0 / 100;
@@ -141,7 +199,7 @@ async fn insert_user(
         .finish();
 
     if let Err(e) =
-        sqlx::query("INSERT INTO users (id, name, is_notify, is_admin, endpoin,t p256dh, auth) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO users (id, name, is_notify, is_admin, endpoin, p256dh, auth) VALUES ($1) ON CONFLICT (id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
             .bind(profile.is_notify)
@@ -159,4 +217,38 @@ async fn insert_user(
         ));
     };
     Ok(cookie)
+}
+
+async fn get_user(
+    jar: &PrivateCookieJar,
+    db: &model::Db,
+) -> Result<model::User, (StatusCode, Redirect)> {
+    let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
+        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+    };
+    let res = match sqlx::query_as::<_, model::User>(
+        "SELECT 
+        users
+        FROM sessions 
+        LEFT JOIN USERS ON sessions.user_id = users.id
+        WHERE sessions.session_id = $1 
+        LIMIT 1",
+    )
+    .bind(cookie)
+    .fetch_one(&(db.pool))
+    .await
+    {
+        Ok(res) => res,
+        Err(_e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Redirect::to("/"))),
+    };
+
+    Ok(model::User {
+        id: res.id,
+        name: res.name,
+        is_notify: res.is_notify,
+        is_admin: res.is_admin,
+        endpoint: res.endpoint,
+        p256dh: res.p256dh,
+        auth: res.auth,
+    })
 }
