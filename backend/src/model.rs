@@ -40,16 +40,63 @@ impl FromRef<AppState> for Key {
 
 #[derive(Debug, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
-    pub id: Oid,
+    pub id: String,
     pub name: String,
-    pub avatar_url: String,
-    pub scout: i64,
-    pub coins: i64,
-    pub points: i64,
+    pub is_notify: bool,
     pub is_admin: bool,
+    pub endpoint: Option<String>,
+    pub p256dh: Option<String>,
+    pub auth: Option<String>,
+}
+
+impl User {
+    pub fn new(
+        id: String,
+        name: String,
+        is_notify: bool,
+        is_admin: bool,
+        endpoint: Option<String>,
+        p256dh: Option<String>,
+        auth: Option<String>,
+    ) -> Self {
+        User {
+            id,
+            name,
+            is_notify,
+            is_admin,
+            endpoint,
+            p256dh,
+            auth,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct OauthUser {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct SlackIdRes {
+    pub ok: bool,
+    pub user: OauthUser,
+    team: Team,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+struct Team {
+    id: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct AuthRequest {
     pub code: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ScoutEventTeam {
+    pub event_key: String,
+    pub team_key: String,
+    pub scout_id: String,
 }

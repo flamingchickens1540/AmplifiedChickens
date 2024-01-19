@@ -7,9 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.79"
-axum = { version = "0.7.2", features = ["ws", "multipart", "macros"] }
+axum = { version = "0.7.2", features = ["ws", "multipart", "macros", "tokio"] }
 axum-extra = { version = "0.9.1", features = ["cookie-private"] }
 axum-login = "0.12.0"
+axum-server = { version = "0.6.0", features = ["tls-rustls"] }
 bimap = { version = "0.6.3", features = ["serde"] }
 chrono = { version = "0.4.31", features = ["clock"] }
 cookie = "0.18.0"

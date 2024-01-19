@@ -1,11 +1,9 @@
+use crate::model;
 use axum::{
     body::Body,
-    extract::{DefaultBodyLimit, Multipart, Path, Query},
+    extract::{Multipart, Path, Query, State},
     http::{Response, StatusCode},
     response::IntoResponse,
-    routing::get,
-    routing::post,
-    Router,
 };
 use serde::{de, Deserialize, Deserializer};
 use std::{
@@ -16,7 +14,6 @@ use std::{
 };
 use uuid::Uuid;
 
-const MAX_IMAGE_SIZE: usize = std::env::var("MAX_IMAGE_SIZE").parse().unwrap_or(50) * 1024 * 1024;
 const IMAGE_DIR: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
 
 #[derive(Deserialize)]
@@ -27,18 +24,18 @@ struct ResizeOptions {
     scale: Option<f32>,
 }
 
-pub fn build_router() -> Router {
-    Router::new()
-        .route("/image/:image", get(image))
-        .route("/upload", post(upload))
-        .layer(DefaultBodyLimit::max(MAX_IMAGE_SIZE))
-}
-
-async fn upload(mut multipart: Multipart) -> impl IntoResponse {
+pub async fn upload(
+    State(state): State<model::AppState>,
+    Query(keys): Query<model::ScoutEventTeam>,
+    mut multipart: Multipart,
+) -> impl IntoResponse {
     let mut tasks = Vec::new();
 
     while let Some(field) = multipart.next_field().await.unwrap() {
         let data = field.bytes().await.unwrap();
+
+        let new_keys = keys.clone();
+        let new_db = state.db.pool.clone();
 
         let task = tokio::spawn(async move {
             let name = Uuid::new_v4().to_string();
@@ -49,6 +46,13 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
             let mut writer = BufWriter::new(file);
             img.write_to(&mut writer, image::ImageOutputFormat::Png)
                 .unwrap();
+            sqlx::query("INSERT INTO images ($1, $2, $3, $4, $5)")
+                .bind(name)
+                .bind(new_keys.event_key)
+                .bind(new_keys.team_key)
+                .bind(path) // FIXME: Make this the correct url
+                .bind(new_keys.scout_id)
+                .execute(&new_db);
         });
 
         tasks.push(task);
@@ -64,7 +68,11 @@ async fn upload(mut multipart: Multipart) -> impl IntoResponse {
         .unwrap()
 }
 
-async fn image(Path(image): Path<String>, options: Query<ResizeOptions>) -> impl IntoResponse {
+pub async fn image(
+    State(state): State<model::AppState>,
+    Path(image): Path<String>,
+    options: Query<ResizeOptions>,
+) -> impl IntoResponse {
     let image = image::open(format!("{IMAGE_DIR}/{image}")).unwrap();
 
     let image = match (options.width, options.height, options.scale) {
@@ -103,8 +111,7 @@ where
     T: FromStr,
     T::Err: fmt::Display,
 {
-    let opt = Option::<String>::deserialize(de)?;
-    match opt.as_deref() {
+    match Option::<String>::deserialize(de)?.as_deref() {
         None | Some("") => Ok(None),
         Some(s) => FromStr::from_str(s).map_err(de::Error::custom).map(Some),
     }

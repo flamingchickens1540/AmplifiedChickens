@@ -2,7 +2,11 @@
 Cargo.lock
 /backend/target
 .env
+/backend/key.pem
+/backend/cert.pem
 
+cert.pem
+key.pem
 # editor
 .vscode/*
 

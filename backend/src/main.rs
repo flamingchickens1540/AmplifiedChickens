@@ -1,21 +1,37 @@
 use axum::{
-    handler::HandlerWithoutStateExt, http::StatusCode, middleware, response::Html, routing::get,
-    Extension, Router,
+    extract::{DefaultBodyLimit, Host},
+    handler::HandlerWithoutStateExt,
+    http::{StatusCode, Uri},
+    middleware,
+    response::Html,
+    response::Redirect,
+    routing::{get, post},
+    BoxError, Extension, Router,
 };
+use axum_server::tls_rustls::RustlsConfig;
 use cookie::Key;
 use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
 use socketioxide::layer::SocketIoLayer;
+use std::{net::SocketAddr, path::PathBuf};
 
-use tower_http::{services::ServeDir, trace::TraceLayer};
+use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
 mod auth;
 mod error;
 mod model;
+mod upload;
 mod ws;
+
+#[allow(dead_code)]
+#[derive(Clone, Copy)]
+struct Ports {
+    http: u16,
+    https: u16,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -31,9 +47,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-    let (ws_layer, io) = ws::create_layer();
-
-    io.ns("/", ws::on_connect);
 
     let ctx = ReqwestClient::new();
 
@@ -42,72 +55,52 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ctx,
         key: Key::generate(), // Cookie key
     };
-    let oauth_client = auth::build_oauth_client(client_id.clone(), client_secret);
-    let router = init_router(state, ws_layer, oauth_client, client_id);
-    let listener =
-        tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
-            .await
-            .unwrap();
+    let router = init_router(state);
+    // configure certificate and private key used by https
+    let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
+        .await
+        .unwrap();
+    let ports = Ports {
+        http: 7878,
+        https: 3007,
+    };
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
+
+    tokio::spawn(redirect_http_to_https(ports));
+
+    info!("Starting Server");
+    info!("Listening on {}", addr);
+
+    axum_server::bind_rustls(addr, config)
+        .serve(router.into_service())
+        .await
+        .unwrap();
 
     info!("Starting Server");
     info!("Listening on port {}", server_port);
 
-    axum::serve(listener, router).await.unwrap();
     Ok(())
 }
 
-fn init_router(
-    state: model::AppState,
-    _ws: SocketIoLayer,
-    oauth_client: BasicClient,
-    oauth_id: String,
-) -> Router {
+fn init_router(state: model::AppState) -> Router<model::AppState> {
     // this router has state
-    let auth = Router::new().route("/", get(auth::google_callback));
+    // TODO: Change to slack callback
+    const MAX_IMAGE_SIZE: usize = std::env::var("MAX_IMAGE_SIZE")
+        .expect("MAX_IMAGE_SIZE not set")
+        .parse()
+        .unwrap_or(50)
+        * 1024
+        * 1024;
 
-    let unprotected: Router<model::AppState> = Router::new()
-        .route("/", get(homepage))
-        .layer(Extension(oauth_id));
-
-    let protected =
-        Router::new()
-            .route("/", get(protected))
-            .route_layer(middleware::from_fn_with_state(
-                state.clone(),
-                auth::user_auth,
-            ));
-
-    let admin = Router::new()
-        .route("/", get(admin))
-        .route_layer(middleware::from_fn_with_state(
-            state.clone(),
-            auth::admin_auth,
-        ));
-
-    // this router doesn't
     Router::new()
-        .nest("/auth/", auth)
-        .nest("/protected", protected)
-        .nest("/admin", admin)
-        .nest("/", unprotected)
-        .layer(Extension(oauth_client))
+        .route("/image/:image", get(upload::image))
+        .route("/upload", post(upload::upload))
+        .layer(DefaultBodyLimit::max(MAX_IMAGE_SIZE))
+        .route("/auth/slack", get(auth::slack_callback))
         .with_state(state)
-    //.layer(
-    //    ServiceBuilder::new()
-    //        .layer(CorsLayer::permissive()) // Enable CORS policy
-    //        .layer(ws),
-    //)
-}
-
-// FrontEnd Routing
-// FrontEnd to server svelte build bundle, css and index.html from public folder
-pub fn front_public_route() -> Router {
-    let front_public = "./frontend/dist"; //std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
-    Router::new()
-        .fallback_service(
-            ServeDir::new(front_public).not_found_service(handle_error.into_service()),
+        .layer(
+            tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
         )
-        .layer(TraceLayer::new_for_http())
 }
 
 async fn handle_error() -> (StatusCode, &'static str) {
@@ -117,45 +110,37 @@ async fn handle_error() -> (StatusCode, &'static str) {
     )
 }
 
-#[axum::debug_handler]
-async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
-    Html(format!("<p>Welcome!</p>
-    
-    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:3007/auth/\">
-    Click here to sign into Google!
-     </a>"))
+#[allow(dead_code)]
+async fn redirect_http_to_https(ports: Ports) {
+    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
+        let mut parts = uri.into_parts();
+
+        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+
+        if parts.path_and_query.is_none() {
+            parts.path_and_query = Some("/".parse().unwrap());
+        }
+
+        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
+        parts.authority = Some(https_host.parse()?);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    let redirect = move |Host(host): Host, uri: Uri| async move {
+        match make_https(host, uri, ports) {
+            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
+            Err(error) => {
+                tracing::warn!(%error, "failed to convert URI to HTTPS");
+                Err(StatusCode::BAD_REQUEST)
+            }
+        }
+    };
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tracing::debug!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, redirect.into_make_service())
+        .await
+        .unwrap();
 }
-
-#[axum::debug_handler]
-async fn protected(Extension(user): Extension<model::User>) -> Html<String> {
-    Html(format!("<p>Welcome {}<p>", user.name))
-}
-
-#[axum::debug_handler]
-async fn admin(Extension(user): Extension<model::User>) -> Html<String> {
-    Html(format!("<p>Welcome Admin {}<p>", user.name))
-}
-
-// With a form of auth
-// // ********
-// // BACK END
-// // ********
-// // Back end server built form various routes that are either public, require auth, or secure login
-// pub fn backend<Store: SessionStore>(
-//     session_layer: SessionManagerLayer<Store>,
-//     shared_state: Arc<store::Store>,
-// ) -> Router {
-//     let session_service = ServiceBuilder::new()
-//         .layer(HandleErrorLayer::new(|_: BoxError| async {
-//             StatusCode::BAD_REQUEST
-//         }))
-//         .layer(session_layer);
-
-//     // could add tower::ServiceBuilder here to group layers, especially if you add more layers.
-//     // see https://docs.rs/axum/latest/axum/middleware/index.html#ordering
-//     Router::new()
-//         .merge(back_public_route())
-//         .merge(back_auth_route())
-//         .merge(back_token_route(shared_state))
-//         .layer(session_service)
-// }
