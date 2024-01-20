@@ -25,7 +25,32 @@
     hasnotifs: false,
     numscouted: 99999999
     })
+    scouts.push({
+    name: "Rex",
+    admin: true,
+    hasnotifs: true,
+    numscouted: 99999999
+    })
+    scouts.push({
+    name: "Azalea",
+    admin: false,
+    hasnotifs: true,
+    numscouted: 99999999
+    })
+    scouts.push({
+    name: "Blaze",
+    admin: true,
+    hasnotifs: false,
+    numscouted: 99999999
+    })
+    scouts.push({
+    name: "Jackson",
+    admin: false,
+    hasnotifs: false,
+    numscouted: 99999999
+    })
 </script>
+<div class="rounded" style="padding: 1rem; background-color: #2C2C2C">
 <h3>User Management</h3>
 <div class="main">
 {#each scouts as scout}
@@ -112,16 +137,17 @@
 {/if}
 {/each}
 </div>
+</div>
 <style>
  h3{
     font-family: 'Poppins-bold';
-    font-size: 35px;
+    font-size: 25px;
     line-height: 91.5%;
     color: #FFFFFF;
-    margin:1rem
+    margin:0.8rem
     }
 .main{
     overflow-y: scroll;
-    max-height: 100%;
+    max-height: 280px;
 }
 </style>

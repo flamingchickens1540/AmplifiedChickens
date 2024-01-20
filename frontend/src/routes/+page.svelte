@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Pit from "$lib/components/AdminDB/NumberScouted.svelte"
+  import Pit from "./app/admin/+page.svelte"
 </script>
 
 <Pit/>
