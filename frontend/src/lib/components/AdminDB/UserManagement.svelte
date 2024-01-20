@@ -148,6 +148,6 @@
     }
 .main{
     overflow-y: scroll;
-    max-height: 280px;
+    max-height: 260px;
 }
 </style>

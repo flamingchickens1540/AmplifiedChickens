@@ -91,6 +91,6 @@ color: #FFFFFF;
 }
 .main{
     overflow-y: scroll;
-    max-height: 280px;
+    max-height: 246px;
 }
 </style>

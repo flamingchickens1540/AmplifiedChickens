@@ -7,7 +7,7 @@ import EventManagement from "$lib/components/AdminDB/EventManagement.svelte"
 import UserManagement from "$lib/components/AdminDB/UserManagement.svelte"
 </script>
 
-<div style="background-color: #1C1C1C; padding:1rem" class="grid grid-cols-2 gap-10">
+<div style="background-color: #1C1C1C; padding:3rem" class="grid grid-cols-2 gap-5">
   <div class="col-span-1 row-span-1 col-start-1 row-start-1">
   <QueueMatch/>
 </div>

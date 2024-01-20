@@ -16,16 +16,16 @@
        font-size: 35px;
        line-height: 91.5%;
        color: #FFFFFF;
-       margin:1rem
+       margin:0.5rem
        }
        h2{
        font-family: 'Poppins-bold';
-       font-size: 35px;
+       font-size: 24px;
        line-height: 91.5%;
        color: #2C2C2C;
        background-color: #00D586;
-       padding-top:0.75rem;
-       padding-bottom:0.75rem;
+       padding-top:0.7rem;
+       padding-bottom:0.7rem;
        margin:2rem;
        margin-top:1rem;
        margin-bottom:1rem

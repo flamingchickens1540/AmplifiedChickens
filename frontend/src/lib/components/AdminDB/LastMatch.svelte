@@ -58,7 +58,7 @@
     margin:0.5rem
     }
     h2{
-font-family: 'Poppins-medium';
+font-family: 'Poppins-bold';
 font-size: 20px;
 color: #1C1C1C;
 line-height: 91.5%;
