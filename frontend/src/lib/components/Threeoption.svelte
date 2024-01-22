@@ -22,24 +22,25 @@
     value = text3
     value = value
     } 
+    import checkmark from "$lib/svgs/checkmark.svg";
     </script>
     {#if location == "far"}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
-        <h3 class="border-b border-outline_gray mt-[-9px] visible" style="background-color: #00D586; color: #353839; border-top-left-radius: 0.2rem; border-top-right-radius: 0.2rem">✓{text1}</h3>
+        <h3 class="border-b border-outline_gray mt-[-9px] visible" style="background-color: #00D586; color: #353839; border-top-left-radius: 0.2rem; border-top-right-radius: 0.2rem"><img style="width:18px" src={checkmark}/> {text1}</h3>
         <h3 class="border-b border-outline_gray mt-[-9px] visible"  style="color: #FFFFFF;" on:click={midbutton}>{text2}</h3>
         <h3 style="color: #FFFFFF;" on:click={farbutton}>{text3}</h3>
         </div>
     {:else if location == "middle"}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <h3 class="border-b border-outline_gray mt-[-9px] visible" style="color: #FFFFFF;" on:click={closebutton}>{text1}</h3>
-        <h3 class="border-b border-outline_gray mt-[-9px] visible" style="background-color: #00D586; color: #353839">✓{text2}</h3>
+        <h3 class="border-b border-outline_gray mt-[-9px] visible" style="background-color: #00D586; color: #353839"><img style="width:18px" src={checkmark}/> {text2}</h3>
         <h3 style="color: #FFFFFF;" on:click={farbutton}>{text3}</h3>
         </div>
     {:else}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <h3 class="border-b border-outline_gray mt-[-9px] visible" style="color: #FFFFFF;" on:click={closebutton}>{text1}</h3>
         <h3 class="border-b border-outline_gray mt-[-9px] visible" style="color: #FFFFFF;" on:click={midbutton}>{text2}</h3>
-        <h3   style="background-color: #00D586; color: #353839; border-bottom-left-radius: 0.2rem; border-bottom-right-radius: 0.2rem">✓{text3}</h3>
+        <h3   style="background-color: #00D586; color: #353839; border-bottom-left-radius: 0.2rem; border-bottom-right-radius: 0.2rem"><img style="width:18px" src={checkmark}/> {text3}</h3>
         </div>
     {/if} 
     
@@ -59,4 +60,8 @@
             color: lightgrey;
             background-color: #353839;
         }
+        h3, img {
+    display: inline-block;
+    vertical-align: middle;
+  }
     </style>

@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Pit from "./app/admin/+page.svelte"
+  import Pit from "./app/match/postmatch/+page.svelte"
 </script>
 
 <Pit/>
