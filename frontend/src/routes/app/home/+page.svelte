@@ -53,33 +53,22 @@
 
   h1 {
     font-family: "Poppins-Bold";
-    font-weight: 700;
-    font-size: 35px;
-    line-height: 35px;
+    @apply font-bold text-xl
   }
   p {
     font-family: "Poppins-Medium";
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 35px;
+    @apply font-medium text-xl
 
   }
   button {
-    border-radius: 5px;
     font-family: "Poppins-Bold";
-    @apply text-text_white bg-btn_grey m-3 
-    py-2
+    @apply text-text_white bg-btn_grey m-3 py-2 rounded-md
   }
   #Match-Scounts {
-    font-weight: 600;
-    font-size: 40px;
-    line-height: 35px;
-    @apply text-navbar_black bg-cresc_green py-5;
+    @apply text-navbar_black bg-cresc_green py-5 font-semibold text-4xl
   }
   #Pit-Scounts {
-    font-weight: 600;
-    font-size: 30px;
-    line-height: 35px;
+    @apply font-semibold text-3xl
   }
 
 </style>
