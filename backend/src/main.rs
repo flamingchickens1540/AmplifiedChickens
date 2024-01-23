@@ -23,6 +23,7 @@ use tracing_subscriber::FmtSubscriber;
 mod auth;
 mod error;
 mod model;
+mod submit;
 mod upload;
 mod ws;
 

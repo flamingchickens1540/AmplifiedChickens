@@ -35,18 +35,17 @@ pub async fn upload(
 
         let new_keys = keys.clone();
         let new_db = state.db.pool.clone();
-        let new_image_dir = image_dir.clone();
 
         let task = tokio::spawn(async move {
             let name = Uuid::new_v4().to_string();
             let img = image::load_from_memory(&data).unwrap();
 
-            let path = format!("{new_image_dir}/{name}.png");
+            let path = format!("https://localhost:3007/image/{name}.png");
             let file = File::create(&path).unwrap();
             let mut writer = BufWriter::new(file);
             img.write_to(&mut writer, image::ImageOutputFormat::Png)
                 .unwrap();
-            let _ = sqlx::query("INSERT INTO images ($1, $2, $3, $4, $5)")
+            let _ = sqlx::query("INSERT INTO images (name, event_key, team_key, url, scout_id) VALUES ($1, $2, $3, $4, $5) IF EXISTS THEN DO NOTHING")
                 .bind(name)
                 .bind(new_keys.event_key)
                 .bind(new_keys.team_key)

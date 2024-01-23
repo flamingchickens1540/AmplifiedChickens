@@ -242,13 +242,5 @@ async fn get_user(
         Err(_e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Redirect::to("/"))),
     };
 
-    Ok(model::User {
-        id: res.id,
-        name: res.name,
-        is_notify: res.is_notify,
-        is_admin: res.is_admin,
-        endpoint: res.endpoint,
-        p256dh: res.p256dh,
-        auth: res.auth,
-    })
+    Ok(model::User { ..res })
 }
