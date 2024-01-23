@@ -24,6 +24,7 @@
     <div class="bg-btn_grey h-[185px] mx-3" style="border-radius: 3px;">
       {#each percents as percent, i} 
         <Pie size={200} percent={percent[1]}/>
+        <p>{percent[0]}</p>
       {/each}
     </div>
     <div class="flex flex-row w-full content-center justify-around">
