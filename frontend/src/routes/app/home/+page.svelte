@@ -3,6 +3,11 @@
 
   export let data: PageData;
   let name = "Test";
+
+  import {spring, tweened} from 'svelte/motion';
+  import Pie from './Pie.svelte';
+
+  let percents = [["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -17,7 +22,9 @@
 
   <div class="flex flex-col content-center">
     <div class="bg-btn_grey h-[185px] mx-3" style="border-radius: 3px;">
-      pie chart thingy
+      {#each percents as percent, i} 
+        <Pie size={200} percent={percent[1]}/>
+      {/each}
     </div>
     <div class="flex flex-row w-full content-center justify-around">
       <button class="w-full"
