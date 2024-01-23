@@ -5,9 +5,9 @@
   let name = "Test";
 
   import {spring, tweened} from 'svelte/motion';
-  import Pie from './Pie.svelte';
+  import Pie from '$lib/components/Pie.svelte';
 
-  let percents = [["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
+  let percents = [["Name", 20], ["Name", 50], ["Name", 0], ["Name", 0], ["Name", 20], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
