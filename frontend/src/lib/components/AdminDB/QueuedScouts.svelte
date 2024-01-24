@@ -1,6 +1,6 @@
 <script lang="ts">
     // import type { Scout } from "$lib/types.ts"
-    export let queued/*:Scout[] */= ["Rex", "Azalea", "Jack", "Blaze", "Charlie", "Domnic",                "Jackson"]
+    export let queued/*:Scout[] */= ["Rex", "Azalea", "Jack", "Blaze", "Charlie", "Domnic", "Jackson"]
     queued = queued.slice(0, 6)
 </script>
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">

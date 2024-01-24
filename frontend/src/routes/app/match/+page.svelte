@@ -17,7 +17,8 @@
   }
 
   function prevSlide() {
-    currentIndex = (currentIndex - 1 + items.length) % items.length;
+    if (currentIndex != 0){
+    currentIndex = (currentIndex - 1 + items.length) % items.length;}
   }
 
   function handleTouchStart(event) {
@@ -59,7 +60,7 @@
 
   .carousel {
     display: flex;
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.2s ease-in-out;
   }
 
   .carousel-item {

@@ -1,5 +1,5 @@
 <script>
-    import Tested from "$lib/components/MultipleThreeSelect.svelte"
+    import Tested from "./app/admin/+page.svelte"
 </script>
 
 <Tested/>
