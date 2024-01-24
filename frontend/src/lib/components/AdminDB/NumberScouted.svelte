@@ -76,7 +76,7 @@
 h3{
 font-family: 'Poppins-bold';
 font-style: normal;
-font-size: 24px;
+font-size: 17px;
 margin:13px;
 color: #FFFFFF;
 }
@@ -91,6 +91,6 @@ color: #FFFFFF;
 }
 .main{
     overflow-y: scroll;
-    max-height: 246px;
+    max-height: 255px;
 }
 </style>

@@ -13,7 +13,7 @@
 <style>
     h3{
        font-family: 'Poppins-bold';
-       font-size: 35px;
+       font-size: 23px;
        line-height: 91.5%;
        color: #FFFFFF;
        margin:0.5rem
@@ -24,8 +24,8 @@
        line-height: 91.5%;
        color: #2C2C2C;
        background-color: #00D586;
-       padding-top:0.7rem;
-       padding-bottom:0.7rem;
+       padding-top:0.8rem;
+       padding-bottom:0.8rem;
        margin:2rem;
        margin-top:1rem;
        margin-bottom:1rem

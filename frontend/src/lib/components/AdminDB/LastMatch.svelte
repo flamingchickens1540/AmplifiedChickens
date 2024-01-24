@@ -52,7 +52,7 @@
 <style>
     h3{
     font-family: 'Poppins-bold';
-    font-size: 30px;
+    font-size: 25px;
     line-height: 91.5%;
     color: #FFFFFF;
     margin:0.5rem
