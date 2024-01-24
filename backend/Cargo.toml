@@ -24,7 +24,6 @@ serde_json = "1.0.111"
 shuttle-secrets = "0.36.0"
 shuttle-shared-db = { version = "0.36.0", features = ["postgres", "sqlx"] }
 shuttle-static-folder = "0.28.0"
-socketioxide = { version = "0.10.0", features = ["state"] }
 sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "macros", "chrono", "uuid"] }
 tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
 tower = "0.4.13"

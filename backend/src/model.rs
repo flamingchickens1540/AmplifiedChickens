@@ -12,7 +12,7 @@ pub struct Db {
 
 impl Db {
     pub async fn new(db_url: String) -> Result<Self, sqlx::Error> {
-        let pool = PgPoolOptions::new().connect(&db_url).await?;
+        let pool: Pool<Postgres> = PgPoolOptions::new().connect(&db_url).await?;
 
         let migrator = sqlx::migrate!();
         migrator.run(&pool).await?;
@@ -35,7 +35,7 @@ impl FromRef<AppState> for Key {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -123,67 +123,67 @@ pub struct TeamMatch {
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct Team {
-    team_key: String,
-    nickname: String,
+    pub team_key: String,
+    pub nickname: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct Match {
-    match_key: String,
-    event_key: String,
+    pub match_key: String,
+    pub event_key: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct Video {
-    match_key: String,
-    url: String,
+    pub match_key: String,
+    pub url: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct TBAMatch {
-    match_key: String,
-    event_key: String,
-    time: chrono::NaiveTime,
-    red_1: String,
-    red_2: String,
-    red_3: String,
-    blue_1: String,
-    blue_2: String,
-    blue_3: String,
-    video: i64,
+    pub match_key: String,
+    pub event_key: String,
+    pub time: chrono::NaiveTime,
+    pub red_1: String,
+    pub red_2: String,
+    pub red_3: String,
+    pub blue_1: String,
+    pub blue_2: String,
+    pub blue_3: String,
+    pub video: i64,
 }
 
 // Pitscouting
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct TeamEvent {
-    id: i64,
-    team_key: String,
-    event_key: String,
-    width: i16,
-    length: i16,
-    is_short: bool,
-    is_camera: bool,
-    drivetrain: DriveTrain,
-    is_ground_intake: bool,
-    is_chute_intake: bool,
-    polish: Polish,
-    scout_id: Uuid,
+    pub id: i64,
+    pub team_key: String,
+    pub event_key: String,
+    pub width: i16,
+    pub length: i16,
+    pub is_short: bool,
+    pub is_camera: bool,
+    pub drivetrain: DriveTrain,
+    pub is_ground_intake: bool,
+    pub is_chute_intake: bool,
+    pub polish: Polish,
+    pub scout_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct Image {
-    id: i64,
-    event_key: String,
-    team_key: String,
-    url: String,
-    scout_id: Uuid,
+    pub id: i64,
+    pub event_key: String,
+    pub team_key: String,
+    pub url: String,
+    pub scout_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct EventState {
-    event_key: String,
-    next_match: String,
-    last_match: String,
+    pub event_key: String,
+    pub next_match: String,
+    pub last_match: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]

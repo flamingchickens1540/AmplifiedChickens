@@ -8,7 +8,7 @@ use axum::{
     Router,
 };
 use axum_extra::extract::PrivateCookieJar;
-use cookie::Cookie;
+use cookie::{Cookie, CookieBuilder};
 use serde_json::Value;
 
 use tracing::{error, info};
@@ -185,7 +185,7 @@ async fn insert_user(
     profile: model::User,
     db: &model::Db,
     token_res: (i64, String),
-) -> Result<Cookie<'static>, (StatusCode, String)> {
+) -> Result<CookieBuilder<'static>, (StatusCode, String)> {
     let secs: i64 = token_res.0 / 100;
 
     let max_age = cookie::time::Instant::now() + cookie::time::Duration::seconds(secs);
@@ -194,9 +194,8 @@ async fn insert_user(
         .domain(".app.localhost")
         .path("/")
         .secure(true)
-        .http_only(true)
-        .max_age(cookie::time::Duration::seconds(secs))
-        .finish();
+        .http_only(false)
+        .max_age(cookie::time::Duration::seconds(secs));
 
     if let Err(e) =
         sqlx::query("INSERT INTO users (id, name, is_notify, is_admin, endpoin, p256dh, auth) VALUES ($1) ON CONFLICT (id) DO NOTHING")

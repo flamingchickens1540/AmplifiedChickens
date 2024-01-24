@@ -13,19 +13,18 @@ use cookie::Key;
 use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
-use socketioxide::layer::SocketIoLayer;
 use std::{net::SocketAddr, path::PathBuf};
 
 use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
+mod admin;
 mod auth;
 mod error;
 mod model;
 mod submit;
 mod upload;
-mod ws;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
@@ -108,6 +107,8 @@ fn init_router(state: model::AppState) -> Router {
         .route("/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
         .route("/auth/slack", get(auth::fake_callback))
+        .route("/submit/pit", post(submit::submit_pit_data))
+        .route("/submit/match", post(submit::submit_team_match))
         .with_state(state)
         .layer(
             tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
