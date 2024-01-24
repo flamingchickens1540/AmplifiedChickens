@@ -3,7 +3,7 @@
 </head>
 
 <script>
-  import Pit from "./app/match/postmatch/+page.svelte"
+  import Pit from "$lib/components/HeheButton.svelte"
 </script>
 
 <Pit/>
