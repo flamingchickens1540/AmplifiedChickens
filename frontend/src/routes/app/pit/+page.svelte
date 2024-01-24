@@ -12,8 +12,24 @@
   let wheredrive = ""
   let drivetrain = ""
   let intake = ""
+  let chute = false
+  let ground = false
   let polish = 3
   let notes = ""
+  if (intake == "both"){
+chute = true
+ground = true
+chute = chute
+ground = ground
+  }
+  if (intake == "Ground"){
+ground = true
+ground = ground
+  }
+  if (intake == "Chute"){
+chute = true
+chute = chute
+  }
 </script>
 <SubmitButton text="Teams Remaining"/>
 <TextInput name="Team Number" bind:value = {teamnumber}/>
