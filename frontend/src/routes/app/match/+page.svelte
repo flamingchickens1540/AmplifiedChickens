@@ -9,7 +9,7 @@
   import Slide3 from '$lib/components/Tele.svelte';
   import Slide4 from '$lib/components/Postmatch.svelte';
   // Import other slide components
-  let items = [Slide1, Slide2, Slide3, Slide4]; // Add more components as needed
+  let items = [Slide1, Slide2, Slide3, Slide4];
 
   function nextSlide() {
     if (currentIndex != 3){

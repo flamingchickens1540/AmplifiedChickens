@@ -21,6 +21,7 @@
 <Header phase = {title}/>
 <div class="grid grid-cols-2 gap-3">
 <button class="col-span-2" on:click={() => notover = false}>
+    <div style="margin-left: 17px; margin-right: 17px">
     <svg viewBox="0 0 365 152" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_1212_799)">
         <g filter="url(#filter1_d_1212_799)">
@@ -51,9 +52,11 @@
         <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1212_799" result="shape"/>
         </filter>
         </defs>
-        </svg>  
+        </svg> 
+    </div>
 </button>
 <button class="grid col-start-1" on:click={Success}>
+    <div style="margin-left: 17px; margin-bottom: 17px;">
     <svg viewBox="0 0 178 466" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_0_1)">
         <rect x="4" width="170" height="458" rx="5" fill="#00D586"/>
@@ -73,9 +76,11 @@
         </filter>
         </defs>
         </svg>
+    </div>
         
 </button>
 <button on:click={Fail}>
+    <div style="margin-right: 17px; margin-bottom: 17px;">
     <svg viewBox="0 0 177 466" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_0_1)">
         <rect x="4" width="169" height="458" rx="5" fill="#EE3C42"/>
@@ -95,13 +100,11 @@
         </filter>
         </defs>
         </svg>
+    </div>
         
 </button>
            
 </div>
 
 <style>
-    svg{
-        margin:0.5rem
-    }
 </style>
