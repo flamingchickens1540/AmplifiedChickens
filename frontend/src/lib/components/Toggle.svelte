@@ -32,8 +32,8 @@
 <div
         class="border border-outline_gray mt-[-9px] visible grid grid-cols-2 grid-rows-1 place-items-center rounded"
     >
-            <h3 class="border-r border-outline_gray mt-[-9px] visible grid col-start-2 col-span-1 row-start-1 text-center div"
-            style="background-color: #00D586; color: #353839; border-top-right-radius: 0.2rem; border-bottom-right-radius: 0.2rem"><img style="width:18px" src={checkmark}/> {text2}<h3>
+            <h3 class="border-r border-outline_gray mt-[-9px] visible grid col-start-2 col-span-1 row-start-1 text-center"
+            style="background-color: #00D586; color: #353839; border-top-right-radius: 0.2rem; border-bottom-right-radius: 0.2rem"><img style="width:18px" src={checkmark}/> {text2}</h3>
         <h3 class="text-center" style="color: #FFFFFF;" on:click={toggleon}>
             {text1}
         </h3>
