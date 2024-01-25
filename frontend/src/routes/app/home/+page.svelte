@@ -20,11 +20,15 @@
     >You are at 2024orore</p>
   </div>
 
-  <div class="flex flex-col content-center">
-    <div class="bg-btn_grey h-[185px] mx-3" style="border-radius: 3px;">
+  <div class="flex flex-col content-center items-stretch">
+    <div class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md">
       {#each percents as percent, i} 
-        <Pie size={200} percent={percent[1]}/>
-        <p>{percent[0]}</p>
+        {#if i < 8} 
+        <div class="p-1 flex flex-col items-center">
+          <Pie size={46} percent={percent[1]}/>
+          <p class="text-text_white">{percent[0]}</p>
+        </div>
+        {/if} 
       {/each}
     </div>
     <div class="flex flex-row w-full content-center justify-around">
@@ -52,13 +56,10 @@
 <style lang="postcss">
 
   h1 {
-    font-family: "Poppins-Bold";
-    @apply font-bold text-xl
+    @apply font-bold text-4xl
   }
   p {
-    font-family: "Poppins-Medium";
     @apply font-medium text-xl
-
   }
   button {
     font-family: "Poppins-Bold";
