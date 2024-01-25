@@ -39,13 +39,11 @@
         onclick="location.href='https://www.statbotics.io/event/2024orsal';"
       > Statbotics </button>
     </div>
-    <button
-      onclick="location.href='https://www.statbotics.io/event/2024orsal';"
-    >
+    <button onclick="location.href='https://www.statbotics.io/event/2024orsal';">
       Twitch Stream
     </button>
-    <button id="Pit-Scounts"> Pit Scount </button>
-    <button id="Match-Scounts"> Match Scount </button>
+    <button id="Pit-Scounts"> Pit Scout </button>
+    <button id="Match-Scounts"> Match Scout </button>
   </div>
 
   <nav class="bg-navbar_black text-text_white h-[81px]">
