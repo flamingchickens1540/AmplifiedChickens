@@ -9,6 +9,7 @@ cert.pem
 key.pem
 # editor
 .vscode/*
+/backend/.idea/
 
 # sveltekit
 /frontend/.DS_Store

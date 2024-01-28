@@ -1,5 +1,5 @@
 use axum::extract::FromRef;
-use cookie::Key;
+use axum_extra::extract::cookie::Key;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, types::Uuid, Pool, Postgres};
 
@@ -68,21 +68,15 @@ impl User {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct OauthUser {
-    pub id: String,
-    pub name: String,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct SlackIdRes {
-    pub ok: bool,
-    pub user: OauthUser,
-}
-
 #[derive(Debug, Deserialize)]
 pub struct AuthRequest {
     pub code: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct SlackClaims {
+    pub exp: i64,
+    pub name: String,
 }
 
 // Database model

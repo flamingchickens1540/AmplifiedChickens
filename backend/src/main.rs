@@ -8,13 +8,12 @@ use axum::{
     routing::{get, post},
     BoxError, Extension, Router,
 };
+use axum_extra::extract::cookie::{Cookie, CookieJar, Key};
 use axum_server::tls_rustls::RustlsConfig;
-use cookie::Key;
 use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
 use std::{net::SocketAddr, path::PathBuf};
-
 use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
@@ -77,9 +76,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    info!("Starting Server");
-    info!("Listening on port {}", server_port);
-
     Ok(())
 }
 
@@ -92,13 +88,7 @@ fn init_router(state: model::AppState) -> Router {
         * 1024;
     let unprotected: Router<model::AppState> = Router::new().route("/", get(homepage));
 
-    let protected =
-        Router::new()
-            .route("/", get(protected))
-            .route_layer(middleware::from_fn_with_state(
-                state.clone(),
-                auth::user_auth,
-            ));
+    let protected = Router::new().route("/", get(protected));
 
     Router::new()
         .nest("/", unprotected)
@@ -106,7 +96,7 @@ fn init_router(state: model::AppState) -> Router {
         .route("/image/:image", get(upload::image))
         .route("/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
-        .route("/auth/slack", get(auth::fake_callback))
+        .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
         .with_state(state)
@@ -131,10 +121,7 @@ async fn homepage() -> Html<String> {
      </a>"))
 }
 
-#[axum::debug_handler]
-async fn protected(Extension(user): Extension<model::User>) -> Html<String> {
-    Html(format!("<p>Welcome {}<p>", user.name))
-}
+async fn protected(jar: CookieJar) -> Html<String> {}
 
 #[axum::debug_handler]
 async fn admin(Extension(user): Extension<model::User>) -> Html<String> {

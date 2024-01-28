@@ -1,3 +1,5 @@
+use std::{collections::BTreeMap, ops::AddAssign, os::unix::fs::chroot};
+
 use crate::model;
 use axum::{
     extract::{Extension, Query, Request, State},
@@ -7,123 +9,22 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_extra::extract::PrivateCookieJar;
-use cookie::{Cookie, CookieBuilder};
+use axum_extra::extract::cookie::{Cookie, CookieJar};
+use dotenv::dotenv;
+use jsonwebtoken::*;
 use serde_json::Value;
 
 use tracing::{error, info};
 
 pub async fn slack_callback(
     State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
-    Query(query): Query<model::AuthRequest>,
-) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
-    info!("THIS");
-    let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
-    let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
-    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
-    info!("{}", redirect_url);
-    //let nonce = "test_nonce";
-
-    let token_res: serde_json::Value = state
-        .ctx
-        .post("https://slack.com/api/openid.connect.token")
-        .query(&[
-            ("client_id", client_id),
-            ("client_secret", client_secret),
-            ("code", query.code),
-            ("redirect_uri", redirect_url),
-            ("grant_type", "authorization_code".to_string()),
-        ])
-        .send()
-        .await
-        .unwrap()
-        .json()
-        .await
-        .unwrap();
-    info!("Token Response: {:?}", token_res);
-
-    let access_token = token_res.get("access_token").unwrap().to_string();
-    info!("Access Token: {}", access_token);
-
-    let identity_response = match state
-        .ctx
-        .get("https://slack.com/api/openid.connect.userInfo")
-        .header("content_type", "application/x-www-form-urlencoded")
-        .header("Authorization", format!("Bearer {}", access_token))
-        .send()
-        .await
-    {
-        Ok(res) => res.json::<serde_json::Value>().await,
-        Err(e) => {
-            return Err::<(PrivateCookieJar, Redirect), (axum::http::StatusCode, std::string::String)>(
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Reqwest Error: {e}"),
-                ),
-            )
-        }
-    };
-
-    match identity_response {
-        Ok(res) => match res {
-            Value::Object(obj) => {
-                info!("{:?}", obj); // happening "invalid_auth"
-                if obj.get("ok").unwrap().as_bool().unwrap() {
-                    let user = obj.get("user").unwrap();
-                    let oauth_data: model::OauthUser = model::OauthUser {
-                        id: user.get("id").unwrap().to_string(),
-                        name: user.get("name").unwrap().to_string(),
-                    };
-
-                    // TODO: Check if it's valid to assume they only log in once ever, so we can set scouting stats to default
-                    let profile = model::User::new(
-                        oauth_data.id,
-                        oauth_data.name,
-                        false,
-                        false,
-                        None,
-                        None,
-                        None,
-                    );
-
-                    let cookie = insert_user(
-                        profile,
-                        &state.db,
-                        (
-                            obj.get("expires_in").unwrap().as_i64().unwrap(),
-                            access_token,
-                        ),
-                    )
-                    .await?;
-                    Ok((jar.add(cookie), Redirect::to("/")))
-                } else {
-                    Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "Identity request returned not ok".to_string(),
-                    ))
-                }
-            }
-            _ => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Identity request return unexpected json".to_string(),
-            )),
-        },
-        Err(e) => Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Incorrectly Authed, Identity response failed: {}", e),
-        )),
-    }
-}
-
-pub async fn fake_callback(
-    State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
+    jar: CookieJar,
     Query(query): Query<model::AuthRequest>,
 ) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
+    let signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
     info!("Redirect URL: {}", redirect_url);
     //let nonce = "test_nonce";
 
@@ -145,60 +46,108 @@ pub async fn fake_callback(
         .unwrap();
     info!("Token Response: {:?}", token_res);
 
+    if !token_res.get("ok").unwrap().as_bool().unwrap() {
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Authentication failed".to_string(),
+        ));
+    }
+
     let access_token = token_res.get("access_token").unwrap().to_string();
+    let id_token = token_res.get("id_token").unwrap().as_str().unwrap();
+
+    let key = DecodingKey::from_secret(&[]);
+    let mut validation: Validation = Validation::new(Algorithm::HS256);
+    validation.insecure_disable_signature_validation();
+    validation.validate_exp = false;
+    validation.validate_aud = false;
+
+    let data: TokenData<serde_json::Value> =
+        decode::<serde_json::Value>(id_token, &key, &validation).unwrap();
+
+    //let decoding_key = DecodingKey::from_secret(signing_secret.as_bytes());
+    //let decoded_token = verify_signature
+    //let decoded_token =
+    //    decode::<model::SlackClaims>(&id_token, &decoding_key, &Validation::default())
+    //        .expect("Failed to decode token");
+
+    let name = data.claims.get("name").unwrap().as_str().unwrap();
+    let exp = data.claims.get("exp").unwrap().as_i64().unwrap();
+    let sub = data
+        .claims
+        .get("sub")
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    info!("Name: {}", name);
+    info!("Exp: {}", exp);
+    info!("Sub: {}", sub);
+    info!("{:?}", data.claims);
     info!("Access Token: {}", access_token);
+    let max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
 
-    let id =
-        sqlx::query("SELECT user_id FROM users ORDER BY id ASC LIMIT 1").fetch_one(&state.db.pool);
+    let profile = model::User::new(sub, name.to_string(), false, false, None, None, None);
 
-    let profile = model::User::new(
-        "".to_string(),
-        "TestUser".to_string(),
-        false,
-        false,
-        None,
-        None,
-        None,
-    );
+    let cookie = insert_user(profile, state.db, (exp, access_token)).await?;
+    Ok((jar.add(cookie), Redirect::to("/protected")))
+}
 
-    let cookie = insert_user(profile, &state.db, (300000, access_token)).await?;
-    Ok((jar.add(cookie), Redirect::to("/")))
+pub async fn logout(
+    State(state): State<model::AppState>,
+    jar: CookieJar,
+) -> Result<impl IntoResponse, (String, StatusCode)> {
+    let id = jar.get("sid").unwrap();
+
+    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE id EQUALS $1 LIMIT 1")
+        .bind(id.value())
+        .execute(&state.db.pool)
+        .await
+    {
+        error!("Failed to remove user from db: {err}");
+        return Err((
+            "Failed to remove user form db".to_string(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ));
+    }
+
+    Ok((jar.remove("sid"), StatusCode::OK))
 }
 
 pub async fn user_auth(
     State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
-    mut req: Request,
-    next: Next,
-) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
-    let user: model::User = match get_user(&jar, &state.db).await {
-        Ok(user) => user,
-        Err(e) => return Err(e),
-    };
+    jar: CookieJar,
+) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
+    get_user(&jar, &state.db).await
+}
 
-    req.extensions_mut().insert(user);
-    Ok(next.run(req).await)
+pub async fn admin_auth(
+    State(state): State<model::AppState>,
+    jar: CookieJar,
+) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
+    let res = get_user(&jar, &state.db).await?;
+
+    if !res.1.is_admin {
+        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+    }
+
+    Ok(res)
 }
 
 // token_res: (expires_in, access_token)
 async fn insert_user(
     profile: model::User,
-    db: &model::Db,
+    db: model::Db,
     token_res: (i64, String),
-) -> Result<CookieBuilder<'static>, (StatusCode, String)> {
+) -> Result<Cookie<'static>, (StatusCode, String)> {
     let secs: i64 = token_res.0 / 100;
 
-    let max_age = cookie::time::Instant::now() + cookie::time::Duration::seconds(secs);
-
-    let cookie = Cookie::build(("sid", token_res.1))
-        .domain(".app.localhost")
-        .path("/")
-        .secure(true)
-        .http_only(false)
-        .max_age(cookie::time::Duration::seconds(secs));
+    let max_age = chrono::Local::now().timestamp_millis() * 100 + secs;
+    let cookie = Cookie::new("sid", token_res.1);
 
     if let Err(e) =
-        sqlx::query("INSERT INTO users (id, name, is_notify, is_admin, endpoin, p256dh, auth) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
             .bind(profile.is_notify)
@@ -209,7 +158,7 @@ async fn insert_user(
             .execute(&db.pool)
             .await
     {
-        error!("Error while trying to make account: {e}");
+        error!("Error trying to create account: {e}");
         return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Error trying to create account: {e}"),
@@ -219,27 +168,28 @@ async fn insert_user(
 }
 
 async fn get_user(
-    jar: &PrivateCookieJar,
+    jar: &CookieJar,
     db: &model::Db,
-) -> Result<model::User, (StatusCode, Redirect)> {
-    let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
-        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
-    };
+) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
+    let cookie = jar.get("sid");
+    info!("Access token: {:?}", cookie);
+    //let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
+    //    error!("Unauthorized user attempted to query a protected endpoint");
+    //   return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+    //};
     let res = match sqlx::query_as::<_, model::User>(
-        "SELECT 
-        users
-        FROM sessions 
-        LEFT JOIN USERS ON sessions.user_id = users.id
-        WHERE sessions.session_id = $1 
-        LIMIT 1",
+        "SELECT * FROM \"Users\" WHERE access_token EQUALS $1 LIMIT 1",
     )
-    .bind(cookie)
+    .bind(cookie.unwrap().value())
     .fetch_one(&(db.pool))
     .await
     {
         Ok(res) => res,
-        Err(_e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Redirect::to("/"))),
+        Err(e) => {
+            error!("{}", e);
+            return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+        }
     };
 
-    Ok(model::User { ..res })
+    Ok((StatusCode::OK, model::User { ..res }))
 }
