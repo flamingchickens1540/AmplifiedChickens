@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     response::IntoResponse,
 };
-use cookie::CookieJar;
+use axum_extra::extract::cookie::{Cookie, CookieJar, Key};
 use sqlx::PgPool;
 
 use crate::model::{AppState, User};

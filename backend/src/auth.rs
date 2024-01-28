@@ -91,7 +91,7 @@ pub async fn slack_callback(
     let profile = model::User::new(sub, name.to_string(), false, false, None, None, None);
 
     let cookie = insert_user(profile, state.db, (exp, access_token)).await?;
-    Ok((jar.add(cookie), Redirect::to("/protected")))
+    Ok((jar.add(cookie), Redirect::to("http://localhost:5173/")))
 }
 
 pub async fn logout(
@@ -117,19 +117,22 @@ pub async fn logout(
 
 pub async fn user_auth(
     State(state): State<model::AppState>,
-    jar: CookieJar,
+    Query(access_token): Query<String>,
 ) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
-    get_user(&jar, &state.db).await
+    get_user(access_token, &state.db).await
 }
 
 pub async fn admin_auth(
     State(state): State<model::AppState>,
-    jar: CookieJar,
+    Query(access_token): Query<String>,
 ) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
-    let res = get_user(&jar, &state.db).await?;
+    let res = get_user(access_token, &state.db).await?;
 
     if !res.1.is_admin {
-        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            Redirect::to("http://localhost:5173/"),
+        ));
     }
 
     Ok(res)
@@ -168,26 +171,30 @@ async fn insert_user(
 }
 
 async fn get_user(
-    jar: &CookieJar,
+    access_token: String,
     db: &model::Db,
 ) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
-    let cookie = jar.get("sid");
-    info!("Access token: {:?}", cookie);
+    //let cookie = jar.get("sid");
+    //info!("Access token: {:?}", cookie);
     //let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
     //    error!("Unauthorized user attempted to query a protected endpoint");
     //   return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
     //};
+
     let res = match sqlx::query_as::<_, model::User>(
         "SELECT * FROM \"Users\" WHERE access_token EQUALS $1 LIMIT 1",
     )
-    .bind(cookie.unwrap().value())
+    .bind(access_token)
     .fetch_one(&(db.pool))
     .await
     {
         Ok(res) => res,
         Err(e) => {
             error!("{}", e);
-            return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                Redirect::to("http://localhost:5173/"),
+            ));
         }
     };
 
