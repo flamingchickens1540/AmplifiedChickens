@@ -11,10 +11,11 @@ function finish(){
 </script>
 <h4 style="margin-bottom:0" class="rounded">LOTTERY BUTTON</h4>
 <center>
+    <h3  style="font-size:1.5rem; margin-bottom:0" class="col-span-5 rounded">Number: {number}</h3>
     <button on:click={randomize}>
-    <h3 style="margin-bottom:0" class="col-span-5 rounded">Click to generate number!</h3>
+    <h3 class="col-span-5 rounded">Click to generate number!</h3>
 </button>
-<h3 style="font-size:1.5rem;" class="col-span-5 rounded">Number: {number}</h3>
+
     
 </center>
 

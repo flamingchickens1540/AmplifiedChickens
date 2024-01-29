@@ -42,8 +42,8 @@
     <button style="margin-right: 6px" onclick="location.href='https://www.statbotics.io/event/2024orsal';">
       Twitch Stream
     </button>
-    <button id="Pit-Scounts"> Pit Scout </button>
-    <button id="Match-Scounts"> Match Scout </button>
+    <button id="Pit-Scounts"><a href="/app/pit">Pit Scout </button>
+    <button id="Match-Scounts"><a href="/app/match"> Match Scout </button>
   </div>
 
   <nav class="bg-navbar_black text-text_white h-[81px]">

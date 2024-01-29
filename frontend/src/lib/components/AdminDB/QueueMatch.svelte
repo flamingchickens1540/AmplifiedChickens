@@ -15,7 +15,7 @@
     export let redscout2 = "Auto-Assign"
     export let redscout3 = "Auto-Assign"
 </script>
-<div class="rounded" style="background-color: #2C2C2C; padding:1rem">
+<div class="rounded" style="background-color: #2C2C2C; padding:0.75rem">
 <div class="flex justify-between items-center rounded" style="background-color: #5C5C5C; padding:0.2rem; margin:17px">
 <h3>{match}</h3>
 <h2 class="rounded">Load</h2>
@@ -28,7 +28,7 @@
     <AssignStudentBlue team1={blueteam1} team2={blueteam2} team3={blueteam3} bind:selected1={bluescout1} bind:selected2={bluescout2} bind:selected3={bluescout3}/>
 </div>
 </div>
-<center><h2 class="rounded" style="padding-top:1rem; padding-bottom: 1rem">Queue Match</h2></center>
+<center><h2 class="rounded" style="padding-top:0.9rem; padding-bottom: 0.9rem">Queue Match</h2></center>
 </div>
 <style>
     h3{
