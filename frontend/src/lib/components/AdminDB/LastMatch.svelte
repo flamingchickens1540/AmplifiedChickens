@@ -2,6 +2,7 @@
     export let lastmatch = "qm4"
     import type { Scout } from "$src/lib/types.ts"
     let robots:Scout[] = [] 
+    import { Modal, Content, Trigger } from "sv-popup"
     robots.push({
         name: "1540",
         status: "Complete"
@@ -34,17 +35,65 @@
 {#if robot.status == "Complete"}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
 <h3 class="self-center"> {robot.name}</h3>
-<h2 class="rounded col-start-5" style="background-color: #00D586; padding: 1.5rem; padding-top: 0.8rem; padding-bottom: 0.8rem">Complete</h2>
+<div class="col-start-5">
+    <Modal basic>
+        <Content>
+            <h2>media data display design goes here</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>these are filler lines to show that this can hold multiple lines</h2>
+            <h2>(I can change the background color)</h2>
+        </Content>
+        <Trigger>
+            <h2 class="rounded" style="background-color: #00D586; padding: 1.5rem; padding-top: 0.8rem; padding-bottom: 0.8rem">Complete</h2>
+        </Trigger>
+      </Modal>
+</div>
 </div>
 {:else if robot.status == "Pending"}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
     <h3 class="self-center">{robot.name}</h3>
-    <h2 class="rounded col-start-5" style="background-color: #F6D93F; padding: 2rem; padding-top: 0.8rem; padding-bottom: 0.8rem">Pending</h2>
+    <div class="col-start-5">
+        <Modal basic>
+            <Content>
+                <h2>media data display design goes here</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>these are filler lines to show that this can hold multiple lines</h2>
+                <h2>(I can change the background color)</h2>
+            </Content>
+            <Trigger>
+                <h2 class="rounded col-start-5" style="background-color: #F6D93F; padding: 2rem; padding-top: 0.8rem; padding-bottom: 0.8rem">Pending</h2>
+            </Trigger>
+          </Modal>
+    </div>
     </div>
 {:else}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
     <h3 class="self-center">{robot.name}</h3>
-    <h2 class="rounded col-start-5" style="background-color: #EE3C42; padding: 0.8rem; padding-top: 0.8rem; padding-bottom: 0.8rem;">Unassigned</h2>
+    <div class="col-start-5">
+        <Modal basic>
+            <Content>
+              <h2>media data display design goes here</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>these are filler lines to show that this can hold multiple lines</h2>
+              <h2>(I can change the background color)</h2>
+            </Content>
+            <Trigger>
+                <h2 class="rounded col-start-5" style="background-color: #EE3C42; padding: 0.8rem; padding-top: 0.8rem; padding-bottom: 0.8rem;">Unassigned</h2>
+            </Trigger>
+          </Modal>
+    </div>
     </div>
 {/if}
 {/each}

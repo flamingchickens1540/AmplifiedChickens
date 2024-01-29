@@ -5,6 +5,8 @@
   import Rating from "$lib/components/Rating.svelte"
   import Textarea from "$lib/components/TextArea.svelte"
   import SubmitButton from "$lib/components/SubmitButton.svelte"
+  import TeamsRemainingPopup from "$lib/components/TeamsRemainingPopup.svelte"
+  import { Modal, Content, Trigger } from "sv-popup"
   let teamnumber = ""
   let width = ""
   let height = ""
@@ -31,7 +33,14 @@ chute = true
 chute = chute
   }
 </script>
-<SubmitButton text="Teams Remaining"/>
+  <Modal>
+      <Content style="background-color: #2C2C2C; width:92%; margin:auto" class="p-4 rounded">
+      <TeamsRemainingPopup/>
+      </Content> 
+      <Trigger>
+        <SubmitButton text="Teams Remaining"/>
+      </Trigger>
+    </Modal>
 <TextInput name="Team Number" bind:value = {teamnumber}/>
 <TextInput name="Width" bind:value = {width}/>
 <TextInput name="Length" bind:value = {height}/>
