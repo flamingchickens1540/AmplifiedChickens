@@ -2,6 +2,72 @@
   import type { PageData } from "./$types";
 
   export let data: PageData;
+  let name = "Test";
+
+  import {spring, tweened} from 'svelte/motion';
+  import Pie from '$lib/components/Pie.svelte';
+
+  let percents = [["Name", 20], ["Name", 50], ["Name", 0], ["Name", 0], ["Name", 20], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
 </script>
 
-<h1>Home</h1>
+<main class="bg-bg_gray h-screen flex flex-col justify-between">
+  <div>
+    <h1 class="px-3 text-text_white pt-6"
+    >Good Afternoon</h1>
+    <h1 class="px-3 text-cresc_green"
+    >{name}</h1>
+    <p class="px-3 text-outline_gray"
+    >You are at 2024orore</p>
+  </div>
+
+  <div class="flex flex-col content-center items-stretch">
+    <div class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md">
+      {#each percents as percent, i} 
+        {#if i < 8} 
+        <div class="p-1 flex flex-col items-center">
+          <Pie size={46} percent={percent[1]}/>
+          <p class="text-text_white">{percent[0]}</p>
+        </div>
+        {/if} 
+      {/each}
+    </div>
+    <div class="flex flex-row w-full content-center justify-around">
+      <button class="w-full"
+        onclick="location.href='https://www.thebluealliance.com/event/2024orsal';"
+      > TheBlueAlliance </button>
+      <button style="margin-left: 6px" class="w-full" 
+        onclick="location.href='https://www.statbotics.io/event/2024orsal';"
+      > Statbotics </button>
+    </div>
+    <button style="margin-right: 6px" onclick="location.href='https://www.statbotics.io/event/2024orsal';">
+      Twitch Stream
+    </button>
+    <button id="Pit-Scounts"> Pit Scout </button>
+    <button id="Match-Scounts"> Match Scout </button>
+  </div>
+
+  <nav class="bg-navbar_black text-text_white h-[81px]">
+    navbar goes here
+  </nav>
+</main>
+
+<style lang="postcss">
+
+  h1 {
+    @apply font-bold text-4xl
+  }
+  p {
+    @apply font-medium text-xl
+  }
+  button {
+    font-family: "Poppins-Bold";
+    @apply text-text_white bg-btn_grey m-3 py-2 rounded-md
+  }
+  #Match-Scounts {
+    @apply text-navbar_black bg-cresc_green py-5 font-semibold text-4xl
+  }
+  #Pit-Scounts {
+    @apply font-semibold text-3xl
+  }
+
+</style>

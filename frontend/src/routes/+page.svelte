@@ -1,5 +1,5 @@
 <script>
-    import Tested from "./app/admin/+page.svelte"
+    import Tested from "$lib/components/AdminDB/DataShow.svelte"
 </script>
 
 <Tested/>
