@@ -11,8 +11,8 @@
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
-  <div>
-    <h1 class="px-3 text-text_white pt-6"
+  <div class="grid content-end">
+    <h1 class="px-3 text-text_white pt-10"
     >Good Afternoon</h1>
     <h1 class="px-3 text-cresc_green"
     >{name}</h1>
@@ -21,29 +21,29 @@
   </div>
 
   <div class="flex flex-col content-center items-stretch">
-    <div class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md">
+    <div style="margin-top: -2rem" class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md">
       {#each percents as percent, i} 
         {#if i < 8} 
         <div class="p-1 flex flex-col items-center">
           <Pie size={46} percent={percent[1]}/>
           <p class="text-text_white">{percent[0]}</p>
         </div>
-        {/if} 
+        {/if}  
       {/each}
     </div>
     <div class="flex flex-row w-full content-center justify-around">
-      <button class="w-full"
+      <button style="margin-top: 24px" class="w-full"
         onclick="location.href='https://www.thebluealliance.com/event/2024orsal';"
       > TheBlueAlliance </button>
-      <button style="margin-left: 6px" class="w-full" 
+      <button style="margin-left: 0px; margin-top: 24px" class="w-full" 
         onclick="location.href='https://www.statbotics.io/event/2024orsal';"
       > Statbotics </button>
     </div>
-    <button style="margin-right: 6px" onclick="location.href='https://www.statbotics.io/event/2024orsal';">
+    <button style="margin-right: px" onclick="location.href='https://www.youtube.com/watch?v=dQw4w9WgXcQ';">
       Twitch Stream
     </button>
-    <button id="Pit-Scounts"><a href="/app/pit">Pit Scout </button>
-    <button id="Match-Scounts"><a href="/app/match"> Match Scout </button>
+    <button style="padding: 1.5rem" id="Pit-Scounts"><a href="/app/pit">Pit Scout </button>
+    <button style="padding: 2.5rem" id="Match-Scounts"><a href="/app/match"> Match Scout </button>
   </div>
 
   <nav class="bg-navbar_black text-text_white h-[81px]">
@@ -61,7 +61,11 @@
   }
   button {
     font-family: "Poppins-Bold";
-    @apply text-text_white bg-btn_grey m-3 py-2 rounded-md
+    margin: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    @apply text-text_white bg-btn_grey py-2 rounded-md
+    
   }
   #Match-Scounts {
     @apply text-navbar_black bg-cresc_green py-5 font-semibold text-4xl
