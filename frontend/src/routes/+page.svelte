@@ -1,5 +1,5 @@
 <script>
-    import Tested from "$lib/components/MatchScoutHome.svelte"
+    import Tested from "$lib/components/Navbar.svelte"
 </script>
 
 <Tested/>

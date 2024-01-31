@@ -1,21 +1,29 @@
 <script lang="ts">
   import type { PageData } from "./$types";
+  let greeting;
 
+const currentTime = new Date().getHours();
+  import Navbar from "$lib/components/Navbar.svelte"
+if (currentTime < 12) {
+  greeting = "Morning";
+} else {
+  greeting = "Afternoon";
+}
   export let data: PageData;
   let name = "Test";
 
   import {spring, tweened} from 'svelte/motion';
   import Pie from '$lib/components/Pie.svelte';
-
+  export let giventime = 1706579944;
   let percents = [["Name", 20], ["Name", 50], ["Name", 0], ["Name", 0], ["Name", 20], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
   <div class="grid content-end">
     <h1 class="px-3 text-text_white pt-10"
-    >Good Afternoon</h1>
+    >Good {greeting}</h1>
     <h1 class="px-3 text-cresc_green"
-    >{name}</h1>
+    >{name}.</h1>
     <p class="px-3 text-outline_gray"
     >You are at 2024orore</p>
   </div>
@@ -31,11 +39,11 @@
         {/if}  
       {/each}
     </div>
-    <div class="flex flex-row w-full content-center justify-around">
-      <button style="margin-top: 24px" class="w-full"
+    <div class="flex flex-row w-full content-center justify-around items-end">
+      <button style="margin-top: 12px" class="w-full"
         onclick="location.href='https://www.thebluealliance.com/event/2024orsal';"
       > TheBlueAlliance </button>
-      <button style="margin-left: 0px; margin-top: 24px" class="w-full" 
+      <button style="margin-left: 0px; margin-top: 12px" class="w-full" 
         onclick="location.href='https://www.statbotics.io/event/2024orsal';"
       > Statbotics </button>
     </div>
@@ -45,10 +53,9 @@
     <button style="padding: 1.5rem" id="Pit-Scounts"><a href="/app/pit">Pit Scout </button>
     <button style="padding: 2.5rem" id="Match-Scounts"><a href="/app/match"> Match Scout </button>
   </div>
-
-  <nav class="bg-navbar_black text-text_white h-[81px]">
-    navbar goes here
-  </nav>
+    <div>
+    <Navbar green1/>
+  </div>
 </main>
 
 <style lang="postcss">
@@ -60,10 +67,12 @@
     @apply font-medium text-xl
   }
   button {
-    font-family: "Poppins-Bold";
+    font-family: "Poppins-Medium";
     margin: 15px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 20px;
+    padding: 1rem;
     @apply text-text_white bg-btn_grey py-2 rounded-md
     
   }
@@ -71,7 +80,7 @@
     @apply text-navbar_black bg-cresc_green py-5 font-semibold text-4xl
   }
   #Pit-Scounts {
-    @apply font-semibold text-3xl
+    @apply font-medium text-3xl
   }
 
 </style>

@@ -5,16 +5,18 @@
     export let rteam1 = 5920;
     export let rteam2 = 5920;
     export let rteam3 = 5920;
+    export let started = false
     import Pie from '$lib/components/Pie.svelte';
     let clicked = false
-
+    export let selected = true
+    import Navbar from "$lib/components/Navbar.svelte"
   let percents = [["Name", 20], ["Name", 50], ["Name", 0], ["Name", 0], ["Name", 20], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
-
+  
     // messy time code (NO TOUCHIE)
     let minutes = 0;
     let time = 0;
-    let timeuntilmatch = 60;
-    export let timegiven = 1706579944;
+    export let timeuntilmatch = 60;
+    export let timegiven = 1706658804;
     var date = new Date(timegiven * 1000);
     var hours = date.getHours();
     var min = date.getMinutes();
@@ -26,7 +28,7 @@
     function getTimestamp() {
         return Math.floor(new Date().getTime() / 1000);
     }
-
+  
     setInterval(() => (time = getTimestamp()), 1000);
     $: timeuntilmatch = timegiven - time;
     $: if (timeuntilmatch > 60) {
@@ -37,9 +39,14 @@
         minutes = timeuntilmatch;
     }
     // messy time code (NO TOUCHIE)
-</script>
 
-<div class="grid content-end pt-20">
+    $: if (timeuntilmatch <= 0 && clicked == true && selected == true) {
+        started = true
+        started = started
+    }
+  </script>
+  
+  <div class="grid content-end pt-10">
     <h1 class="px-3 text-text_white pt-10">
         The next match starts in: 
     </h1>
@@ -48,17 +55,17 @@
             class="px-3 text-cresc_green"
         >
             {minutes}
-            {timeuntilmatch <= 60 ? "seconds" : "minutes"}.
+            {timeuntilmatch <= 60 ?  timeuntilmatch == 1 ? "second" : "seconds" : minutes == 1 ? "minute" : "minutes"}.
         </h1>
     <p class="px-3 text-outline_gray">
         Qualification match {match} starts at {formattedTime}
     </p>
-</div>
-
-<div
+  </div>
+  
+  <div
     class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
     style="background-color: #5C5C5C; margin: 15px; padding:15px"
->
+  >
     <center>
         <h2 class="rounded" style="background-color: #ED1C24;">{rteam1}</h2>
     </center>
@@ -77,9 +84,9 @@
     <center>
         <h2 class="rounded" style="background-color: #0083E6;">{bteam2}</h2>
     </center>
-</div>
-
-<div class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md mains">
+  </div>
+  
+  <div class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md mains">
     {#each percents as percent, i} 
       {#if i < 8} 
       <div class="p-1 flex flex-col items-center">
@@ -93,23 +100,35 @@
   <div class="mains">
     <center>
   <button style="padding: 2.5rem" id="Match-Scounts" on:click={()=>clicked = true}> Join Queue </button>
-</center>
+  </center>
   </div>
   {:else}
   <div class="mains">
     <center>
     <button style="padding: 2.8rem" id="Match-Scouts" on:click={()=>clicked = false}> Leave Queue</button>
-</center>
+  </center>
     </div>
+
   {/if}
-<style lang="postcss">
+<div class="bottom-div">
+<Navbar green3/>
+</div>
+  <style lang="postcss">
+    .bottom-div {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0; /* Just for visualization */
+  text-align: center;
+}
     h2 {
         font-family: poppins-bold;
         color: #ffffff;
         font-size: 24px;
         padding: 0.75rem
     }
-
+  
     h1 {
         @apply font-bold text-3xl;
     }
@@ -136,4 +155,5 @@
     margin-top: 2rem;
     margin-bottom: 2rem;
     }
-</style>
+  </style>
+  

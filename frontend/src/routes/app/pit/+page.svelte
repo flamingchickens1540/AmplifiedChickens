@@ -7,6 +7,7 @@
   import SubmitButton from "$lib/components/SubmitButton.svelte"
   import TeamsRemainingPopup from "$lib/components/TeamsRemainingPopup.svelte"
   import { Modal, Content, Trigger } from "sv-popup"
+  import Navbar from "$lib/components/Navbar.svelte"
   let teamnumber = ""
   let width = ""
   let height = ""
@@ -63,3 +64,4 @@ chute = chute
 <!-- todo: make that actually add a photo -->
 <SubmitButton/>
 <!-- todo: make this actually submit -->
+<Navbar green2/>

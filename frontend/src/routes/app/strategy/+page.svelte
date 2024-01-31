@@ -3,5 +3,10 @@
 
   export let data: PageData;
 </script>
+<div style="background-color: #F6D93F;">
+  <h2>COMING SOON!</h2>
+</div>
 
-<h1>Strategy</h1>
+
+<style>
+</style>

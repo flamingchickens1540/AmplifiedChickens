@@ -1,6 +1,7 @@
 <script>
 import TextInput from "$lib/components/TextInput.svelte";
 import SubmitButton from "$lib/components/SubmitButton.svelte"
+import Navbar from "$lib/components/Navbar.svelte"
 let teamnumber = ""
 let imageuploaded = false
 </script>
@@ -18,3 +19,16 @@ let imageuploaded = false
 {/if}
 <SubmitButton text = "Add Photo"/>
 <SubmitButton/>
+<div class="bottom-div" style="background-color: #000000;">
+  <Navbar green4/>
+  </div>
+<style>
+  .bottom-div {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0; /* Just for visualization */
+  text-align: center;
+}
+</style>
