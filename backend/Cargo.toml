@@ -9,11 +9,11 @@ edition = "2021"
 anyhow = "1.0.79"
 axum = { version = "0.7.2", features = ["ws", "multipart", "macros", "tokio"] }
 axum-extra = { version = "0.9.1", features = ["cookie-private"] }
-axum-login = "0.12.0"
 axum-server = { version = "0.6.0", features = ["tls-rustls"] }
 bimap = { version = "0.6.3", features = ["serde"] }
 chrono = { version = "0.4.31", features = ["clock"] }
 dotenv = "0.15.0"
+http = "1.0.0"
 image = "0.24.8"
 jsonwebtoken = "9.2.0"
 oauth2 = "4.4.2"

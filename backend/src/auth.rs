@@ -2,13 +2,15 @@ use std::{collections::BTreeMap, ops::AddAssign, os::unix::fs::chroot};
 
 use crate::model;
 use axum::{
-    extract::{Extension, Query, Request, State},
+    extract::{Extension, Json, Query, Request, State},
     http::StatusCode,
     middleware::Next,
     response::{IntoResponse, Redirect},
     routing::get,
     Router,
 };
+use http::header::{LOCATION, SET_COOKIE};
+
 use axum_extra::extract::cookie::{Cookie, CookieJar};
 use dotenv::dotenv;
 use jsonwebtoken::*;
@@ -16,11 +18,12 @@ use serde_json::Value;
 
 use tracing::{error, info};
 
+#[axum::debug_handler]
 pub async fn slack_callback(
     State(state): State<model::AppState>,
     jar: CookieJar,
     Query(query): Query<model::AuthRequest>,
-) -> Result<impl IntoResponse, (axum::http::StatusCode, String)> {
+) -> Result<axum::http::Response<String>, (axum::http::StatusCode, String)> {
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
@@ -90,8 +93,25 @@ pub async fn slack_callback(
 
     let profile = model::User::new(sub, name.to_string(), false, false, None, None, None);
 
-    let cookie = insert_user(profile, state.db, (exp, access_token)).await?;
-    Ok((jar.add(cookie), Redirect::to("http://localhost:5173/")))
+    let id = insert_user(profile.clone(), state.db).await?;
+
+    let response = axum::http::Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(LOCATION, "http://localhost:5173/app/home") // TODO: Change to /app/home
+        .header(
+            SET_COOKIE,
+            format!("access_code={}; Path=/; SameSite=None", access_token),
+        )
+        .body("Redirecting...".to_string())
+        .unwrap();
+
+    //let mut response = axum::http::Response::new(axum::http::StatusCode::OK);
+    //response.headers_mut().insert(
+    //   "Set-Cookie",
+    //   axum::http::HeaderValue::from_str(&format!("user_data={}; Path=/; HttpOnly", profile.id))
+    //       .unwrap(),
+    //);
+    Ok(response)
 }
 
 pub async fn logout(
@@ -115,39 +135,31 @@ pub async fn logout(
     Ok((jar.remove("sid"), StatusCode::OK))
 }
 
+#[axum::debug_handler]
 pub async fn user_auth(
     State(state): State<model::AppState>,
-    Query(access_token): Query<String>,
-) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
-    get_user(access_token, &state.db).await
+    Json(access_token): Json<String>,
+) -> Result<Json<model::User>, Redirect> {
+    Ok(Json(get_user(access_token, &state.db).await?))
 }
 
 pub async fn admin_auth(
     State(state): State<model::AppState>,
     Query(access_token): Query<String>,
-) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
-    let res = get_user(access_token, &state.db).await?;
+) -> Result<Json<model::User>, Redirect> {
+    let user = get_user(access_token, &state.db).await?;
 
-    if !res.1.is_admin {
-        return Err((
-            StatusCode::UNAUTHORIZED,
-            Redirect::to("http://localhost:5173/"),
-        ));
+    if !user.is_admin {
+        return Err(Redirect::to("http://localhost:5173/"));
     }
 
-    Ok(res)
+    Ok(Json(user))
 }
 
 // token_res: (expires_in, access_token)
-async fn insert_user(
-    profile: model::User,
-    db: model::Db,
-    token_res: (i64, String),
-) -> Result<Cookie<'static>, (StatusCode, String)> {
-    let secs: i64 = token_res.0 / 100;
-
-    let max_age = chrono::Local::now().timestamp_millis() * 100 + secs;
-    let cookie = Cookie::new("sid", token_res.1);
+async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusCode, String)> {
+    //let max_age: i64 = chrono::Local::now().timestamp_millis() * 100 + secs;
+    //cookie.set_max_age(max_age);
 
     if let Err(e) =
         sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING")
@@ -167,13 +179,10 @@ async fn insert_user(
             format!("Error trying to create account: {e}"),
         ));
     };
-    Ok(cookie)
+    Ok(())
 }
 
-async fn get_user(
-    access_token: String,
-    db: &model::Db,
-) -> Result<(StatusCode, model::User), (StatusCode, Redirect)> {
+async fn get_user(access_token: String, db: &model::Db) -> Result<model::User, Redirect> {
     //let cookie = jar.get("sid");
     //info!("Access token: {:?}", cookie);
     //let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
@@ -182,7 +191,7 @@ async fn get_user(
     //};
 
     let res = match sqlx::query_as::<_, model::User>(
-        "SELECT * FROM \"Users\" WHERE access_token EQUALS $1 LIMIT 1",
+        "SELECT * FROM \"Users\" WHERE access_token EQUALS $1",
     )
     .bind(access_token)
     .fetch_one(&(db.pool))
@@ -191,12 +200,9 @@ async fn get_user(
         Ok(res) => res,
         Err(e) => {
             error!("{}", e);
-            return Err((
-                StatusCode::UNAUTHORIZED,
-                Redirect::to("http://localhost:5173/"),
-            ));
+            return Err(Redirect::to("http://localhost:5173/"));
         }
     };
 
-    Ok((StatusCode::OK, model::User { ..res }))
+    Ok(model::User { ..res })
 }

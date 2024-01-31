@@ -112,7 +112,7 @@ pub struct TeamMatch {
     pub notes: String,
     pub is_broke: bool,
     pub is_died: bool,
-    pub scout_id: Uuid,
+    pub scout_id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
@@ -161,7 +161,7 @@ pub struct TeamEvent {
     pub is_ground_intake: bool,
     pub is_chute_intake: bool,
     pub polish: Polish,
-    pub scout_id: Uuid,
+    pub scout_id: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
@@ -170,7 +170,7 @@ pub struct Image {
     pub event_key: String,
     pub team_key: String,
     pub url: String,
-    pub scout_id: Uuid,
+    pub scout_id: i64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]

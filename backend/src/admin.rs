@@ -28,3 +28,19 @@ pub async fn get_user(
 
     Ok(serde_json::to_value(user).unwrap())
 }
+
+pub async fn get_all_users(
+    State(state): State<AppState>,
+) -> Result<(StatusCode, Vec<User>), (StatusCode, String)> {
+    // TODO: Make sure an error isn't returned if there aren't any users logged in
+    match sqlx::query_as("SELECT * FROM \"Users\"")
+        .fetch_all(&state.db.pool)
+        .await
+    {
+        Ok(users) => Ok((StatusCode::OK, users)),
+        Err(err) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Failed to fetch users: {err}").to_string(),
+        )),
+    }
+}
