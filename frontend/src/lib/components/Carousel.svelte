@@ -3,7 +3,7 @@
   
     let currentIndex = 0;
     let startX = 0;
-  
+    
     import Slide1 from '$lib/components/Prematch.svelte';
     import Slide2 from '$lib/components/Auto.svelte';
     import Slide3 from '$lib/components/Tele.svelte';
