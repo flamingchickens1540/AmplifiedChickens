@@ -1,6 +1,6 @@
 <script lang="ts">
 	let  avatar, fileinput;
-	let images:string[] = []
+	export let images:string[] = []
 	const onFileSelected =(e)=>{
   let image = e.target.files[0];
             let reader = new FileReader();
@@ -11,7 +11,6 @@
                  images = images
             };
 }
-import TextInput from "$lib/components/TextInput.svelte"
 let teamnumber=""
 import SubmitButton from "$lib/components/SubmitButton.svelte"
 
@@ -19,13 +18,9 @@ function removeimage(index: number){
   images.splice(index, 1)
   images = images
 }
-import Navbar from "$lib/components/Navbar.svelte"
 </script>
 
-<div style="margin:15px; padding-bottom: 200px">
-  <div>
-	<TextInput name="Team Number" bind:value={teamnumber}/>
-</div>
+<div style="padding-bottom: 200px">
         {#if images.length !== 0}
         {#each images as image, n}
         <div style="margin:15px; padding:1rem; position: relative;" class="border border-outline_gray rounded mt-[-9px] visible">
@@ -57,17 +52,8 @@ import Navbar from "$lib/components/Navbar.svelte"
       <input style="display:none" type="file" accept=".jpg, .jpeg, .png" on:change={(e)=>onFileSelected(e)} bind:this={fileinput} >
       <SubmitButton/>
 </div>
-<div class="bottom-div">
-</div>
 <style> 
-.bottom-div {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #f0f0f0; /* Just for visualization */
-  text-align: center;
-}
+
 	.upload{
 		display:flex;
 	height:50px;
