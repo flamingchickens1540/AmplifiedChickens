@@ -59,3 +59,15 @@ export type TeamEvent = {
 export type StageEnum = "onstage" | "park" | "not attempted" | "failed"
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"
+
+export type ScoutedRobot = {
+    number: string
+    status: string
+}
+export type Scout = {
+name: string
+admin: boolean
+hasnotifs: boolean
+numscouted: number
+// coopcoins: number
+}

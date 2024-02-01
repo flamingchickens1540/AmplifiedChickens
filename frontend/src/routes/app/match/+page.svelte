@@ -1,7 +1,11 @@
-<script lang="ts">
-  import type { PageData } from "./$types";
-
-  export let data: PageData;
+<script>
+  import Carousel from "$lib/components/Carousel.svelte"
+  import Homepage from "$lib/components/MatchScoutHomepage.svelte"
+  let started = false
 </script>
-
-<h1>Match</h1>
+{#if !started}
+<Homepage bind:started={started}/>
+{/if}
+{#if started == true}
+<Carousel/>
+{/if}

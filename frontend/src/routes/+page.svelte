@@ -1,9 +1,5 @@
-<head>
-    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet">
-</head>
-
 <script>
-  import Confirm from "$lib/components/Confirm.svelte"
+    import Tested from "$lib/components/Navbar.svelte"
 </script>
 
-<Confirm/>
+<Tested/>

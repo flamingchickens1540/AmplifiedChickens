@@ -1,17 +1,29 @@
 <script>
     import Header from "$lib/components/Header.svelte"
-    import Toggleleave from "$lib/components/Toggle.svelte";
-    export let amp = 0
-    export let speaker = 0
-    export let piece = 0
+    import Toggle from "$lib/components/Toggle.svelte";
+    import Confirm from "$lib/components/Confirm.svelte"
+    let leavestatus = ""
+    let amp = false
+    let ampsuc = 0
+    let ampfail = 0
+    let speaker = false
+    let speaksuc = 0
+    let speakfail = 0
+    let piece = false
+    let piecefail = 0
+    let piecesuc = 0
 </script>
-
+{#if speaker == true}
+<Confirm title = "Speaker (Auto)" bind:notover = {speaker} bind:valuesuc = {speaksuc} bind:valuefail = {speakfail}/>
+{:else if amp == true}
+<Confirm title = "Amp (Auto)" bind:notover = {amp} bind:valuesuc = {ampsuc} bind:valuefail = {ampfail}/>
+{:else if piece == true}
+<Confirm title = "Pickup (Auto)" bind:notover = {piece} bind:valuesuc = {piecesuc} bind:valuefail = {piecefail}/>
+{:else}
 <Header phase = "Auto"/>
-<!-- add the team color and number with "team" (as a string) and "teamcolor" (red or blue, as a string) -->
-<Toggleleave text1 = "Stayed Home" text2 = "Left Home"/>
-<!-- get the result using buttonon -->
+<Toggle text1 = "Stayed Home" text2 = "Left Home" bind:value = {leavestatus}/>
 <div class="grid grid-cols-2 gap-3 m-4">
-    <button on:click={() => {speaker += 1;}}>
+    <button on:click={() => {speaker = true}}>
     <svg viewBox="0 0 178 316" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_857_1659)">
         <rect x="4" width="170" height="308" rx="5" fill="#5C5C5C"/>
@@ -32,7 +44,7 @@
         </defs>
     </svg>
     </button>
-    <button on:click={() => {amp += 1;}}>
+    <button on:click={() => {amp = true;}}>
     <svg viewBox="0 0 178 316" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g filter="url(#filter0_d_857_1659)">
         <rect x="4" width="170" height="308" rx="5" fill="#5C5C5C"/>
@@ -54,8 +66,7 @@
         </svg>
         </button>
 
-        <button on:click={() => {piece += 1;}}>
-        <div class="row-start-2 col-span-2">
+        <button class="col-span-2" on:click={() => {piece = true;}}>
         <svg viewBox="0 0 365 229" fill="none" xmlns="http://www.w3.org/2000/svg">
             <g filter="url(#filter0_d_1302_3116)">
             <rect x="4" width="357" height="221" rx="5" fill="#5C5C5C"/>
@@ -75,9 +86,6 @@
             </filter>
             </defs>
             </svg>
-        </div>
         </button>
-        
-
-
 </div>
+{/if}
