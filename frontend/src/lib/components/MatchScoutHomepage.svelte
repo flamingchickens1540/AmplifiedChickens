@@ -5,9 +5,11 @@
     export let rteam1 = 5920;
     export let rteam2 = 5920;
     export let rteam3 = 5920;
-    export let started = false
+    export let queuefull = true
+    import Game from "$lib/components/HeheButton.svelte"
     import Pie from '$lib/components/Pie.svelte';
-    let clicked = false
+    export let clicked = false
+    import { Modal, Content, Trigger } from "sv-popup"
     export let selected = true
     import Navbar from "$lib/components/Navbar.svelte"
   let percents = [["Name", 20], ["Name", 50], ["Name", 0], ["Name", 0], ["Name", 20], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ["Name", 0], ];
@@ -39,13 +41,8 @@
         minutes = timeuntilmatch;
     }
     // messy time code (NO TOUCHIE)
-
-    $: if (timeuntilmatch <= 0 && clicked == true && selected == true) {
-        started = true
-        started = started
-    }
   </script>
-  
+   {#if clicked == false} <!-- before they click queue match -->
   <div class="grid content-end pt-10">
     <h1 class="px-3 text-text_white pt-10">
         The next match starts in: 
@@ -96,23 +93,49 @@
       {/if}  
     {/each}
   </div>
-  {#if clicked == false}
+ {#if queuefull == false}<!-- if queue is not full -->
   <div class="mains">
     <center>
   <button style="padding: 2.5rem" id="Match-Scounts" on:click={()=>clicked = true}> Join Queue </button>
   </center>
   </div>
-  {:else}
+  {:else} <!-- if queue is full -->
+  <div class="mains">
+    <center>
+  <button style="padding: 4rem; padding-left: 2.5rem; padding-right:2.5rem" id="Match-Scountss"> Queue Full </button>
+  </center>
+  </div>
+  {/if}
+
+
+
+  {:else} <!-- after they click queue match buttom -->
+  <center>
+<h2 style="font-size: 36px;">Waiting For Match To Start</h2>
+</center>
+
   <div class="mains">
     <center>
     <button style="padding: 2.8rem" id="Match-Scouts" on:click={()=>clicked = false}> Leave Queue</button>
   </center>
-    </div>
-
+  </div>
+  <Modal>
+    <Content style="background-color: #2C2C2C; width:92%; margin:auto" class="p-4 rounded">
+    <Game/>
+    </Content> 
+    <Trigger>
+    <div class="grid grid-cols-5">
+        <button class="col-span-5">
+            <h3 class="col-span-5 rounded ">Bored?</h3>
+        </button>
+        </div>
+    </Trigger>
+  </Modal>
   {/if}
 <div class="bottom-div">
 <Navbar green3/>
 </div>
+
   <style lang="postcss">
     .bottom-div {
   position: fixed;
@@ -151,9 +174,25 @@
         font-size: 44px;
         background-color: #ED1C24;
     }
+    #Match-Scountss {
+        @apply  py-5 font-semibold;
+        font-size: 44px;
+        background-color: #6C6C6C;
+        color: #1C1C1C
+    }
     .mains{
     margin-top: 2rem;
     margin-bottom: 2rem;
     }
+    h3{
+            margin: 17px;
+            color: #FFFFFF;
+            background-color: #5c5c5c;
+            font-size: 3rem;
+            padding: 1rem;
+            text-align: center;
+            /* Teams Remaining */
+font-family: 'Poppins-medium';
+font-style: bold;}
   </style>
   
