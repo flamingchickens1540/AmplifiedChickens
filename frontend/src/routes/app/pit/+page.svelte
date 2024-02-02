@@ -54,7 +54,7 @@
 <Toggle text1="Under Stage" text2="Around Stage" bind:value={wheredrive} />
 <Threeoption
   text1="Swerve"
-  text2="Tank"
+  text2="Tank" 
   text3="Other"
   bind:value={drivetrain}
 />
@@ -63,7 +63,7 @@
 <Textarea bind:value={notes} />
 <ImageUpload />
 <div id="navbar">
-  <Navbar />
+  <Navbar green2/>
 </div>
 
 <style>

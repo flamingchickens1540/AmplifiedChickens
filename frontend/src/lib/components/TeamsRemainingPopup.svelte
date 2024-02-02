@@ -6,10 +6,14 @@
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">
 <h3 style="margin:0.5rem">Teams Remaining</h3>
 <div class="main">
+{#if queued.length > 0}
 {#each queued as person}
 
 <h3 on:click={() => {value = person}} class="rounded" style="padding: 1rem; background-color: #5C5C5C">{person}</h3>
 {/each}
+{:else}
+<h3 class="rounded" style="padding: 1rem; background-color: #5C5C5C">No Teams Remaining!</h3>
+{/if}
 </div>
 </div>
 <style>

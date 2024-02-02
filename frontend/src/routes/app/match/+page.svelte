@@ -1,11 +1,13 @@
-<script>
+<script lang="ts">
   import Carousel from "$lib/components/Carousel.svelte"
   import Homepage from "$lib/components/MatchScoutHomepage.svelte"
-  let started = false
+  let queued = false
+  export let selected = true
+  export let started = true
 </script>
-{#if !started}
-<Homepage bind:started={started}/>
-{/if}
-{#if started == true}
+{queued}
+{#if queued == true && selected == true && started == true}
 <Carousel/>
+{:else}
+<Homepage bind:clicked = {queued}/>
 {/if}
