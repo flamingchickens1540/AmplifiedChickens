@@ -5,10 +5,10 @@
     export let rteam1 = 5920;
     export let rteam2 = 5920;
     export let rteam3 = 5920;
-    export let queuefull = false
+    export let queuefull = true
     import Game from "$lib/components/HeheButton.svelte"
     import Pie from '$lib/components/Pie.svelte';
-    let clicked = false
+    export let clicked = false
     import { Modal, Content, Trigger } from "sv-popup"
     export let selected = true
     import Navbar from "$lib/components/Navbar.svelte"

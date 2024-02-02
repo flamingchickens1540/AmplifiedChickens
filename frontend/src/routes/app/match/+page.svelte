@@ -5,7 +5,6 @@
   export let selected = true
   export let started = true
 </script>
-{queued}
 {#if queued == true && selected == true && started == true}
 <Carousel/>
 {:else}
