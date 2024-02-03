@@ -57,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // configure certificate and private key used by https
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
         .await
-        .unwrap();
+        .expect("Missing cert.pem and key.pem files");
     let ports = Ports {
         http: 7878,
         https: 3007,
