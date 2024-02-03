@@ -5,7 +5,7 @@
   export let rteam1 = 5920;
   export let rteam2 = 5920;
   export let rteam3 = 5920;
-  import Game from "$lib/components/HeheButton.svelte";
+  import Game from "$lib/components/Lottery.svelte";
   import Pie from "$lib/components/Pie.svelte";
   export let clicked = false;
   import { Modal, Content, Trigger } from "sv-popup";

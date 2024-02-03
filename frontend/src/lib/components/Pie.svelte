@@ -1,6 +1,6 @@
-<script>
+<script lang="ts">
   export let size = 200;
-  export let percent = 0;
+  export let percent: number = 0;
   export let bgColor = "#2c2c2c";
   export let fgColor = "#00d586";
   
