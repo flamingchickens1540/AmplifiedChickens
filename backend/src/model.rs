@@ -1,3 +1,6 @@
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
 use axum::extract::FromRef;
 use axum_extra::extract::cookie::Key;
 use serde::{Deserialize, Serialize};
@@ -26,7 +29,7 @@ impl Db {
 pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
-    pub queue: RoboQueue,
+    pub queue: Arc<Mutex<RoboQueue>>,
 }
 
 /// Scouts: Access codes
@@ -56,7 +59,7 @@ impl RoboQueue {
             } else {
                 String::from("blue")
             };
-            let endpoint: String = Self::get_user(&self, self.scouts[i].clone(), db).await?;
+            let endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
             // Push robot and team color to user
         }
         Ok(())
@@ -76,14 +79,18 @@ impl RoboQueue {
             } else {
                 String::from("blue")
             };
-            let endpoint: String = Self::get_user(&self, self.scouts[i].clone(), db).await?;
+            let endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
 
             // Push robot and team color to user
         }
         Ok(())
     }
 
-    async fn get_user(&self, id: String, db: &Db) -> Result<String, (QueueError, String)> {
+    async fn get_user_endpoint(
+        &self,
+        id: &String,
+        db: &Db,
+    ) -> Result<String, (QueueError, String)> {
         match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE id = $1")
             .bind(id)
             .fetch_one(&db.pool)
@@ -108,9 +115,10 @@ impl RoboQueue {
         }
     }
 
-    pub async fn add_scout_auto_assign(&mut self, scout: String) {
+    pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
             let robot = self.robots.pop();
+            let endpoint = self.get_user_endpoint(&scout, db);
             // Push robot to scout
         }
 

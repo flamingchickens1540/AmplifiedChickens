@@ -18,10 +18,10 @@ use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
-mod admin;
 mod auth;
 mod error;
 mod model;
+mod queue;
 mod submit;
 mod upload;
 
@@ -90,13 +90,21 @@ fn init_router(state: model::AppState) -> Router {
         * 1024;
 
     Router::new()
-        .route("/authUser", get(auth::user_auth))
-        .route("/image/:image", get(upload::image))
-        .route("/upload", post(upload::upload))
+        .route("/auth/user", get(auth::user_auth))
+        .route("/submit/image/:image", get(upload::image))
+        .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
+        .route("/admin/getUser/single", post(queue::get_user))
+        .route("/admin/newMatch/manual", post(queue::new_match_manual))
+        .route("/admin/newMatch/auto", post(queue::new_match_auto))
+        .route("/admin/newEvent", post(queue::new_event))
+        .route("/admin/getUser/all/", post(queue::get_scouts_and_scouted))
+        .route("/admin/getUser/queued", post(queue::get_queued_scouts))
+        .route("/scout/inQueue", post(queue::in_queue))
+        .route("/scout/queueUser", post(queue::queue_user))
         .with_state(state)
         .layer(
             tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
