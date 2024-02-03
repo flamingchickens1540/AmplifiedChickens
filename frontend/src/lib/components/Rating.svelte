@@ -3,7 +3,7 @@
   export let value = 3;
 </script>
 
-<div class="relative m-4 h-16">
+<div class="relative h-16" style="margin: 17px">
   <div class="grid grid-flow-col justify-center items-center py-2">
     {#each Array(value) as _, i}
       <button on:click={() => (value = i + 1)}>
