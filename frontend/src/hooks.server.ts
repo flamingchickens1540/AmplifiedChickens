@@ -19,5 +19,21 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
     }
 
+    if (event.url.pathname.startsWith('/app/admin')) {
+        console.log("Checking admin auth")
+
+        const is_admin = event.cookies.get('is_admin')
+
+        console.log("is_admin: " + is_admin)
+
+        if (is_admin == undefined) {
+            console.log("Unauthorized Request")
+            return json({
+                status: 401,
+                body: 'Unauthorized'
+            });
+        }
+    }
+
     return await resolve(event)
 } 

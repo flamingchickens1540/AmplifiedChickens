@@ -94,15 +94,38 @@ pub async fn slack_callback(
 
     let id = insert_user(profile.clone(), state.db).await?;
 
-    let response = axum::http::Response::builder()
-        .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, "http://localhost:5173/app/home") 
-        .header(
-            SET_COOKIE,
-            format!("access_code={}; Path=/; SameSite=None; Secure", access_token),
-        )
-        .body("Redirecting...".to_string())
-        .unwrap();
+    // TODO: Remove redundency
+    let response = if profile.is_admin {
+        axum::http::Response::builder()
+            .status(StatusCode::SEE_OTHER)
+            .header(LOCATION, "http://localhost:5173/app/home")
+            .header(
+                SET_COOKIE,
+                format!(
+                    "access_code={}; Path=/; SameSite=None; Secure",
+                    access_token
+                ),
+            )
+            .header(
+                SET_COOKIE,
+                "is_admin=true; Path=/; SameSite=None; Secure".to_string(),
+            )
+            .body("Redirecting...".to_string())
+            .unwrap()
+    } else {
+        axum::http::Response::builder()
+            .status(StatusCode::SEE_OTHER)
+            .header(LOCATION, "http://localhost:5173/app/home")
+            .header(
+                SET_COOKIE,
+                format!(
+                    "access_code={}; Path=/; SameSite=None; Secure",
+                    access_token
+                ),
+            )
+            .body("Redirecting...".to_string())
+            .unwrap()
+    };
 
     //let mut response = axum::http::Response::new(axum::http::StatusCode::OK);
     //response.headers_mut().insert(
@@ -142,27 +165,6 @@ pub async fn logout(
         .unwrap();
 
     Ok(response)
-}
-
-#[axum::debug_handler]
-pub async fn user_auth(
-    State(state): State<model::AppState>,
-    Json(access_token): Json<String>,
-) -> Result<Json<model::User>, Redirect> {
-    Ok(Json(get_user(access_token, &state.db).await?))
-}
-
-pub async fn admin_auth(
-    State(state): State<model::AppState>,
-    Query(access_token): Query<String>,
-) -> Result<Json<model::User>, Redirect> {
-    let user = get_user(access_token, &state.db).await?;
-
-    if !user.is_admin {
-        return Err(Redirect::to("http://localhost:5173/"));
-    }
-
-    Ok(Json(user))
 }
 
 // token_res: (expires_in, access_token)

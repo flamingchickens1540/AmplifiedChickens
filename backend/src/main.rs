@@ -92,7 +92,6 @@ fn init_router(state: model::AppState) -> Router {
         * 1024;
 
     Router::new()
-        .route("/auth/user", get(auth::user_auth))
         .route("/submit/image/:image", get(upload::image))
         .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
