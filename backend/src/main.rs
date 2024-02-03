@@ -13,7 +13,9 @@ use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 use oauth2::basic::BasicClient;
 use reqwest::Client as ReqwestClient;
+use std::sync::Arc;
 use std::{net::SocketAddr, path::PathBuf};
+use tokio::sync::Mutex;
 use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
@@ -45,11 +47,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ctx = ReqwestClient::new();
 
-    let queue = model::RoboQueue {
+    let queue = Arc::new(Mutex::new(model::RoboQueue {
         match_keys: vec![],
         robots: vec![],
         scouts: vec![],
-    };
+    }));
 
     let state = model::AppState {
         db, // Database
@@ -97,13 +99,13 @@ fn init_router(state: model::AppState) -> Router {
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
-        .route("/admin/getUser/single", post(queue::get_user))
+        .route("/admin/getUser/single", get(queue::get_user))
         .route("/admin/newMatch/manual", post(queue::new_match_manual))
         .route("/admin/newMatch/auto", post(queue::new_match_auto))
         .route("/admin/newEvent", post(queue::new_event))
-        .route("/admin/getUser/all/", post(queue::get_scouts_and_scouted))
-        .route("/admin/getUser/queued", post(queue::get_queued_scouts))
-        .route("/scout/inQueue", post(queue::in_queue))
+        .route("/admin/getUser/all", get(queue::get_scouts_and_scouted))
+        .route("/admin/getUser/queued", get(queue::get_queued_scouts))
+        .route("/scout/inQueue", get(queue::in_queue))
         .route("/scout/queueUser", post(queue::queue_user))
         .with_state(state)
         .layer(

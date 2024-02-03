@@ -44,7 +44,7 @@ pub async fn get_all_users(
 }
 
 pub async fn new_match_auto(
-    State(state): &mut State<AppState>,
+    State(state): State<AppState>,
     Form(robots): Form<Vec<String>>,
 ) -> Result<impl IntoResponse, StatusCode> {
     let mut queue = state.queue.lock().await;
@@ -68,7 +68,7 @@ pub struct ManualMatch {
 }
 
 pub async fn new_match_manual(
-    State(state): &mut State<AppState>,
+    State(state): State<AppState>,
     Form(manual_match): Form<ManualMatch>,
 ) -> Result<impl IntoResponse, impl IntoResponse> {
     let mut queue = state.queue.lock().await;
@@ -92,8 +92,9 @@ pub struct NewEvent {
     twitch_link: Option<String>,
 }
 
+#[axum::debug_handler]
 pub async fn new_event(
-    State(state): &mut State<AppState>,
+    State(state): State<AppState>,
     Form(event): Form<NewEvent>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     match sqlx::query("INSERT INTO \"Events\" (event_key, steam_url) VALUES ($1, $2)")
