@@ -21,7 +21,6 @@ use tracing::{error, info};
 #[axum::debug_handler]
 pub async fn slack_callback(
     State(state): State<model::AppState>,
-    jar: CookieJar,
     Query(query): Query<model::AuthRequest>,
 ) -> Result<axum::http::Response<String>, (axum::http::StatusCode, String)> {
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
