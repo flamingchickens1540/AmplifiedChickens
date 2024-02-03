@@ -230,7 +230,7 @@ pub async fn queue_user(
         ));
     }
 
-    queue.add_scout_auto_assign(id, &state.db);
+    queue.add_scout_auto_assign(id, &state.db).await;
 
     Ok((StatusCode::OK, "Success".to_string()))
 }
