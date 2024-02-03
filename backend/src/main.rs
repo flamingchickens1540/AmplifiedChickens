@@ -38,10 +38,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
     let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
 
-    let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
-    let client_secret =
-        std::env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
-
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
@@ -49,10 +45,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ctx = ReqwestClient::new();
 
+    let queue = model::RoboQueue {
+        match_keys: vec![],
+        robots: vec![],
+        scouts: vec![],
+    };
+
     let state = model::AppState {
         db, // Database
         ctx,
-        key: Key::generate(), // Cookie key
+        queue,
     };
     // configure certificate and private key used by https
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")

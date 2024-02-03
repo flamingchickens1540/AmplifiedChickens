@@ -115,12 +115,10 @@ pub async fn slack_callback(
 
 pub async fn logout(
     State(state): State<model::AppState>,
-    jar: CookieJar,
+    Json(id): Json<String>,
 ) -> Result<impl IntoResponse, (String, StatusCode)> {
-    let id = jar.get("sid").unwrap();
-
-    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE id EQUALS $1 LIMIT 1")
-        .bind(id.value())
+    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE id = $1 LIMIT 1")
+        .bind(id)
         .execute(&state.db.pool)
         .await
     {
@@ -131,7 +129,19 @@ pub async fn logout(
         ));
     }
 
-    Ok((jar.remove("sid"), StatusCode::OK))
+    let response = axum::http::Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(LOCATION, "http://localhost:5173/app/home") // TODO: Change to /app/home
+        .header(
+            SET_COOKIE,
+            format!(
+                "access_code=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .body("Redirecting...".to_string())
+        .unwrap();
+
+    Ok(response)
 }
 
 #[axum::debug_handler]
