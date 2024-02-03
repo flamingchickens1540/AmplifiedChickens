@@ -96,10 +96,10 @@ pub async fn slack_callback(
 
     let response = axum::http::Response::builder()
         .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, "http://localhost:5173/app/home") // TODO: Change to /app/home
+        .header(LOCATION, "http://localhost:5173/app/home") 
         .header(
             SET_COOKIE,
-            format!("access_code={}; Path=/; SameSite=None", access_token),
+            format!("access_code={}; Path=/; SameSite=None; Secure", access_token),
         )
         .body("Redirecting...".to_string())
         .unwrap();
