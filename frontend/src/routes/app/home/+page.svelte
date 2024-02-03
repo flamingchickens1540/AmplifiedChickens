@@ -104,7 +104,7 @@
         >
     </div>
     <div>
-        <Navbar />
+        <Navbar page="home"/>
     </div>
 </main>
 

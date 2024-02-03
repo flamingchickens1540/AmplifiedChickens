@@ -44,5 +44,5 @@
 </div>
 
 <div class="bottom-div">
-  <Navbar green5/>
+  <Navbar page="strategy"/>
 </div>

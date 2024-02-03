@@ -149,7 +149,7 @@
     </div>
   {/if}
 <div class="bottom-div">
-  <Navbar green3 />
+  <Navbar page="match" />
 </div>
 
 <style lang="postcss">

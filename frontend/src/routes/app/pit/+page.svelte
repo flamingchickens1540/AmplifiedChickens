@@ -62,9 +62,11 @@
 <Rating name="Robot Polish" bind:value={polish} />
 <Textarea bind:value={notes} />
 <ImageUpload />
-<div id="navbar">
-  <Navbar green2/>
+
+<div>
+  <Navbar page="pit"/>
 </div>
+
 
 <style>
   #navbar {
