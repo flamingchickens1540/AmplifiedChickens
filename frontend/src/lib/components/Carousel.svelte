@@ -4,12 +4,12 @@
     let currentIndex = 0;
     let startX = 0;
     
-    import Slide1 from '$lib/components/Prematch.svelte';
-    import Slide2 from '$lib/components/Auto.svelte';
-    import Slide3 from '$lib/components/Tele.svelte';
-    import Slide4 from '$lib/components/Postmatch.svelte';
+    import Prematch from '$lib/components/Prematch.svelte';
+    import Auto from '$lib/components/Auto.svelte';
+    import Tele from '$lib/components/Tele.svelte';
+    import Postmatch from '$lib/components/Postmatch.svelte';
     // Import other slide components
-    let items = [Slide1, Slide2, Slide3, Slide4];
+    let items = [Prematch, Auto, Tele, Postmatch];
   
     function nextSlide() {
       if (currentIndex != 3){
