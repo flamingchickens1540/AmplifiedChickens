@@ -1,7 +1,13 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
-
-  export let data: PageData;
+  import Carousel from "$lib/components/Carousel.svelte"
+  import Homepage from "$lib/components/MatchScoutHomepage.svelte"
+  let queued = false
+  export let selected = true
+  export let started = false
 </script>
+{#if queued == true && selected == true && started == true}
+<Carousel/>
+{:else}
+<Homepage bind:clicked = {queued}/>
+{/if}
 
-<h1>Match</h1>
