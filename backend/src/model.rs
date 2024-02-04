@@ -1,10 +1,10 @@
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use axum::extract::FromRef;
-use axum_extra::extract::cookie::Key;
+
+
 use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, types::Uuid, Pool, Postgres};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 
 use reqwest::Client as ReqwestClient;
 use tracing::{error, info};
@@ -49,17 +49,17 @@ impl RoboQueue {
         mut robots: Vec<String>,
         db: &Db,
     ) -> Result<(), (QueueError, String)> {
-        for (i, robot) in robots.iter().enumerate() {
+        for (i, _robot) in robots.iter().enumerate() {
             if self.scouts.is_empty() {
                 self.robots.append(&mut robots);
                 break;
             }
-            let color = if robots.len() <= 3 {
+            let _color = if robots.len() <= 3 {
                 String::from("red")
             } else {
                 String::from("blue")
             };
-            let endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
+            let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
             // Push robot and team color to user
         }
         Ok(())
@@ -73,13 +73,13 @@ impl RoboQueue {
         db: &Db,
     ) -> Result<(), (QueueError, String)> {
         assert_eq!(robots.len(), scouts.len());
-        for (i, robot) in robots.iter().enumerate() {
-            let color = if robots.len() <= 3 {
+        for (i, _robot) in robots.iter().enumerate() {
+            let _color = if robots.len() <= 3 {
                 String::from("red")
             } else {
                 String::from("blue")
             };
-            let endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
+            let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
 
             // Push robot and team color to user
         }
@@ -117,8 +117,8 @@ impl RoboQueue {
 
     pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
-            let robot = self.robots.pop();
-            let endpoint = self.get_user_endpoint(&scout, db);
+            let _robot = self.robots.pop();
+            let _endpoint = self.get_user_endpoint(&scout, db);
             // Push robot to scout
         }
 

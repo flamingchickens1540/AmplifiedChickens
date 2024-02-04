@@ -1,12 +1,12 @@
 use axum::{
-    extract::{Query, State},
+    extract::{State},
     http::StatusCode,
     response::IntoResponse,
     Form, Json,
 };
-use axum_extra::extract::cookie::{Cookie, CookieJar, Key};
+
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+
 use tracing::error;
 
 use crate::model::{self, AppState, User};
@@ -21,7 +21,7 @@ pub async fn get_user(
         .await
     {
         Ok(user) => user,
-        Err(e) => return Err(StatusCode::UNAUTHORIZED),
+        Err(_e) => return Err(StatusCode::UNAUTHORIZED),
     };
 
     Ok(Json(user))
@@ -125,7 +125,7 @@ pub async fn set_user_permissions(
         .await
     {
         Ok(_) => Ok(StatusCode::OK),
-        Err(err) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(_err) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
 #[axum::debug_handler]

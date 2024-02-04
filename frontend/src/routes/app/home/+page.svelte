@@ -29,7 +29,7 @@
 
     let greeting = determine_greeting();
 
-    let scout_names: string[] = ["Name", "Name", "Name", "Name", "Name", "Name", "Name", "Name"]
+    let scout_names: string[] = fetch()
     let scout_percents: number[] = [20, 40, 56, 47, 39, 48, 20]
 
 </script>

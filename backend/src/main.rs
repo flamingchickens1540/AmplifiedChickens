@@ -2,23 +2,21 @@ use axum::{
     extract::{DefaultBodyLimit, Host},
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
-    middleware,
-    response::Html,
     response::Redirect,
     routing::{get, post},
-    BoxError, Extension, Router,
+    BoxError, Router,
 };
-use axum_extra::extract::cookie::{Cookie, CookieJar, Key};
+
 use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
-use oauth2::basic::BasicClient;
+
 use reqwest::Client as ReqwestClient;
 use std::sync::Arc;
-use std::{net::SocketAddr, path::PathBuf};
+use std::{net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
-use tracing::{error, info};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, FmtSubscriber};
+use tower_http::{cors::CorsLayer};
+use tracing::{info};
+use tracing_subscriber::{FmtSubscriber};
 
 mod auth;
 mod error;
@@ -34,18 +32,11 @@ struct Ports {
     https: u16,
 }
 
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-struct Ports {
-    http: u16,
-    https: u16,
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let server_host = dotenv::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let server_port = dotenv::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    let _server_host = dotenv::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let _server_port = dotenv::var("SERVER_PORT").expect("SERVER_PORT is not set");
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();

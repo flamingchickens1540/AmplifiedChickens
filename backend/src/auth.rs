@@ -1,20 +1,17 @@
-use std::{collections::BTreeMap, ops::AddAssign, os::unix::fs::chroot};
+
 
 use crate::model;
 use axum::{
-    extract::{Extension, Json, Query, Request, State},
+    extract::{Json, Query, State},
     http::StatusCode,
-    middleware::Next,
     response::{IntoResponse, Redirect},
-    routing::get,
-    Router,
 };
 use http::header::{LOCATION, SET_COOKIE};
 
-use axum_extra::extract::cookie::{Cookie, CookieJar};
-use dotenv::dotenv;
+
+
 use jsonwebtoken::*;
-use serde_json::Value;
+
 
 use tracing::{error, info};
 
@@ -26,7 +23,7 @@ pub async fn slack_callback(
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
-    let signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
+    let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
     info!("Redirect URL: {}", redirect_url);
     //let nonce = "test_nonce";
 
@@ -88,11 +85,11 @@ pub async fn slack_callback(
     info!("Sub: {}", sub);
     info!("{:?}", data.claims);
     info!("Access Token: {}", access_token);
-    let max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
+    let _max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
 
     let profile = model::User::new(sub, name.to_string(), false, false, None, None, None);
 
-    let id = insert_user(profile.clone(), state.db).await?;
+    let _id = insert_user(profile.clone(), state.db).await?;
 
     // TODO: Remove redundency
     let response = if profile.is_admin {
