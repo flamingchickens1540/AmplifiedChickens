@@ -1,39 +1,18 @@
-import { json, type Handle } from '@sveltejs/kit'
+import { type Handle, redirect } from '@sveltejs/kit'
 
 export const handle: Handle = async ({ event, resolve }) => {
-    console.log(event.cookies.getAll());
-    console.log(event.url.pathname)
-    if (event.url.pathname.startsWith('/app')) {
-        console.log("Checking auth")
+    const access_code = event.cookies.get('access_code');
+    console.log(access_code)
 
-        const access_token = event.cookies.get('access_code');
+    if (event.url.pathname == "/" && access_code) throw redirect(302, "/app/home");
 
-        console.log(access_token)
-
-        if (access_token == undefined) {
-            console.log("Unauthorized Request")
-            return json({
-                status: 401,
-                body: 'Unauthorized'
-            });
-        }
-    }
+    if (event.url.pathname != "/" && !access_code) throw redirect(302, "/");
 
     if (event.url.pathname.startsWith('/app/admin')) {
-        console.log("Checking admin auth")
-
-        const is_admin = event.cookies.get('is_admin')
-
-        console.log("is_admin: " + is_admin)
-
-        if (is_admin == undefined) {
-            console.log("Unauthorized Request")
-            return json({
-                status: 401,
-                body: 'Unauthorized'
-            });
+        if (event.cookies.get('is_admin') == undefined) { //TODO: secure endpoint properly with backend API
+            throw redirect(302, "/")
         }
     }
-
+    
     return await resolve(event)
 } 
