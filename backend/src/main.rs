@@ -11,12 +11,12 @@ use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
 use reqwest::Client as ReqwestClient;
+use std::net::SocketAddr;
 use std::sync::Arc;
-use std::{net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::{cors::CorsLayer};
-use tracing::{info};
-use tracing_subscriber::{FmtSubscriber};
+use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
+use tracing::{error, info};
+use tracing_subscriber::FmtSubscriber;
 
 mod auth;
 mod error;
@@ -35,8 +35,8 @@ struct Ports {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let _server_host = dotenv::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let _server_port = dotenv::var("SERVER_PORT").expect("SERVER_PORT is not set");
+    let _server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
+    let _server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
@@ -144,3 +144,4 @@ async fn redirect_http_to_https(ports: Ports) {
         .await
         .unwrap();
 }
+
