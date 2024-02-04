@@ -4,13 +4,12 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
     import Pie from "$lib/components/Pie.svelte";
-    import { spring, tweened } from "svelte/motion";
     import { goto } from "$app/navigation";
-    import { redirect } from "@sveltejs/kit";
 
     export let data: PageData;
-    export let giventime = 1706579944;
-    export let event = "YOUR MOTHER";
+    export let nextMatchTime = 1706579944;
+    export let event_key = "2023orwil";
+    export let twitchURL = "https://www.twitch.tv/firstinspires";
 
     let name = "Test";
     let endpoint = "https://fakeendpoint.com";
@@ -29,9 +28,17 @@
 
     let greeting = determine_greeting();
 
-    let scout_names: string[] = fetch()
-    let scout_percents: number[] = [20, 40, 56, 47, 39, 48, 20]
-
+    let scout_names: string[] = [
+        "name",
+        "name",
+        "name",
+        "name",
+        "name",
+        "name",
+        "name",
+        "name",
+    ];
+    let scout_percents: number[] = [20, 40, 56, 47, 39, 48, 20, 30];
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -53,7 +60,7 @@
                 >
             </Content>
             <Trigger>
-                <p class="px-3 text-outline_gray">You are at 2024{event}</p>
+                <p class="px-3 text-outline_gray">You are at {event_key}</p>
             </Trigger>
         </Modal>
     </div>
@@ -72,39 +79,42 @@
                 {/if}
             {/each}
         </div>
-        <div
-            class="flex flex-row w-full content-center justify-around items-end"
-        >
-            <button
-                style="margin-top: 12px"
-                class="w-full"
-                on:click={() => redirect(302, 'https://www.thebluealliance.com/event/2024orsal')}
-            >
-                TheBlueAlliance
-            </button>
-            <button
-                style="margin-left: 0px; margin-top: 12px"
-                class="w-full"
-                on:click={() => redirect(302, 'https://www.statbotics.io/event/2024orsal')}
-            >
-                Statbotics
-            </button>
+        <div class="flex flex-row w-full content-center justify-around items-end">
+            <a href="https://www.thebluealliance.com/event/{event_key}" style="margin-left: 15px; margin-right: 15px;">
+                <button
+                    style="margin-left:0px; width: 100%"
+                >
+                    TheBlueAlliance
+                </button>
+            </a>
+            <a href="https://www.statbotics.io/event/{event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
+                <button
+                    style="width:100%; margin-right: 15px; margin-left: 0px; padding-left: 0px; padding-right: 0px;"
+                >
+                    Statbotics
+                </button>
+            </a>
         </div>
+        <a href="{twitchURL}" style="margin-left: 15px; margin-right: 15px;">
+            <button
+                style="margin-left:0px; width: 100%"
+            >
+                Twitch Stream
+            </button>
+        </a>
         <button
-            style="margin-right: px"
-            on:click={() => redirect(302, 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')}
+            style="padding: 1.5rem"
+            id="Pit-Scounts"
+            on:click={() => goto("/app/pit")}>Pit Scout</button
         >
-            Twitch Stream
-        </button>
-        <button style="padding: 1.5rem" id="Pit-Scounts" on:click={() => goto("/app/pit")}
-            >Pit Scout</button
-        >
-        <button style="padding: 2.5rem" id="Match-Scounts" on:click={() => goto("/app/match")}
-            >Match Scout</button
+        <button
+            style="padding: 2.5rem"
+            id="Match-Scounts"
+            on:click={() => goto("/app/match")}>Match Scout</button
         >
     </div>
     <div>
-        <Navbar page="home"/>
+        <Navbar page="home" />
     </div>
 </main>
 
