@@ -66,14 +66,3 @@
 <div>
   <Navbar page="pit" />
 </div>
-
-<style>
-  #navbar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #f0f0f0; /* Just for visualization */
-    text-align: center;
-  }
-</style>
