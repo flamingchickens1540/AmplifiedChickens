@@ -60,21 +60,10 @@ export type StageEnum = "onstage" | "park" | "not attempted" | "failed"
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"
 
-<<<<<<< HEAD
-export type User = {
-    name: string,
+// Util Structs
 
-}
-=======
 export type ScoutedRobot = {
     number: string
+    scout_name: string
     status: string
 }
-export type Scout = {
-name: string
-admin: boolean
-hasnotifs: boolean
-numscouted: number
-// coopcoins: number
-}
->>>>>>> 26fe9d655d97c722f56e099e09d0a26d94a20b8a

@@ -1,7 +1,9 @@
+use futures::Stream;
+use std::pin::Pin;
 use std::sync::Arc;
+use std::task::{Context, Poll};
 use tokio::sync::Mutex;
-
-
+use tokio::time::Interval;
 
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
@@ -30,6 +32,26 @@ pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
     pub queue: Arc<Mutex<RoboQueue>>,
+    pub ss_events: Arc<Mutex<EventStream>>,
+}
+
+#[derive(Debug)]
+pub struct EventStream {
+    pub events: Vec<TeamMatch>,
+}
+
+impl Stream for EventStream {
+    type Item = TeamMatch;
+
+    fn poll_next(mut self: Pin<&mut EventStream>, cx: &mut Context) -> Poll<Option<TeamMatch>> {
+        let curr = self.events.pop();
+
+        if curr.is_none() {
+            return Poll::Pending;
+        }
+
+        return Poll::Ready(curr);
+    }
 }
 
 /// Scouts: Access codes

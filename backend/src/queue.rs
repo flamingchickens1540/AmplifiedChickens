@@ -1,9 +1,5 @@
-use axum::{
-    extract::{State},
-    http::StatusCode,
-    response::IntoResponse,
-    Form, Json,
-};
+use axum::response::Sse;
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
 
 use serde::{Deserialize, Serialize};
 
@@ -118,6 +114,8 @@ pub async fn set_user_permissions(
     State(state): State<AppState>,
     Json(user_perm): Json<UserPerm>,
 ) -> Result<impl IntoResponse, StatusCode> {
+    // Send through sse here
+    Sse::new();
     match sqlx::query("UPDATE \"Users\" SET is_admin = $1 WHERE id = $2")
         .bind(user_perm.admin)
         .bind(user_perm.id)

@@ -51,10 +51,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         scouts: vec![],
     }));
 
+    let ss_events;
+
     let state = model::AppState {
         db, // Database
         ctx,
         queue,
+        ss_events,
     };
     // configure certificate and private key used by https
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
@@ -90,6 +93,7 @@ fn init_router(state: model::AppState) -> Router {
         * 1024;
 
     Router::new()
+        .route("auth/check", get(auth::check_auth))
         .route("/submit/image/:image", get(upload::image))
         .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
@@ -144,4 +148,3 @@ async fn redirect_http_to_https(ports: Ports) {
         .await
         .unwrap();
 }
-

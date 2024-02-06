@@ -2,6 +2,8 @@ use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
 
 use crate::model::{AppState, TeamEvent, TeamMatch};
 
+pub async fn admin_sse_connect() {}
+
 pub async fn submit_team_match(
     State(state): State<AppState>,
     Form(form): Form<TeamMatch>,

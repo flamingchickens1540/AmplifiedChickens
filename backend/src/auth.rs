@@ -1,6 +1,4 @@
-
-
-use crate::model;
+use crate::model::{self, AppState};
 use axum::{
     extract::{Json, Query, State},
     http::StatusCode,
@@ -8,11 +6,9 @@ use axum::{
 };
 use http::header::{LOCATION, SET_COOKIE};
 
-
-
 use jsonwebtoken::*;
 
-
+use serde::Deserialize;
 use tracing::{error, info};
 
 #[axum::debug_handler]
@@ -162,6 +158,47 @@ pub async fn logout(
         .unwrap();
 
     Ok(response)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AuthRequest {
+    code: String,
+    is_admin: bool,
+}
+
+//
+pub async fn check_auth(
+    State(state): State<AppState>,
+    Json(req): Json<AuthRequest>,
+) -> Result<(), (StatusCode, String)> {
+    let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_code = $1")
+        .bind(req.code)
+        .fetch_optional(&state.db.pool)
+        .await
+    {
+        Ok(user) => match user {
+            Some(val) => val,
+            None => {
+                return Err((
+                    StatusCode::UNAUTHORIZED,
+                    "User does not exist in DB".to_string(),
+                ))
+            }
+        },
+        Err(err) => {
+            error!("ERROR LOOKING USER UP FOR AUTH: {}", err);
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to lookup user".to_string(),
+            ));
+        }
+    };
+
+    if user.is_admin && req.is_admin {
+        return Err((StatusCode::UNAUTHORIZED, "User is not an admin".to_string()));
+    }
+
+    Ok(())
 }
 
 // token_res: (expires_in, access_token)

@@ -1,40 +1,25 @@
 <script lang="ts">
-    export let lastmatch = "qm4"
     import type { Scout } from "$src/lib/types.ts"
-    let robots:Scout[] = [] 
     import { Modal, Content, Trigger } from "sv-popup"
-    robots.push({
-        name: "1540",
-        status: "Complete"
+
+    let team_matches: Scout[] = []
+    let last_match = ""
+    
+    const server_source = new EventSource("https://sse.dev/test")
+
+    server_source.addEventListener("new_team_match", (event) => {
+        var message = JSON.parse(event.data)
+        team_matches.push(message.team_match)
+        last_match = message.team_match.match_key
     })
-    robots.push({
-        name: "254",
-        status: "Complete"
-    })
-    robots.push({
-        name: "1678",
-        status: "Complete"
-    })
-    robots.push({
-        name: "2056",
-        status: "Complete"
-    })
-    robots.push({
-        name: "118",
-        status: "Pending"
-    })
-    robots.push({
-        name: "5920",
-        status: "Not Assigned"
-    })
-    robots = robots.slice(0, 6)
+
 </script>
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">
-<h3>Last Match ({lastmatch})</h3>
-{#each robots as robot}
-{#if robot.status == "Complete"}
+<h3>Last Match ({last_match})</h3>
+{#each team_matches as team_match}
+{#if team_match.status == "Complete"}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
-<h3 class="self-center"> {robot.name}</h3>
+<h3 class="self-center"> {team_match.name}</h3>
 <div class="col-start-5">
     <Modal basic>
         <Content>
@@ -53,9 +38,9 @@
       </Modal>
 </div>
 </div>
-{:else if robot.status == "Pending"}
+{:else if team_match.status == "Pending"}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
-    <h3 class="self-center">{robot.name}</h3>
+    <h3 class="self-center">{team_match.name}</h3>
     <div class="col-start-5">
         <Modal basic>
             <Content>
@@ -76,7 +61,7 @@
     </div>
 {:else}
 <div class="grid rounded grid-cols-20 justify-between content-center" style="background-color: #5C5C5C; margin: 12px">
-    <h3 class="self-center">{robot.name}</h3>
+    <h3 class="self-center">{team_match.name}</h3>
     <div class="col-start-5">
         <Modal basic>
             <Content>
