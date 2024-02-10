@@ -1,8 +1,30 @@
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
-
 use crate::model::{AppState, TeamEvent, TeamMatch};
+use axum::response::sse::{Event, KeepAlive, Sse};
+use axum::{extract::State, http::StatusCode, response::IntoResponse, Form};
+use futures::stream::{self, Stream};
+use futures::StreamExt;
+use std::ops::Deref;
+use std::{convert::Infallible, path::PathBuf, time::Duration};
+use tokio::sync::watch;
+use tokio::time;
+use tokio_stream::wrappers::WatchStream;
+use tracing::info;
 
-pub async fn admin_sse_connect() {}
+pub async fn admin_sse_connect(
+    State(state): State<AppState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    info!("Admin connected to SSE stream");
+
+    let mut upstreams = state.team_match_upstreams.lock().await;
+
+    let (tx, rx) = watch::channel(Ok(Event::default()));
+
+    let rx: WatchStream<Result<Event, Infallible>> = WatchStream::new(rx);
+
+    upstreams.push(tx);
+
+    Sse::new(rx).keep_alive(KeepAlive::default())
+}
 
 pub async fn submit_team_match(
     State(state): State<AppState>,

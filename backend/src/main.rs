@@ -2,21 +2,24 @@ use axum::{
     extract::{DefaultBodyLimit, Host},
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
-    response::Redirect,
+    response::{IntoResponse, Redirect},
     routing::{get, post},
-    BoxError, Router,
+    BoxError, Json, Router,
 };
 
 use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
 use reqwest::Client as ReqwestClient;
-use std::net::SocketAddr;
+use serde_json::json;
 use std::sync::Arc;
+use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
+use tower_http::cors::CorsLayer;
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
+
+use self::model::TeamMatch;
 
 mod auth;
 mod error;
@@ -35,9 +38,6 @@ struct Ports {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let _server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let _server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
-
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
@@ -51,13 +51,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         scouts: vec![],
     }));
 
-    let ss_events;
-
     let state = model::AppState {
         db, // Database
         ctx,
         queue,
-        ss_events,
+        team_match_upstreams: Arc::new(Mutex::new(vec![])),
     };
     // configure certificate and private key used by https
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
@@ -93,14 +91,16 @@ fn init_router(state: model::AppState) -> Router {
         * 1024;
 
     Router::new()
-        .route("auth/check", get(auth::check_auth))
+        .route("/health", get(health))
+        .route("/dummyData", get(dummy_data))
+        .route("/auth/check", get(auth::check_auth))
         .route("/submit/image/:image", get(upload::image))
         .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
-        .route("/admin/getUser/single", get(queue::get_user))
+        //.route("/admin/getUser/single", get(queue::get_user))
         .route("/admin/newMatch/manual", post(queue::new_match_manual))
         .route("/admin/newMatch/auto", post(queue::new_match_auto))
         .route("/admin/newEvent", post(queue::new_event))
@@ -114,7 +114,16 @@ fn init_router(state: model::AppState) -> Router {
         )
 }
 
-#[allow(dead_code)]
+async fn health() -> Result<impl IntoResponse, Infallible> {
+    Ok(())
+}
+
+async fn dummy_data() -> Result<Json<TeamMatch>, Infallible> {
+    let team_match = TeamMatch::default();
+
+    Ok(Json(team_match))
+}
+
 async fn redirect_http_to_https(ports: Ports) {
     fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
         let mut parts = uri.into_parts();

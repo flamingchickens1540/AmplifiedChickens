@@ -27,7 +27,7 @@ export const handle: Handle = async ({ event, resolve }) => {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json",
-            },
+            }, 
             body: JSON.stringify({ code: access_code, is_admin: true }),
         })
 

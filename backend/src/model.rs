@@ -1,9 +1,16 @@
-use futures::Stream;
+use axum::response::sse::Event;
+use futures::sink::Send;
+use futures::{Stream, StreamExt};
+use serde_json::json;
+use std::convert::Infallible;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
+use tokio::sync::watch::{self, Receiver, Sender};
 use tokio::sync::Mutex;
 use tokio::time::Interval;
+use tokio::time::{self, Duration};
+use tokio_stream::wrappers::WatchStream;
 
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
@@ -32,26 +39,7 @@ pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
     pub queue: Arc<Mutex<RoboQueue>>,
-    pub ss_events: Arc<Mutex<EventStream>>,
-}
-
-#[derive(Debug)]
-pub struct EventStream {
-    pub events: Vec<TeamMatch>,
-}
-
-impl Stream for EventStream {
-    type Item = TeamMatch;
-
-    fn poll_next(mut self: Pin<&mut EventStream>, cx: &mut Context) -> Poll<Option<TeamMatch>> {
-        let curr = self.events.pop();
-
-        if curr.is_none() {
-            return Poll::Pending;
-        }
-
-        return Poll::Ready(curr);
-    }
+    pub team_match_upstreams: Arc<Mutex<Vec<Sender<Result<Event, Infallible>>>>>,
 }
 
 /// Scouts: Access codes
@@ -113,7 +101,7 @@ impl RoboQueue {
         id: &String,
         db: &Db,
     ) -> Result<String, (QueueError, String)> {
-        match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE id = $1")
+        match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE access_code = $1")
             .bind(id)
             .fetch_one(&db.pool)
             .await
@@ -206,7 +194,7 @@ pub struct ScoutEventTeam {
     pub scout_id: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
+#[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow, Default)]
 pub struct TeamMatch {
     pub id: Option<i32>,
     pub match_key: String,
@@ -226,7 +214,7 @@ pub struct TeamMatch {
     pub trap_succeed: bool,
     pub trap_missed: bool,
     pub stage: Stage,
-    pub skill: Skill,
+    pub skill: i16,
     pub notes: String,
     pub is_broke: bool,
     pub is_died: bool,
@@ -307,14 +295,10 @@ pub enum Stage {
     Failed,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
-#[sqlx(rename_all = "lowercase")]
-pub enum Skill {
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
+impl Default for Stage {
+    fn default() -> Self {
+        Stage::NotAttempted
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]

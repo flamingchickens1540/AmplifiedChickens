@@ -5,15 +5,12 @@ use serde::{Deserialize, Serialize};
 
 use tracing::error;
 
-use crate::model::{self, AppState, User};
+use crate::model::{self, AppState, Db, User};
 
-pub async fn get_user(
-    State(state): State<AppState>,
-    Json(id): Json<String>,
-) -> Result<Json<User>, StatusCode> {
-    let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE id = $1")
-        .bind(id)
-        .fetch_one(&state.db.pool)
+pub async fn get_user_helper(db: &Db, code: String) -> Result<Json<User>, StatusCode> {
+    let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_code = $1")
+        .bind(code)
+        .fetch_one(&db.pool)
         .await
     {
         Ok(user) => user,
@@ -84,6 +81,7 @@ pub async fn new_match_manual(
 
 #[derive(Serialize, Deserialize)]
 pub struct NewEvent {
+    code: String,
     event_key: String,
     twitch_link: Option<String>,
 }
@@ -93,13 +91,20 @@ pub async fn new_event(
     State(state): State<AppState>,
     Form(event): Form<NewEvent>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let user: User = match get_user_helper(&state.db, event.code).await {
+        Ok(user) => user.0,
+        Err(_) => return Err((StatusCode::UNAUTHORIZED, "User not in DB".to_string())),
+    };
+    if !user.is_admin {
+        return Err((StatusCode::UNAUTHORIZED, "User is not admin".to_string()));
+    }
     match sqlx::query("INSERT INTO \"Events\" (event_key, steam_url) VALUES ($1, $2)")
         .bind(event.event_key)
         .bind(event.twitch_link)
         .execute(&state.db.pool)
         .await
     {
-        Ok(_) => Ok(StatusCode::OK),
+        Ok(_) => Ok(()),
         Err(err) => Err((StatusCode::INTERNAL_SERVER_ERROR, err.to_string())),
     }
 }
@@ -109,13 +114,13 @@ pub struct UserPerm {
     admin: bool,
     id: String,
 }
+
 #[axum::debug_handler]
 pub async fn set_user_permissions(
     State(state): State<AppState>,
     Json(user_perm): Json<UserPerm>,
 ) -> Result<impl IntoResponse, StatusCode> {
     // Send through sse here
-    Sse::new();
     match sqlx::query("UPDATE \"Users\" SET is_admin = $1 WHERE id = $2")
         .bind(user_perm.admin)
         .bind(user_perm.id)
@@ -126,6 +131,7 @@ pub async fn set_user_permissions(
         Err(_err) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
 }
+
 #[axum::debug_handler]
 pub async fn get_finished_matches(
     State(state): State<AppState>,
@@ -164,7 +170,7 @@ pub async fn get_queued_scouts(
                 .await
             {
                 Ok(user) => user.name,
-                Err(_) => return Err(StatusCode::INTERNAL_SERVER_ERROR),
+                Err(_) => return Err(StatusCode::),
             },
         );
     }
@@ -191,6 +197,7 @@ pub async fn get_scouts_and_scouted(
     };
     for scout in scouts.iter() {
         let name = scout.name.clone();
+        // TODO: Figure out how do COUNT commands without macros, because macros check for a db connection and are annoying for dev
         let count: i64 = match sqlx::query!("SELECT COUNT(*) FROM \"Users\" WHERE id = $1", name)
             .fetch_one(&state.db.pool)
             .await
@@ -217,10 +224,10 @@ pub async fn in_queue(State(state): State<AppState>, Json(id): Json<String>) -> 
 #[axum::debug_handler]
 pub async fn queue_user(
     State(state): State<AppState>,
-    Json(id): Json<String>,
+    Json(access_token): Json<String>,
 ) -> Result<(StatusCode, String), (StatusCode, String)> {
     let mut queue = state.queue.lock().await;
-    if queue.scouts.contains(&id) {
+    if queue.scouts.contains(&access_token) {
         error!("Scout already in queue attempted to enter queue");
         return Err((
             StatusCode::BAD_REQUEST,
@@ -228,7 +235,7 @@ pub async fn queue_user(
         ));
     }
 
-    queue.add_scout_auto_assign(id, &state.db).await;
+    queue.add_scout_auto_assign(access_token, &state.db).await;
 
     Ok((StatusCode::OK, "Success".to_string()))
 }
