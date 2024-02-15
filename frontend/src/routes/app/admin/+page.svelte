@@ -5,33 +5,43 @@
     import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte";
     import EventManagement from "$lib/components/AdminDB/EventManagement.svelte";
     import UserManagement from "$lib/components/AdminDB/UserManagement.svelte";
-    
+
     import type { PageData } from "./$types";
     import type { Scout, TeamKey, TeamMatch } from "$lib/types";
+    import { onMount } from "svelte";
 
     export let data: PageData;
 
-    let access_token = data.a_code as string
+    let access_token = data.access_token as string;
 
-    let red_teams: TeamKey[] = []
-    let blue_teams: TeamKey[] = []
+    let red_teams: TeamKey[] = ["frc1", "frc2", "frc3"];
+    let blue_teams: TeamKey[] = ["frc4", "frc5", "frc6"];
 
-    let all_scouts: Scout[] = []
-    let queued_scouts: Scout[] = []
-    let scouted_robots: TeamMatch[] = []
+    let all_scouts: Scout[] = [];
+    let queued_scouts: Scout[] = [];
 
-    console.log(data)
+    let auto_assign: boolean = false;
+
+    let selected_red_scouts: Scout[] = [];
+    let selected_blue_scouts: Scout[] = [];
+    let scouted_robots: TeamMatch[] = [];
+
+    onMount(() => {
+        console.log("mounted") // THIS DOESN'T TRIGGER :-{
+    })
+
+    console.log("past mounting")
+
+    // console.log(data)
 
     function clear_teams() {
-        red_teams = []
-        blue_teams = []
+        red_teams = [];
+        blue_teams = [];
     }
 
     function clear_scouts() {
-        queued_scouts = []
+        queued_scouts = [];
     }
-
-    
 </script>
 
 <div
@@ -39,15 +49,20 @@
     class="grid grid-cols-2 gap-5 overflow-hidden"
 >
     <div class="col-span-1 row-span-1 col-start-1 row-start-1">
-        <QueueMatch bind:red_teams={red_teams} bind:blue_teams={blue_teams} access_token={access_token}/>
+        <QueueMatch
+            bind:red_teams
+            bind:blue_teams
+            bind:auto_assign
+            {access_token}
+        />
     </div>
 
     <div class="grid grid-cols-2 grid-rows-1 gap-5">
         <div>
-            <LastMatch bind:scouted_robots={scouted_robots}/>
+            <LastMatch bind:scouted_robots />
         </div>
         <div>
-            <QueuedScouts bind:queued={queued_scouts}/>
+            <QueuedScouts bind:queued={queued_scouts} />
         </div>
     </div>
 
@@ -56,11 +71,15 @@
             <NumberScouted />
         </div>
         <div class="col-span-3">
-            <EventManagement on:clear_scouts={clear_scouts} on:clear_teams={clear_teams} access_token={access_token}/>
+            <EventManagement
+                on:clear_scouts={clear_scouts}
+                on:clear_teams={clear_teams}
+                {access_token}
+            />
         </div>
     </div>
 
     <div>
-        <UserManagement bind:scouts={all_scouts} access_token={access_token}/>
+        <UserManagement bind:scouts={all_scouts} {access_token} />
     </div>
 </div>

@@ -1,9 +1,11 @@
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
-    const a_code = cookies.get('access_token');
+    const access_token = cookies.get('access_token')
+    
+    console.log("ADMIN") // THIS TRIGGERS
 
     return {
-        a_code
-    };
+        access_token
+    }
 }) satisfies PageServerLoad;

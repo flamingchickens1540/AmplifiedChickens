@@ -285,8 +285,8 @@ pub struct Image {
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]
 pub struct EventState {
     pub event_key: String,
-    pub next_match: String,
-    pub last_match: String,
+    pub next_match: Option<String>,
+    pub last_match: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]

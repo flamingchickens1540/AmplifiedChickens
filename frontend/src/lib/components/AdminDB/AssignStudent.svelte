@@ -4,7 +4,7 @@
 
     export let color: string
     export let teams: string[] = []
-    export let selected: Scout[] = []
+    export const selected: Scout[] = []
     export let queued: Scout[] = []
 
     let scout_opts: string[] = []

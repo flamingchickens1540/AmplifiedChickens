@@ -1,13 +1,15 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; 
 
 import { type Handle, redirect, json } from '@sveltejs/kit'
 
 export const handle: Handle = async ({ event, resolve }) => {
 
-    console.log(event.cookies.getAll());
-    console.log(event.url.pathname)
+    // console.log(event.cookies.getAll());
+    // console.log(event.url.pathname)
 
     const access_token = event.cookies.get('access_token')
+
+    let auth_res = undefined
 
     if (access_token == undefined) {
         if (event.url.pathname == "/") {
@@ -24,7 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     if (event.url.pathname.startsWith('/app/admin')) {
         console.log("Checking admin auth")
 
-        let auth_res = await fetch("https://localhost:3007/auth/check", {
+        auth_res = await fetch("https://localhost:3007/auth/check", {
             method: "POST",
             headers: {
                 Accept: "application/json",
@@ -33,16 +35,16 @@ export const handle: Handle = async ({ event, resolve }) => {
             body: JSON.stringify({ access_token: access_token, is_admin: true }),
         })
 
-        console.log(auth_res)
-
         if (auth_res.status == 200) {
             return await resolve(event)
         }
 
         return json({ status: 401, body: 'Unauthorized Request: Admin' })
-    }
+    } else if (event.url.pathname.startsWith('/app')) {
+        
+        console.log("Checking auth")
 
-    let auth_res = await fetch("https://localhost:3007/auth/check", {
+        auth_res = await fetch("https://localhost:3007/auth/check", {
         method: "POST",
         headers: {
             Accept: "application/json",
@@ -50,11 +52,6 @@ export const handle: Handle = async ({ event, resolve }) => {
         },
         body: JSON.stringify({ access_token: access_token, is_admin: false }),
     })
-
-    console.log(auth_res)
-
-    if (event.url.pathname.startsWith('/app')) {
-        console.log("Checking auth")
 
         console.log(access_token)
 
@@ -67,8 +64,11 @@ export const handle: Handle = async ({ event, resolve }) => {
         }
     }
 
-    if (event.url.pathname == "/" && auth_res.status == 200) throw redirect(302, "/app/home");
-    
+    console.log(auth_res)
+    if (auth_res != undefined) {
+        if (event.url.pathname == "/" && auth_res?.status == 200) throw redirect(302, "/app/home");
+    }
+
     return await resolve(event)
 }
 

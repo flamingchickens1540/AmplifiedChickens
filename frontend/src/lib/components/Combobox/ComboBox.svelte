@@ -3,10 +3,10 @@
 
     export let disabled = undefined;
     export let error = undefined;
-    export let expand = true;
+    export const expand = true;
     export let id = uid();
     export let label = "";
-    export let loading = false;
+    export const loading = false;
     export let name;
     export let options = [];
     export let placeholder = "Scout Name";
