@@ -7,29 +7,28 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.79"
-axum = { version = "0.7.2", features = ["ws", "multipart", "macros"] }
+async-stream = "0.3.5"
+axum = { version = "0.7.2", features = ["ws", "multipart", "macros", "tokio"] }
 axum-extra = { version = "0.9.1", features = ["cookie-private"] }
-axum-login = "0.12.0"
 axum-server = { version = "0.6.0", features = ["tls-rustls"] }
-bimap = { version = "0.6.3", features = ["serde"] }
 chrono = { version = "0.4.31", features = ["clock"] }
-cookie = "0.18.0"
 dotenv = "0.15.0"
-hyper = "1.1.0"
-hyper-tls = "0.6.0"
+futures = "0.3.30"
+futures-core = "0.3.30"
+http = "1.0.0"
+image = "0.24.8"
+jsonwebtoken = "9.2.0"
 oauth2 = "4.4.2"
+postgres = "0.19.7"
 reqwest = "0.11.23"
 rust-s3 = "0.33.0"
 serde = "1.0.195"
 serde_json = "1.0.111"
-shuttle-secrets = "0.36.0"
-shuttle-shared-db = { version = "0.36.0", features = ["postgres", "sqlx"] }
-shuttle-static-folder = "0.28.0"
-socketioxide = { version = "0.10.0", features = ["state"] }
-sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "macros", "chrono"] }
+sqlx = { version = "0.7.3", features = ["runtime-tokio-native-tls", "macros", "chrono", "uuid", "postgres"] }
 tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
+tokio-stream = { version = "0.1.14", features = ["sync"] }
 tower = "0.4.13"
 tower-http = { version = "0.5.0", features = ["fs", "trace", "cors"] }
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-uuid = "1.6.1"
+tracing-subscriber = "0.3.18"
+uuid = { version = "1.6.1", features = ["v4"] }

@@ -1,38 +1,85 @@
 <script lang="ts">
-import QueueMatch from "$lib/components/AdminDB/QueueMatch.svelte";
-import LastMatch from "$lib/components/AdminDB/LastMatch.svelte"
-import QueuedScouts from "$lib/components/AdminDB/QueuedScouts.svelte"
-import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte"
-import EventManagement from "$lib/components/AdminDB/EventManagement.svelte"
-import UserManagement from "$lib/components/AdminDB/UserManagement.svelte"
+    import QueueMatch from "$lib/components/AdminDB/QueueMatch.svelte";
+    import LastMatch from "$lib/components/AdminDB/LastMatch.svelte";
+    import QueuedScouts from "$lib/components/AdminDB/QueuedScouts.svelte";
+    import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte";
+    import EventManagement from "$lib/components/AdminDB/EventManagement.svelte";
+    import UserManagement from "$lib/components/AdminDB/UserManagement.svelte";
+
+    import type { PageData } from "./$types";
+    import type { Scout, TeamKey, TeamMatch } from "$lib/types";
+    import { onMount } from "svelte";
+
+    export let data: PageData;
+
+    let access_token = data.access_token as string;
+
+    let red_teams: TeamKey[] = ["frc1", "frc2", "frc3"];
+    let blue_teams: TeamKey[] = ["frc4", "frc5", "frc6"];
+
+    let all_scouts: Scout[] = [];
+    let queued_scouts: Scout[] = [];
+
+    let auto_assign: boolean = false;
+
+    let selected_red_scouts: Scout[] = [];
+    let selected_blue_scouts: Scout[] = [];
+    let scouted_robots: TeamMatch[] = [];
+
+    onMount(() => {
+        console.log("mounted") // THIS DOESN'T TRIGGER :-{
+    })
+
+    console.log("past mounting")
+
+    // console.log(data)
+
+    function clear_teams() {
+        red_teams = [];
+        blue_teams = [];
+    }
+
+    function clear_scouts() {
+        queued_scouts = [];
+    }
 </script>
 
-<div style="background-color: #1C1C1C; padding:3rem" class="grid grid-cols-2 gap-5">
-  <div class="col-span-1 row-span-1 col-start-1 row-start-1">
-  <QueueMatch/>
-</div>
+<div
+    style="background-color: #1C1C1C; padding:2rem; overflow: hidden;"
+    class="grid grid-cols-2 gap-5 overflow-hidden"
+>
+    <div class="col-span-1 row-span-1 col-start-1 row-start-1">
+        <QueueMatch
+            bind:red_teams
+            bind:blue_teams
+            bind:auto_assign
+            {access_token}
+        />
+    </div>
 
-<div class="grid grid-cols-2 grid-rows-1 gap-5">
-<div>
-<LastMatch/>
-</div>
-<div>
-<QueuedScouts/>
-</div>
-</div>
+    <div class="grid grid-cols-2 grid-rows-1 gap-5">
+        <div>
+            <LastMatch bind:scouted_robots />
+        </div>
+        <div>
+            <QueuedScouts bind:queued={queued_scouts} />
+        </div>
+    </div>
 
-<div class="grid grid-cols-5 gap-5">
-<div class="col-span-2">
-<NumberScouted/>
-</div>
-<div class="col-span-3">
-<EventManagement/>
-</div>
-</div>
+    <div class="grid grid-cols-5 gap-5">
+        <div class="col-span-2">
+            <NumberScouted />
+        </div>
+        <div class="col-span-3">
+            <EventManagement
+                on:clear_scouts={clear_scouts}
+                on:clear_teams={clear_teams}
+                {access_token}
+            />
+        </div>
+    </div>
 
-<div>
-<UserManagement/>
-</div>
-
-
+    <div>
+        <UserManagement bind:scouts={all_scouts} {access_token} />
+    </div>
 </div>
