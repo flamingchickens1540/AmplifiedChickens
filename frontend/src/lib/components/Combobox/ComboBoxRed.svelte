@@ -2,6 +2,7 @@
 	import Context from "./Context.svelte"
 	import ComboBox from "./ComboBox.svelte"
 	export let value = ""
+	export let color = ""
   const getFlag = code => String.fromCodePoint(...[...code.toUpperCase()].map(char => 127397 + char.charCodeAt()))
 </script>
 
@@ -10,7 +11,7 @@
 	<ComboBox
 		name="Assignment"
 		bind:value = {value}
-		color="#ED1C24"
+		color={color}
 		options={[
     	{ text: "Auto-Assign", value: "auto-assign" },
     	{ text: "Addi Dauler", value: "Addi Dauler" },

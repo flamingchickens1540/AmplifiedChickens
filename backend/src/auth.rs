@@ -83,42 +83,61 @@ pub async fn slack_callback(
     info!("Access Token: {}", access_token);
     let _max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
 
-    let profile = model::User::new(sub, name.to_string(), false, false, None, None, None);
+    let profile = model::User::new(
+        sub.clone(),
+        name.to_string(),
+        false,
+        false,
+        None,
+        None,
+        None,
+        access_token.clone(),
+    );
+
+    let current_event_key =
+        match sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
+            .fetch_one(&state.db.pool)
+            .await
+        {
+            Ok(state) => state.event_key,
+            Err(_) => {
+                error!("Failed to get current event key");
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to get current event key".to_string(),
+                ));
+            }
+        };
 
     let _id = insert_user(profile.clone(), state.db).await?;
 
-    // TODO: Remove redundency
-    let response = if profile.is_admin {
-        axum::http::Response::builder()
-            .status(StatusCode::SEE_OTHER)
-            .header(LOCATION, "http://localhost:5173/app/home")
-            .header(
-                SET_COOKIE,
-                format!(
-                    "access_code={}; Path=/; SameSite=None; Secure",
-                    access_token
-                ),
-            )
-            .header(
-                SET_COOKIE,
-                "is_admin=true; Path=/; SameSite=None; Secure".to_string(),
-            )
-            .body("Redirecting...".to_string())
-            .unwrap()
-    } else {
-        axum::http::Response::builder()
-            .status(StatusCode::SEE_OTHER)
-            .header(LOCATION, "http://localhost:5173/app/home")
-            .header(
-                SET_COOKIE,
-                format!(
-                    "access_code={}; Path=/; SameSite=None; Secure",
-                    access_token
-                ),
-            )
-            .body("Redirecting...".to_string())
-            .unwrap()
-    };
+    Ok(axum::http::Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(LOCATION, "http://localhost:5173/app/home")
+        .header(
+            SET_COOKIE,
+            format!(
+                "access_token={}; Path=/; SameSite=None; Secure",
+                access_token
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!("scout_name={}; Path=/; SameSite=None; Secure", name),
+        )
+        .header(
+            SET_COOKIE,
+            format!("scout_id={}; Path=/; SameSite=None; Secure", sub),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "current_event_key={}; Path=/; SameSite=None; Secure",
+                current_event_key
+            ),
+        )
+        .body("Redirecting...".to_string())
+        .unwrap())
 
     //let mut response = axum::http::Response::new(axum::http::StatusCode::OK);
     //response.headers_mut().insert(
@@ -126,15 +145,14 @@ pub async fn slack_callback(
     //   axum::http::HeaderValue::from_str(&format!("user_data={}; Path=/; HttpOnly", profile.id))
     //       .unwrap(),
     //);
-    Ok(response)
 }
 
 pub async fn logout(
     State(state): State<model::AppState>,
-    Json(id): Json<String>,
+    Json(access_token): Json<String>,
 ) -> Result<impl IntoResponse, (String, StatusCode)> {
-    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE id = $1 LIMIT 1")
-        .bind(id)
+    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE acess_token = $1 LIMIT 1")
+        .bind(access_token)
         .execute(&state.db.pool)
         .await
     {
@@ -151,7 +169,25 @@ pub async fn logout(
         .header(
             SET_COOKIE,
             format!(
-                "access_code=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+                "access_token=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "scout_name=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "scout_id=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "current_event_key=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
             ),
         )
         .body("Redirecting...".to_string())
@@ -162,7 +198,7 @@ pub async fn logout(
 
 #[derive(Debug, Deserialize)]
 pub struct AuthRequest {
-    code: String,
+    access_token: String,
     is_admin: bool,
 }
 
@@ -171,18 +207,29 @@ pub async fn check_auth(
     State(state): State<AppState>,
     Json(req): Json<AuthRequest>,
 ) -> Result<(), (StatusCode, String)> {
-    let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_code = $1")
-        .bind(req.code)
+    info!("Check auth");
+    info!("Access Token: {}", req.access_token);
+
+    let users = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
+        .fetch_all(&state.db.pool)
+        .await
+        .expect("Some users to exist");
+
+    info!("All Users: {:?}", users);
+
+    let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
+        .bind(format!("\"{}\"", req.access_token))
         .fetch_optional(&state.db.pool)
         .await
     {
         Ok(user) => match user {
             Some(val) => val,
             None => {
+                error!("User is not in DB");
                 return Err((
                     StatusCode::UNAUTHORIZED,
                     "User does not exist in DB".to_string(),
-                ))
+                ));
             }
         },
         Err(err) => {
@@ -194,7 +241,8 @@ pub async fn check_auth(
         }
     };
 
-    if user.is_admin && req.is_admin {
+    if !user.is_admin && req.is_admin {
+        error!("Not Admin User attepted to access admin route");
         return Err((StatusCode::UNAUTHORIZED, "User is not an admin".to_string()));
     }
 
@@ -205,9 +253,10 @@ pub async fn check_auth(
 async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusCode, String)> {
     //let max_age: i64 = chrono::Local::now().timestamp_millis() * 100 + secs;
     //cookie.set_max_age(max_age);
+    info!("New user\n{:?}", profile);
 
     if let Err(e) =
-        sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth, access_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
             .bind(profile.is_notify)
@@ -215,6 +264,7 @@ async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusC
             .bind(profile.endpoint)
             .bind(profile.p256dh)
             .bind(profile.auth)
+            .bind(profile.access_token)
             .execute(&db.pool)
             .await
     {
@@ -235,12 +285,10 @@ async fn get_user(access_token: String, db: &model::Db) -> Result<model::User, R
     //   return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
     //};
 
-    let res = match sqlx::query_as::<_, model::User>(
-        "SELECT * FROM \"Users\" WHERE access_token EQUALS $1",
-    )
-    .bind(access_token)
-    .fetch_one(&(db.pool))
-    .await
+    let res = match sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\" WHERE auth = $1")
+        .bind(access_token)
+        .fetch_one(&(db.pool))
+        .await
     {
         Ok(res) => res,
         Err(e) => {

@@ -5,17 +5,16 @@
     import Navbar from "$lib/components/Navbar.svelte";
     import Pie from "$lib/components/Pie.svelte";
     import { goto } from "$app/navigation";
+    import { onMount } from "svelte";
+    import { current_event_key } from "$lib/stores/homeStores";
 
     export let data: PageData;
     export let nextMatchTime = 1706579944;
-    export let event_key = "2023orwil";
     export let twitchURL = "https://www.twitch.tv/firstinspires";
 
-    let name = "Test";
-    let endpoint = "https://fakeendpoint.com";
-    let p256dh = "bladadada-dadadaaaaa";
-    let auth = "authkey-fakebutnotreal";
-    let inconspicuousstring = `{"endpoint":"${endpoint}","keys":{"p256dh":"${p256dh}","auth":"${auth}"}}`;
+    let name = data.scout_name;
+
+    current_event_key.set(data.current_event_key?.toString() || "2024orore");
 
     function determine_greeting(): string {
         const currentTime = new Date().getHours();
@@ -26,10 +25,33 @@
         }
     }
 
+    async function get_scout_percents(): Promise<readonly [string[], number[]]> {
+        let res = await fetch("https://localhost:3007/admin/users/get/all", {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            }
+        })
+
+        console.log(res)
+
+        return res.json()
+    }
+
     let greeting = determine_greeting();
 
-    let scout_names: string[] = ["Crow", "Sienna", "Azalea", "Rex", "Blaze", "Charlie", "Fin", "Jack", "Zach"]
-    let scout_percents: number[] = [20, 40, 56, 47, 39, 48, 20]
+    let scout_names: string[] = []
+    let scout_percents: number[] = []
+
+    onMount(async () => {
+        let result = await get_scout_percents()
+
+        console.log(result)
+
+        scout_names = result[0]
+        scout_percents = result[1]
+    })
 
 </script>
 
@@ -48,11 +70,11 @@
                 <SubmitButton text="Subscribe!" />
                 <code
                     style="font-size: 20px; font-family: poppins-medium; color: white; overflow: wrap;"
-                    >{inconspicuousstring}</code
+                    >{data}</code
                 >
             </Content>
             <Trigger>
-                <p class="px-3 text-outline_gray">You are at {event_key}</p>
+                <p class="px-3 text-outline_gray">You are at {$current_event_key}</p>
             </Trigger>
         </Modal>
     </div>
@@ -72,14 +94,14 @@
             {/each}
         </div>
         <div class="flex flex-row w-full content-center justify-around items-end">
-            <a href="https://www.thebluealliance.com/event/{event_key}" style="margin-left: 15px; margin-right: 15px;">
+            <a href="https://www.thebluealliance.com/event/{current_event_key}" style="margin-left: 15px; margin-right: 15px;">
                 <button
                     style="margin-left:0px; width: 100%"
                 >
                     TheBlueAlliance
                 </button>
             </a>
-            <a href="https://www.statbotics.io/event/{event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
+            <a href="https://www.statbotics.io/event/{current_event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
                 <button
                     style="width:100%; margin-right: 15px; margin-left: 0px; padding-left: 0px; padding-right: 0px;"
                 >

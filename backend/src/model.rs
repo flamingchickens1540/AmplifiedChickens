@@ -101,7 +101,7 @@ impl RoboQueue {
         id: &String,
         db: &Db,
     ) -> Result<String, (QueueError, String)> {
-        match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE access_code = $1")
+        match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE access_token = $1")
             .bind(id)
             .fetch_one(&db.pool)
             .await
@@ -150,6 +150,7 @@ pub struct User {
     pub endpoint: Option<String>,
     pub p256dh: Option<String>,
     pub auth: Option<String>,
+    pub access_token: String,
 }
 
 impl User {
@@ -161,6 +162,7 @@ impl User {
         endpoint: Option<String>,
         p256dh: Option<String>,
         auth: Option<String>,
+        access_token: String,
     ) -> Self {
         User {
             id,
@@ -170,6 +172,7 @@ impl User {
             endpoint,
             p256dh,
             auth,
+            access_token,
         }
     }
 }

@@ -89,11 +89,11 @@ fn init_router(state: model::AppState) -> Router {
         .unwrap_or(50)
         * 1024
         * 1024;
-
+    // post for json data, any request involving sending an access code should be such
     Router::new()
         .route("/health", get(health))
         .route("/dummyData", get(dummy_data))
-        .route("/auth/check", get(auth::check_auth))
+        .route("/auth/check", post(auth::check_auth))
         .route("/submit/image/:image", get(upload::image))
         .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
@@ -101,13 +101,22 @@ fn init_router(state: model::AppState) -> Router {
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
         //.route("/admin/getUser/single", get(queue::get_user))
-        .route("/admin/newMatch/manual", post(queue::new_match_manual))
-        .route("/admin/newMatch/auto", post(queue::new_match_auto))
-        .route("/admin/newEvent", post(queue::new_event))
-        .route("/admin/getUser/all", get(queue::get_scouts_and_scouted))
-        .route("/admin/getUser/queued", get(queue::get_queued_scouts))
-        .route("/scout/inQueue", get(queue::in_queue))
-        .route("/scout/queueUser", post(queue::queue_user))
+        .route("/admin/new/match/manual", post(queue::new_match_manual))
+        .route("/admin/new/match/auto", post(queue::new_match_auto))
+        .route("/admin/new/event", post(queue::new_event))
+        .route(
+            "/admin/users/setPermissions",
+            post(queue::set_user_permissions),
+        )
+        .route(
+            "/admin/sse/lastMatchStream",
+            post(submit::admin_sse_connect),
+        )
+        .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
+        .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
+        .route("/scout/inQueue", post(queue::in_queue)) // tested;
+        .route("/scout/queue", post(queue::queue_user)) // tested
+        .route("/scout/dequeue", post(queue::dequeue_user)) // tested
         .with_state(state)
         .layer(
             tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy

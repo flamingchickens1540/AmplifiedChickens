@@ -1,5 +1,19 @@
+<script lang="ts">
+    import type { PageData } from "./$types";
+    import { goto } from "$app/navigation";
+    import { redirect } from "@sveltejs/kit";
+
+    export let data: PageData;
+
+    if (data.a_code) {
+        // goto("/app/home")
+        // redirect(302, "/app/home")
+        console.log("a code yay")
+    }
+</script>
+
 <center>
-    <img src="/logo.png" />
+    <!-- <img src="/logo.png" /> -->
     <h2>Welcome</h2>
     <h3>to Amplified Chickens</h3>
     <a

@@ -1,10 +1,19 @@
+export type Scout = {
+    name: string,
+    admin: boolean,
+    noti: boolean
+    status: MatchStatus
+}
+
+export type MatchStatus = "complete" | "pending" | "not_started"
+
 export type TeamKey = `frc${number}`
 
 export type MatchKey = `${EventKey}_${'qm' | 'qf' | 'sf' | 'f'}${number}`
 
 export type EventKey = `${number}${string}`
 
-export type TeamMatch = {
+export type TeamMatchData = {
     match_key: MatchKey
     team_key: TeamKey
     is_fielded: boolean
@@ -62,7 +71,7 @@ export type DrivetrainEnum = "swerve" | "tank" | "other"
 
 // Util Structs
 
-export type ScoutedRobot = {
+export type TeamMatch = {
     number: string
     scout_name: string
     status: string
