@@ -1,9 +1,9 @@
 <script lang="ts">
   import Carousel from "$lib/components/Carousel.svelte"
   import Homepage from "$lib/components/MatchScoutHomepage.svelte"
-  let queued = false
+  let queued = true
   export let selected = true
-  export let started = false
+  export let started = true
 </script>
 {#if queued == true && selected == true && started == true}
 <Carousel/>

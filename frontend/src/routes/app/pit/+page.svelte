@@ -1,5 +1,6 @@
 <script lang="ts">
   import TextInput from "$lib/components/TextInput.svelte";
+  import NumberInput from "$lib/components/NumberInput.svelte";
   import Toggle from "$lib/components/Toggle.svelte";
   import Threeoption from "$lib/components/Threeoption.svelte";
   import Rating from "$lib/components/Rating.svelte";
@@ -9,29 +10,25 @@
   import Navbar from "$lib/components/Navbar.svelte";
   import ImageUpload from "$lib/components/ImageUpload.svelte";
   import { Modal, Content, Trigger } from "sv-popup";
+  import {pit} from '$lib/stores/pitStores.ts';
   let teamnumber = "";
-  let width = "";
-  let height = "";
-  let weight = "";
-  let wheredrive = "";
+  let width: Number
+  let height: Number
+  let weight: Number
   let drivetrain = "";
   let intake = "";
-  let chute = false;
-  let ground = false;
-  let polish = 3;
-  let notes = "";
   if (intake == "both") {
-    chute = true;
-    ground = true;
-    chute = chute;
-    ground = ground;
+    $pit.is_ground_intake = true
+    $pit.is_chute_intake = true
   } else if (intake == "Ground") {
-    ground = true;
-    ground = ground;
+    $pit.is_ground_intake = true
+    $pit.is_chute_intake = false
   } else {
-    chute = true;
-    chute = chute;
+    $pit.is_ground_intake = false
+    $pit.is_chute_intake = true
   }
+  $: $pit.drivetrain = drivetrain.toLocaleLowerCase()
+  $: $pit.team_key = "frc"+teamnumber
 </script>
 
 <Modal>
@@ -48,10 +45,10 @@
   </Trigger>
 </Modal>
 <TextInput name="Team Number" bind:value={teamnumber} />
-<TextInput name="Width" bind:value={width} />
-<TextInput name="Length" bind:value={height} />
-<TextInput name="Weight" bind:value={weight} />
-<Toggle text1="Under Stage" text2="Around Stage" bind:value={wheredrive} />
+<NumberInput name="Width (ft)" bind:value={$pit.width} />
+<NumberInput name="Length (ft)" bind:value={$pit.length} />
+<NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
+<Toggle text1="Under Stage" text2="Around Stage" bind:buttonon={$pit.is_short} />
 <Threeoption
   text1="Swerve"
   text2="Tank" 
@@ -59,8 +56,8 @@
   bind:value={drivetrain}
 />
 <Threeoption text1="Chute" text2="Ground" text3="Both" bind:value={intake} />
-<Rating name="Robot Polish" bind:value={polish} />
-<Textarea bind:value={notes} />
+<Rating name="Robot Polish" bind:value={$pit.polish} />
+<Textarea bind:value={$pit.notes} />
 <ImageUpload />
 <div id="navbar">
   <Navbar green2/>

@@ -1,15 +1,17 @@
-<script>
+<script lang="ts">
   export let name = "";
-  export let value = 0;
+  export let value: Number
 </script>
 
 <!-- CREDIT: https://play.tailwindcss.com/asmAkefxLr -->
-<div class="relative m-4 max-w-[fit-content] group">
+<div class="relative m-4 group">
   <input
     type="number"
     bind:value
-    class="outline-none px-3 py-3 peer text-text_white bg-bg_gray"
+    class="outline-none px-3 py-3 peer text-text_white"
+    style="background-color: #353839;"
     placeholder=" "
+
   />
 
   <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -38,3 +40,9 @@
     >
   </fieldset>
 </div>
+
+<style>
+  input{
+    width: 100%;
+  }
+</style>

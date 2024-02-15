@@ -1,5 +1,5 @@
 <script lang="ts">
-    let buttonon = true;
+    export let buttonon = true;
     export let text1 = "Text1";
     export let text2 = "Text2";
     export let value = text1;

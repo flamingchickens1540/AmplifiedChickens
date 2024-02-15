@@ -9,7 +9,7 @@
   import Pie from "$lib/components/Pie.svelte";
   export let clicked = false;
   import { Modal, Content, Trigger } from "sv-popup";
-  export let selected = false;
+  export let selected = true;
   import Navbar from "$lib/components/Navbar.svelte";
   let percents = [
     ["Name", 20],
@@ -59,7 +59,7 @@
 </script>
 
   <div class="grid content-end pt-10">
-    <h1 class="px-3 text-text_white pt-10">The next match starts in:</h1>
+    <h1 class="px-3 text-text_white">The next match starts in:</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
       {minutes}
       {timeuntilmatch <= 60
@@ -124,7 +124,7 @@
       </center>
     </div>
   {:else if clicked == true}
-  <div class="mains">
+  <div style="padding-bottom: 5rem;" class="mains">
     <center>
       <button
         style="padding: 2.8rem"
@@ -137,10 +137,10 @@
   </div>
   {:else}
     <!-- if queue is full -->
-    <div class="mains">
+    <div style="padding-bottom: 5rem;" class="mains">
       <center>
         <button
-          style="padding: 2.5rem; padding-left: 4.5rem; padding-right:4.5rem"
+          style="padding: 2.5rem; padding-left: 4.5rem; padding-right:4.5rem; "
           id="Match-Scountss"
         >
           Queue Full
@@ -183,11 +183,11 @@
   }
   #Match-Scounts {
     @apply text-navbar_black bg-cresc_green py-5 font-semibold;
-    font-size: 52px;
+    font-size: 46px;
   }
   #Match-Scouts {
     @apply text-navbar_black  py-5 font-semibold;
-    font-size: 44px;
+    font-size: 39px;
     background-color: #ed1c24;
   }
   #Match-Scountss {
@@ -197,8 +197,8 @@
     color: #1c1c1c;
   }
   .mains {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
   }
   h3 {
     margin: 17px;

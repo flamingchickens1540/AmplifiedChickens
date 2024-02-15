@@ -2,6 +2,7 @@
     import Header from "$lib/components/Header.svelte"
     import Position from "$lib/components/Toggle.svelte"
     import Threeoption from "$lib/components/Where.svelte"
+    import { match_data } from '$lib/stores/matchStores.ts';
 
     let location = ""
     let fieldedstring = ""
@@ -13,6 +14,10 @@
     $: if (fieldedstring == "Fielded"){
         fielded = true
         fielded = fielded
+    }
+    $: {
+        $match_data.is_fielded = fielded
+        $match_data.location = location
     }
     
 
