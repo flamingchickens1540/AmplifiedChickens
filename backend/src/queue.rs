@@ -65,7 +65,7 @@ pub async fn new_match_auto(
 }
 
 pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (StatusCode, String)> {
-    let code: String = match headers.get("x-access-code") {
+    let code: String = match headers.get("x-access-token") {
         Some(code) => code
             .to_str()
             .expect("Header was not valid UTF-8")
@@ -330,4 +330,3 @@ pub async fn dequeue_user(
 
     Ok("User removed from queue".to_string())
 }
-

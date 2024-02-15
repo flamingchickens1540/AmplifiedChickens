@@ -49,25 +49,6 @@
         })
         console.log("Load teams: " + res)
     }
-
-    // async function refresh_tba() {
-    //     let cookie = localStorage.get("access_token")
-    //     let opts = {
-    //         method: "POST",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             "x-access-token": cookie.value
-    //             // 'Content-Type': 'application/x-www-form-urlencoded',
-    //         },
-    //         body: JSON.stringify(event_name), // body data type must match "Content-Type" header
-    //     }
-    //     let res = await fetch("https://localhost:3007/admin/refreshTBA", opts)
-    //     if (res.ok) {
-    //         console.log("TBA refreshed")
-    //     } else {
-    //         console.log("TBA not refreshed")
-    //     }
-    // }
 </script>
 
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">

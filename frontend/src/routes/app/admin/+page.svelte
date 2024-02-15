@@ -5,7 +5,7 @@
     import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte";
     import EventManagement from "$lib/components/AdminDB/EventManagement.svelte";
     import UserManagement from "$lib/components/AdminDB/UserManagement.svelte";
-
+    
     import type { PageData } from "./$types";
     import type { Scout, TeamKey, TeamMatch } from "$lib/types";
 
@@ -13,8 +13,8 @@
 
     let access_token = data.a_code as string
 
-    let red_teams: TeamKey[] = [];
-    let blue_teams: TeamKey[] = [];
+    let red_teams: TeamKey[] = []
+    let blue_teams: TeamKey[] = []
 
     let all_scouts: Scout[] = []
     let queued_scouts: Scout[] = []
@@ -39,7 +39,7 @@
     class="grid grid-cols-2 gap-5 overflow-hidden"
 >
     <div class="col-span-1 row-span-1 col-start-1 row-start-1">
-        <QueueMatch bind:red_teams={red_teams} bind:blue_teams={blue_teams} />
+        <QueueMatch bind:red_teams={red_teams} bind:blue_teams={blue_teams} access_token={access_token}/>
     </div>
 
     <div class="grid grid-cols-2 grid-rows-1 gap-5">

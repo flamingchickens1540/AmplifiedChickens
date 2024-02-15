@@ -1,20 +1,24 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
+    import type { Scout } from "$lib/types";
 
-    export let red_teams: string[] = [];
-    export let blue_teams: string[] = [];
+    export let red_teams: string[] = []
+    export let blue_teams: string[] = []
 
-    export let blue_scouts: string[] = [];
-    export let red_scouts: string[] = [];
+    export let blue_scouts: Scout[] = []
+    export let red_scouts: Scout[] = []
 
     export let match_key = ""
+    export let queued_scouts: Scout[] = []
+
+    export let access_token = ""
 
     async function auto_populate() {
         let res = await fetch(
             `https://www.thebluealliance.com/api/v3/match/${match_key}`,
             {
                 // FIXME: DO NOT COMMIT API KEY
-                headers: { "X-TBA-Auth-Key": "N4U95xQAy80xNrlc6ZEEAM8bKCCimCgKTckEG8zVQViQomM3GpZwVQ8qhtwWsBqc" },
+                headers: { "X-TBA-Auth-Key": "" },
             },
         );
         let match = await res.json();
@@ -25,7 +29,22 @@
     }
 
     async function queue_match() {
-        let res = await fetch("https://localhost:3007/")
+        let res = await fetch("https://localhost:3007/admin/new/match/auto", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                "x-access-token": access_token
+            },
+            body: JSON.stringify(red_teams.concat(blue_teams)),
+        })
+
+        console.log(res)
+
+        red_teams = []
+        blue_teams = []
+        blue_scouts = []
+        red_scouts = []
     }
 </script>
 
@@ -42,6 +61,7 @@
             <AssignStudent
                 bind:teams={red_teams}
                 bind:selected={red_scouts}
+                bind:queued={queued_scouts}
                 color="#ED1C24"
             />
         </div>
@@ -50,6 +70,7 @@
             <AssignStudent
                 bind:teams={blue_teams}
                 bind:selected={blue_scouts}
+                bind:queued={queued_scouts}
                 color="#0083E6"
             />
         </div>
