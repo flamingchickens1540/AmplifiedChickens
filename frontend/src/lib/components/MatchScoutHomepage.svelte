@@ -5,11 +5,19 @@
   export let rteam1 = 5920;
   export let rteam2 = 5920;
   export let rteam3 = 5920;
+<<<<<<< HEAD
   import Game from "$lib/components/Lottery.svelte";
   import Pie from "$lib/components/Pie.svelte";
   export let clicked = false;
   import { Modal, Content, Trigger } from "sv-popup";
   export let selected = false;
+=======
+  import Game from "$lib/components/HeheButton.svelte";
+  import Pie from "$lib/components/Pie.svelte";
+  export let clicked = false;
+  import { Modal, Content, Trigger } from "sv-popup";
+  export let selected = true;
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
   import Navbar from "$lib/components/Navbar.svelte";
   let percents = [
     ["Name", 20],
@@ -59,7 +67,11 @@
 </script>
 
   <div class="grid content-end pt-10">
+<<<<<<< HEAD
     <h1 class="px-3 text-text_white pt-10">The next match starts in:</h1>
+=======
+    <h1 class="px-3 text-text_white">The next match starts in:</h1>
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
     <h1 style="width:auto" class="px-3 text-cresc_green">
       {minutes}
       {timeuntilmatch <= 60
@@ -124,7 +136,11 @@
       </center>
     </div>
   {:else if clicked == true}
+<<<<<<< HEAD
   <div class="mains">
+=======
+  <div style="padding-bottom: 5rem;" class="mains">
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
     <center>
       <button
         style="padding: 2.8rem"
@@ -137,10 +153,17 @@
   </div>
   {:else}
     <!-- if queue is full -->
+<<<<<<< HEAD
     <div class="mains">
       <center>
         <button
           style="padding: 2.5rem; padding-left: 4.5rem; padding-right:4.5rem"
+=======
+    <div style="padding-bottom: 5rem;" class="mains">
+      <center>
+        <button
+          style="padding: 2.5rem; padding-left: 4.5rem; padding-right:4.5rem; "
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
           id="Match-Scountss"
         >
           Queue Full
@@ -149,7 +172,11 @@
     </div>
   {/if}
 <div class="bottom-div">
+<<<<<<< HEAD
   <Navbar page="match" />
+=======
+  <Navbar green3 />
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
 </div>
 
 <style lang="postcss">
@@ -183,11 +210,19 @@
   }
   #Match-Scounts {
     @apply text-navbar_black bg-cresc_green py-5 font-semibold;
+<<<<<<< HEAD
     font-size: 52px;
   }
   #Match-Scouts {
     @apply text-navbar_black  py-5 font-semibold;
     font-size: 44px;
+=======
+    font-size: 46px;
+  }
+  #Match-Scouts {
+    @apply text-navbar_black  py-5 font-semibold;
+    font-size: 39px;
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
     background-color: #ed1c24;
   }
   #Match-Scountss {
@@ -197,8 +232,13 @@
     color: #1c1c1c;
   }
   .mains {
+<<<<<<< HEAD
     margin-top: 2rem;
     margin-bottom: 2rem;
+=======
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
   }
   h3 {
     margin: 17px;

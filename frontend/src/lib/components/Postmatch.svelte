@@ -4,11 +4,33 @@
     import Toggle from "$lib/components/Toggle.svelte"
     import TextArea from "$lib/components/TextArea.svelte"
     import Rating from "$lib/components/Rating.svelte"
+    import { match_data } from '$lib/stores/matchStores';
     let stagestatus = ""
     let driverskill = 3
     let brokenstatus = ""
     let deadstatus = ""
     let notes = ""
+    let deadboolean = false
+    let brokeboolean = false
+    if (deadstatus = "Died on Field"){
+    deadboolean = true
+    }
+    else{
+    deadboolean = false
+    }
+    if (brokenstatus = "Broken"){
+    brokeboolean = true
+    }
+    else{
+    brokeboolean = false
+    }
+    $: {
+        $match_data.stage = stagestatus
+        $match_data.skill = driverskill
+        $match_data.is_broke = brokeboolean
+        $match_data.is_died = deadboolean
+        $match_data.notes = notes
+    }
 </script>
 <Header phase = "Post Match"/>
 <Stage bind:value = {stagestatus}/>

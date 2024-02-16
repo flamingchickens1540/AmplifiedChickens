@@ -1,6 +1,10 @@
 <script>
     import { onMount } from 'svelte';
+<<<<<<< HEAD
   
+=======
+    import { match_data } from '$lib/stores/matchStores.ts';
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
     let currentIndex = 0;
     let startX = 0;
     
@@ -68,7 +72,11 @@
       box-sizing: border-box;
     }
   </style>
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
   <div
     class="carousel-container"
     on:touchstart={handleTouchStart}

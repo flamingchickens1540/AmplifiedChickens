@@ -3,13 +3,7 @@
     import { goto } from "$app/navigation";
     import { redirect } from "@sveltejs/kit";
 
-    export let data: PageData;
-
-    if (data.a_code) {
-        // goto("/app/home")
-        // redirect(302, "/app/home")
-        console.log("a code yay")
-    }
+    // export let data: PageData;
 </script>
 
 <center>

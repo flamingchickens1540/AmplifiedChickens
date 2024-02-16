@@ -2,7 +2,20 @@
     import Header from "$lib/components/Header.svelte"
     import Toggle from "$lib/components/Toggle.svelte";
     import Confirm from "$lib/components/Confirm.svelte"
+<<<<<<< HEAD
     let leavestatus = ""
+=======
+    import { match_data } from '$lib/stores/matchStores.ts';
+    let leavestatus = ""
+    let leaveboolean = false
+    if (leavestatus = "Left Home"){
+    leaveboolean = true
+    }
+    else{
+    leaveboolean = true
+    }
+
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
     let amp = false
     let ampsuc = 0
     let ampfail = 0
@@ -12,6 +25,18 @@
     let piece = false
     let piecefail = 0
     let piecesuc = 0
+<<<<<<< HEAD
+=======
+    $: {
+        $match_data.auto_speaker_succeed = speaksuc
+        $match_data.auto_speaker_missed = speakfail
+        $match_data.auto_amp_succeed = ampsuc
+        $match_data.auto_amp_missed = ampfail
+        $match_data.auto_piece_succeed = piecesuc
+        $match_data.auto_piece_missed = piecefail
+        $match_data.is_leave_start = leaveboolean
+    }
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
 </script>
 {#if speaker == true}
 <Confirm title = "Speaker (Auto)" bind:notover = {speaker} bind:valuesuc = {speaksuc} bind:valuefail = {speakfail}/>

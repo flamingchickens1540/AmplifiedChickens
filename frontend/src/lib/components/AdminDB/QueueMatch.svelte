@@ -22,7 +22,7 @@
                 // FIXME: DO NOT COMMIT API KEY
                 headers: {
                     "X-TBA-Auth-Key":
-                        "N4U95xQAy80xNrlc6ZEEAM8bKCCimCgKTckEG8zVQViQomM3GpZwVQ8qhtwWsBqc",
+                        "",
                 },
             },
         );

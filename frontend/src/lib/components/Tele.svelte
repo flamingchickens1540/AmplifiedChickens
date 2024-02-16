@@ -1,6 +1,7 @@
 <script>
     import Header from "$lib/components/Header.svelte";
     import Confirm from "$lib/components/Confirm.svelte"
+<<<<<<< HEAD
     let amp = false
     let ampsuc = 0
     let ampfail = 0
@@ -17,6 +18,19 @@
 <Confirm title = "Amp (Tele)" bind:notover = {amp} bind:valuesuc = {ampsuc} bind:valuefail = {ampfail}/>
 {:else if trap == true}
 <Confirm title = "Trap (Tele)" bind:notover = {trap} bind:valuesuc = {trapsuc} bind:valuefail = {trapfail}/>
+=======
+    import { match_data } from '$lib/stores/matchStores.ts';
+    let amp = false
+    let speaker = false
+    let trap = false
+</script>
+{#if speaker == true}
+<Confirm title = "Speaker (Tele)" bind:notover = {speaker} bind:valuesuc = {$match_data.tele_speaker_succeed} bind:valuefail = {$match_data.tele_speaker_missed}/>
+{:else if amp == true}
+<Confirm title = "Amp (Tele)" bind:notover = {amp} bind:valuesuc = {$match_data.tele_amp_succeed} bind:valuefail = {$match_data.tele_amp_missed}/>
+{:else if trap == true}
+<Confirm title = "Trap (Tele)" bind:notover = {trap} bind:valuesuc = {$match_data.trap_succeed} bind:valuefail = {$match_data.trap_missed}/>
+>>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
 {:else}
 <Header phase = "Teleop"/>
 <div class="grid grid-cols-2 gap-3 m-4">
