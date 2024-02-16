@@ -18,7 +18,7 @@
   import { spring, tweened } from "svelte/motion";
   import Pie from "$lib/components/Pie.svelte";
   export let giventime = 1706579944;
-  export let event = "YOUR MOTHER";
+  export let event = "2024orsal";
   import SubmitButton from "$lib/components/SubmitButton.svelte";
   let percents = [
     ["Name", 20],
@@ -78,14 +78,14 @@
       <button
         style="margin-top: 12px"
         class="w-full"
-        onclick="location.href='https://www.thebluealliance.com/event/2024orsal';"
+        onclick="location.href='https://www.thebluealliance.com/event/{event}';"
       >
         TheBlueAlliance
       </button>
       <button
         style="margin-left: 0px; margin-top: 12px"
         class="w-full"
-        onclick="location.href='https://www.statbotics.io/event/2024orsal';"
+        onclick="location.href='https://www.statbotics.io/event/{event}';"
       >
         Statbotics
       </button>

@@ -12,9 +12,9 @@
   import { Modal, Content, Trigger } from "sv-popup";
   import {pit} from '$lib/stores/pitStores.ts';
   let teamnumber = "";
-  let width: Number
-  let height: Number
-  let weight: Number
+  let width: number
+  let length: number
+  let weight: number
   let drivetrain = "";
   let intake = "";
   if (intake == "both") {
@@ -29,8 +29,11 @@
   }
   $: $pit.drivetrain = drivetrain.toLocaleLowerCase()
   $: $pit.team_key = "frc"+teamnumber
+  $: $pit.width = width
+  $: $pit.length = length
+  $: $pit.weight = weight
 </script>
-
+{$pit.width}
 <Modal>
   {#if teamnumber == ""}
     <Content
@@ -45,9 +48,9 @@
   </Trigger>
 </Modal>
 <TextInput name="Team Number" bind:value={teamnumber} />
-<NumberInput name="Width (ft)" bind:value={$pit.width} />
-<NumberInput name="Length (ft)" bind:value={$pit.length} />
-<NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
+<NumberInput name="Width (ft)" bind:value={width} />
+<NumberInput name="Length (ft)" bind:value={length} />
+<NumberInput name="Weight (lbs)" bind:value={weight} />
 <Toggle text1="Under Stage" text2="Around Stage" bind:buttonon={$pit.is_short} />
 <Threeoption
   text1="Swerve"

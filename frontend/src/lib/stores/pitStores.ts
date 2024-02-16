@@ -10,5 +10,5 @@ export let pit: Writable<Pit> = writable({
     polish: 3,//iuhoidhufaosdihufoaishudfoa
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
     is_chute_intake: false,//iuhoidhufaosdihufoaishudfoa
-    notes: "pretty bad" //iajsdofjaosdifj
+    notes: "" //iajsdofjaosdifj
 })
