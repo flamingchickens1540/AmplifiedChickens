@@ -28,12 +28,6 @@ mod queue;
 mod submit;
 mod upload;
 
-#[allow(dead_code)]
-#[derive(Clone, Copy)]
-struct Ports {
-    http: u16,
-    https: u16,
-}
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
@@ -45,6 +39,7 @@ struct Ports {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
+    let mode = std::env::var("MODE").expect("MODE not set");
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
@@ -64,19 +59,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         queue,
         team_match_upstreams: Arc::new(Mutex::new(vec![])),
     };
-    // configure certificate and private key used by https
-    let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
-        .await
-        .expect("Missing cert.pem and key.pem files");
-    let ports = Ports {
+    let router = init_router(state);
+
+    if mode == "PROD" {
+        return prod_server(router).await;
+    }
+
+    let ports: Ports = Ports {
         http: 7878,
         https: 3007,
     };
+
+
+    let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
+        .await
+        .unwrap();
+
     let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
 
     tokio::spawn(redirect_http_to_https(ports));
-
-    let router = init_router(state);
 
     info!("Starting Server");
     info!("Listening on {}", addr);
@@ -85,6 +86,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .serve(router.into_make_service())
         .await
         .unwrap();
+
+    Ok(())
+}
+
+async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
+    let addr = std::env::var("SERVER_URL").expect("Server url not set");
+    let listener = tokio::net::TcpListener::bind("localhost:3021").await.unwrap();
+    
+    info!("Starting Prod Server");
+    info!("Listening on {}", addr);
+
+    axum::serve(listener, app).await.unwrap();
 
     Ok(())
 }

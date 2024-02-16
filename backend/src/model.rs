@@ -27,9 +27,6 @@ impl Db {
     pub async fn new(db_url: String) -> Result<Self, sqlx::Error> {
         let pool: Pool<Postgres> = PgPoolOptions::new().connect(&db_url).await?;
 
-        let migrator = sqlx::migrate!();
-        migrator.run(&pool).await?;
-
         Ok(Db { pool })
     }
 }
