@@ -1,11 +1,9 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 import { type Handle, redirect, json } from '@sveltejs/kit'
 
 export const handle: Handle = async ({ event, resolve }) => {
 
-    // console.log(event.cookies.getAll());
-    // console.log(event.url.pathname)
+	console.log(event.cookies.getAll());
+	console.log(event.url.pathname)
 
     const access_token = event.cookies.get('access_token')
 

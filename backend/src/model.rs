@@ -28,9 +28,6 @@ impl Db {
     pub async fn new(db_url: String) -> Result<Self, sqlx::Error> {
         let pool: Pool<Postgres> = PgPoolOptions::new().connect(&db_url).await?;
 
-        let migrator = sqlx::migrate!();
-        migrator.run(&pool).await?;
-
         Ok(Db { pool })
     }
 }
@@ -137,7 +134,7 @@ impl RoboQueue {
 
     pub fn scout_get_robot(&mut self, scout: String) -> Option<String> {
         match self.assigned.get(&scout) {
-            Some(scout) => Some(*scout),
+            Some(scout) => Some(scout.clone()),
             None => self.scout_get_robot_auto(),
         }
     }
