@@ -1,3 +1,5 @@
+use std::convert::Infallible;
+
 use axum::response::Sse;
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
 
@@ -8,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
 
-use crate::model::{self, AppState, Db, User, EventState};
+use crate::model::{self, AppState, Db, EventState, User};
 
 pub async fn get_user_helper(db: &Db, code: String) -> Result<Json<User>, StatusCode> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -331,14 +333,29 @@ pub async fn dequeue_user(
     Ok("User removed from queue".to_string())
 }
 
+#[axum::debug_handler]
+pub async fn get_unpitscouted_teams(
+    State(state): State<AppState>,
+) -> Result<Json<Vec<model::Team>>, Infallible> {
+    let current_event = sqlx::query_as::<_, model::EventState>("SELECT* FROM \"EventState\"")
+        .fetch_one(&state.db.pool)
+        .await
+        .unwrap_or_else(|_| -> EventState {
+            error!("Failed to get eventstate, falling back on default");
+            model::EventState {
+                event_key: "2024orore".to_string(),
+                last_match: None,
+                next_match: None,
+            }
+        });
 
-pub async fn get_unpitscouted_teams(State(State(state): State<AppState>) {
-    let current_event = match sqlx::query_as::<_, model::EventState>("SELECT* FROM \"EventState\"").fetch_one(&state.db.pool).await.unwrap_or_else(|| -> EventState {error!("Failed to get eventstate, falling back on default"); model::EventState { event_key: "2024orore", last_match: None, next_match: None}});
-    let all_teams = match sqlx::query_as::<_, model::Team>("SELECT * FROM \"Teams\" WHERE ").fetch_all(&state.db.pool).await {
-        Ok(teams) => teams,
-        Err(err) => {
-            error!("Failed to get unpitscouted teams for this event");
-            
-        }
-    }
+    Ok(Json(
+        sqlx::query_as::<_, model::Team>(
+            "SELECT * FROM \"Teams\" WHERE event_key = $1 AND width = 0",
+        )
+        .bind(current_event.event_key)
+        .fetch_all(&state.db.pool)
+        .await
+        .unwrap_or(vec![]),
+    ))
 }
