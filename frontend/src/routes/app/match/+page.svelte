@@ -7,10 +7,11 @@
     let selected = true;
     let started = false;
 </script>
+
 {#if queued == true && selected == true && started == true}
-<Carousel/>
+    <Carousel />
 {:else}
-<Homepage bind:clicked = {queued}/>
+    <QueuePage bind:clicked={queued} />
 {/if}
 
 {#if queued == true && selected == true && started == true}
