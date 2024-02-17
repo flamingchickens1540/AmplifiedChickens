@@ -5,7 +5,6 @@
 
 <!-- CREDIT: https://play.tailwindcss.com/asmAkefxLr -->
 <div class="relative m-4 group">
-<<<<<<< HEAD
     <input
         type="text"
         bind:value
@@ -13,16 +12,6 @@
         style="background-color: #353839;"
         placeholder=" "
     />
-=======
-  <input
-    type="text"
-    bind:value
-    class="outline-none px-3 py-3 peer text-text_white"
-    style="background-color: #353839;"
-    placeholder=" "
-
-  />
->>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f
 
     <!-- svelte-ignore a11y-label-has-associated-control -->
     <label
@@ -52,14 +41,7 @@
 </div>
 
 <style>
-<<<<<<< HEAD
     input {
         width: 100%;
     }
 </style>
-=======
-  input{
-    width: 100%;
-  }
-</style>
->>>>>>> efa7ad755fe28f2d82c266b2b627fb6637c0756f

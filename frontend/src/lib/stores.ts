@@ -1,7 +1,25 @@
+import { writable, type Writable } from "svelte/store";
 import type {TeamMatch, TeamMatchData} from "$lib/types.ts"
-import { writable, type Writable } from 'svelte/store';
-export let match_data: Writable<TeamMatchData> = writable({
-    match_key: "2024orsal_qm67", 
+
+import type { Pit } from "$lib/types.ts"
+
+export const current_event_key: Writable<string> = writable('');
+
+export const pit: Writable<Pit> = writable({
+    team_key: "frc2910",//oiajdsofuhasoidhufaosd
+    length: 0,
+    width: 0,
+    weight: 0,
+    is_short: true,//iuhoidhufaosdihufoaishudfoa
+    polish: 3,//iuhoidhufaosdihufoaishudfoa
+    is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
+    drivetrain: "swerve", //iuhoidhufaosdihufoaishudfoa
+    is_chute_intake: false,//iuhoidhufaosdihufoaishudfoa
+    notes: "" //iajsdofjaosdifj
+})
+
+export const match_data: Writable<TeamMatchData> = writable({
+    match_key: "2024orsal_qm67",
     team_key: "frc2910" ,
     location: "Middle", //prematch done
     is_fielded: false,//prematch done

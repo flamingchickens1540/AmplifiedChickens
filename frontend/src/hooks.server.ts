@@ -1,4 +1,4 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 import { type Handle, redirect, json } from '@sveltejs/kit'
 
@@ -41,17 +41,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 
         return json({ status: 401, body: 'Unauthorized Request: Admin' })
     } else if (event.url.pathname.startsWith('/app')) {
-        
+
         console.log("Checking auth")
 
         auth_res = await fetch("https://localhost:3007/auth/check", {
-        method: "POST",
-        headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ access_token: access_token, is_admin: false }),
-    })
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ access_token: access_token, is_admin: false }),
+        })
 
         console.log(access_token)
 

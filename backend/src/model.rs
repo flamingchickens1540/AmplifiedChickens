@@ -199,7 +199,7 @@ pub struct ScoutEventTeam {
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow, Default)]
 pub struct TeamMatch {
-    pub id: Option<i32>,
+    pub id: i32,
     pub match_key: String,
     pub team_key: String,
     pub is_fielded: bool,

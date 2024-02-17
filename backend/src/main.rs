@@ -114,6 +114,7 @@ fn init_router(state: model::AppState) -> Router {
         )
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
         .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
+        .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
         .route("/scout/inQueue", post(queue::in_queue)) // tested;
         .route("/scout/queue", post(queue::queue_user)) // tested
         .route("/scout/dequeue", post(queue::dequeue_user)) // tested

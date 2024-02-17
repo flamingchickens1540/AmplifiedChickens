@@ -1,0 +1,44 @@
+<script lang="ts">
+    import { onMount } from "svelte";
+    import Pie from "./Pie.svelte";
+
+    async function get_scout_percents(): Promise<readonly [string[], number[]]> {
+        let res = await fetch("https://localhost:3007/admin/users/get/all", {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            }
+        })
+
+        console.log(res)
+
+        return res.json()
+    }
+
+    let scout_names: string[] = [];
+    let scout_percents: number[] = [];
+
+    onMount(async () => {
+        let result = await get_scout_percents()
+
+        console.log(result)
+
+        scout_names = result[0]
+        scout_percents = result[1]
+    })
+</script>
+
+<div
+    style=""
+    class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md"
+>
+    {#each scout_percents as _, i}
+        {#if i < 8}
+            <div class="p-1 flex flex-col items-center">
+                <Pie size={46} percent={scout_percents[i]} />
+                <p class="text-text_white">{scout_names[i]}</p>
+            </div>
+        {/if}
+    {/each}
+</div>

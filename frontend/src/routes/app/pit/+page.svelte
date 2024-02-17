@@ -11,8 +11,12 @@
     import ImageUpload from "$lib/components/ImageUpload.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
     import { pit } from "$lib/stores/pitStores";
+    import type { Team } from "$lib/types";
+    import type { PageData } from "./$types";
 
-    let teamnumber = ""
+    export let data: PageData
+    export let team_key = ""
+
     let intake = ""
     $: {
         if (intake == "Both") {
@@ -26,7 +30,27 @@
             $pit.is_chute_intake = true;
         }
     }
-    $: $pit.team_key = "frc" + teamnumber;
+
+    async function get_team() {
+        let res = await fetch(`/api/team/${team_key}`);
+        let json = await res.json();
+        $team = json;
+    }
+
+    async function handle_submit() {
+        let req: any = { id: data.scout_id }
+        req.push($pit)
+
+        let res = fetch("/api/submit/pit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(req).concat(),
+        });
+    }
+
+    
 </script>
 
 <Modal>
@@ -35,14 +59,14 @@
             style="background-color: #2C2C2C; width:92%; margin:auto"
             class="p-4 rounded"
         >
-            <TeamsRemainingPopup bind:value={teamnumber} />
+            <TeamsRemainingPopup bind:value={team_key} bind:remaining_teams={} />
         </Content>
     {/if}
     <Trigger>
         <SubmitButton text="Teams Remaining" />
     </Trigger>
 </Modal>
-<TextInput name="Team Number" bind:value={teamnumber} />
+<TextInput name="Team Number" bind:value={team.team_key} />
 <NumberInput name="Width (ft)" bind:value={$pit.width} />
 <NumberInput name="Length (ft)" bind:value={$pit.length} />
 <NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
@@ -61,9 +85,9 @@
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
 <ImageUpload />
-<!-- <div id="navbar">
+<div id="navbar">
     <Navbar  />
-</div> -->
+</div>
 
 <style>
     #navbar {

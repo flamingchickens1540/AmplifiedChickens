@@ -2,10 +2,10 @@
     import Carousel from "$lib/components/Carousel.svelte";
     import QueuePage from "$lib/components/MatchScoutHomepage.svelte";
 
-    // Write the push notification system
+    // Write the push notification system to modify each of these things
     let queued = false;
-    export let selected = true;
-    export let started = false;
+    let selected = true;
+    let started = false;
 </script>
 
 {#if queued == true && selected == true && started == true}

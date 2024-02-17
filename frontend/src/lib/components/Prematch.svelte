@@ -1,13 +1,13 @@
 <script>
     import Header from "$lib/components/Header.svelte"
     import Position from "$lib/components/Toggle.svelte"
-    import Threeoption from "$lib/components/Where.svelte"
-    import { match_data } from '$lib/stores/matchStores';
+    import Threeoption from "$lib/components/Threeoption.svelte"
+    import { match_data } from '$lib/stores';
 
     let location = ""
     let fieldedstring = ""
     let fielded = true 
-    $: if (fieldedstring == "Missed Match"){
+    $: if (fieldedstring == "Missed Match") {
         fielded = false
         fielded = fielded
     }

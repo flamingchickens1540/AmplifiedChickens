@@ -7,6 +7,7 @@
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
     import { current_event_key } from "$lib/stores/homeStores";
+    import ScoutPercents from "$lib/components/ScoutPercents.svelte";
 
     export let data: PageData;
     export let nextMatchTime = 1706579944;
@@ -25,34 +26,10 @@
         }
     }
 
-    async function get_scout_percents(): Promise<readonly [string[], number[]]> {
-        let res = await fetch("https://localhost:3007/admin/users/get/all", {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            }
-        })
-
-        console.log(res)
-
-        return res.json()
-    }
-
     let greeting = determine_greeting();
 
     let scout_names: string[] = []
     let scout_percents: number[] = []
-
-    onMount(async () => {
-        let result = await get_scout_percents()
-
-        console.log(result)
-
-        scout_names = result[0]
-        scout_percents = result[1]
-    })
-
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -80,19 +57,7 @@
     </div>
 
     <div class="flex flex-col content-center items-stretch">
-        <div
-            style=""
-            class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md"
-        >
-            {#each scout_percents as _, i}
-                {#if i < 8}
-                    <div class="p-1 flex flex-col items-center">
-                        <Pie size={46} percent={scout_percents[i]} />
-                        <p class="text-text_white">{scout_names[i]}</p>
-                    </div>
-                {/if}
-            {/each}
-        </div>
+        <ScoutPercents />
         <div class="flex flex-row w-full content-center justify-around items-end">
             <a href="https://www.thebluealliance.com/event/{current_event_key}" style="margin-left: 15px; margin-right: 15px;">
                 <button

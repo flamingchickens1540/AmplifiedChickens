@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
 
-use crate::model::{self, AppState, Db, User};
+use crate::model::{self, AppState, Db, User, EventState};
 
 pub async fn get_user_helper(db: &Db, code: String) -> Result<Json<User>, StatusCode> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -329,4 +329,16 @@ pub async fn dequeue_user(
     queue.scouts.remove(index);
 
     Ok("User removed from queue".to_string())
+}
+
+
+pub async fn get_unpitscouted_teams(State(State(state): State<AppState>) {
+    let current_event = match sqlx::query_as::<_, model::EventState>("SELECT* FROM \"EventState\"").fetch_one(&state.db.pool).await.unwrap_or_else(|| -> EventState {error!("Failed to get eventstate, falling back on default"); model::EventState { event_key: "2024orore", last_match: None, next_match: None}});
+    let all_teams = match sqlx::query_as::<_, model::Team>("SELECT * FROM \"Teams\" WHERE ").fetch_all(&state.db.pool).await {
+        Ok(teams) => teams,
+        Err(err) => {
+            error!("Failed to get unpitscouted teams for this event");
+            
+        }
+    }
 }
