@@ -3,8 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "vite dev --port 3020",
-    "build": "vite build --3020",
+    "dev": "vite --port 3020",
+    "serve": "./node_modules/node/bin/node ./node_modules/.bin/vite --port 3020",
+    "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
@@ -18,6 +19,7 @@
     "postcss": "^8.4.33",
     "sv-popup": "^0.5.0",
     "svelte": "^4.2.7",
+    "svelte-adapter-bun": "^0.5.1",
     "svelte-check": "^3.6.0",
     "tailwindcss": "^3.4.1",
     "tslib": "^2.4.1",
@@ -27,5 +29,8 @@
   "type": "module",
   "dependencies": {
     "string-width": "^7.1.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
