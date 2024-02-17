@@ -2,6 +2,7 @@ use axum::response::sse::Event;
 use futures::sink::Send;
 use futures::{Stream, StreamExt};
 use serde_json::json;
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -42,10 +43,11 @@ pub struct AppState {
     pub team_match_upstreams: Arc<Mutex<Vec<Sender<Result<Event, Infallible>>>>>,
 }
 
-/// Scouts: Access codes
 #[derive(Debug, Clone)]
 pub struct RoboQueue {
     pub match_keys: Vec<String>,
+    // This is only for manual assignment
+    pub assigned: HashMap<String, String>, // access_token: team_key
     pub robots: Vec<String>,
     pub scouts: Vec<String>,
 }
@@ -59,16 +61,11 @@ impl RoboQueue {
         mut robots: Vec<String>,
         db: &Db,
     ) -> Result<(), (QueueError, String)> {
-        for (i, _robot) in robots.iter().enumerate() {
+        for (i, _) in robots.iter().enumerate() {
             if self.scouts.is_empty() {
                 self.robots.append(&mut robots);
                 break;
             }
-            let _color = if robots.len() <= 3 {
-                String::from("red")
-            } else {
-                String::from("blue")
-            };
             let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
             // Push robot and team color to user
         }
@@ -83,15 +80,15 @@ impl RoboQueue {
         db: &Db,
     ) -> Result<(), (QueueError, String)> {
         assert_eq!(robots.len(), scouts.len());
-        for (i, _robot) in robots.iter().enumerate() {
+        for (i, _) in robots.iter().enumerate() {
             let _color = if robots.len() <= 3 {
                 String::from("red")
             } else {
                 String::from("blue")
             };
             let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
-
-            // Push robot and team color to user
+            self.assigned.insert(scouts[i].clone(), robots[i].clone());
+            // Push to user, then they lookup in the map
         }
         Ok(())
     }
@@ -127,12 +124,22 @@ impl RoboQueue {
 
     pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
-            let _robot = self.robots.pop();
             let _endpoint = self.get_user_endpoint(&scout, db);
-            // Push robot to scout
+            // Push to scout
         }
 
         self.scouts.push(scout);
+    }
+
+    pub fn scout_get_robot_auto(&mut self) -> Option<String> {
+        self.robots.pop()
+    }
+
+    pub fn scout_get_robot(&mut self, scout: String) -> Option<String> {
+        match self.assigned.get(&scout) {
+            Some(scout) => Some(*scout),
+            None => self.scout_get_robot_auto(),
+        }
     }
 }
 

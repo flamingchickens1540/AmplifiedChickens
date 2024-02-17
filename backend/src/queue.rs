@@ -12,14 +12,19 @@ use tracing::{error, info};
 
 use crate::model::{self, AppState, Db, EventState, User};
 
-pub async fn get_user_helper(db: &Db, code: String) -> Result<Json<User>, StatusCode> {
+pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
-        .bind(code)
+        .bind(token)
         .fetch_one(&db.pool)
         .await
     {
         Ok(user) => user,
-        Err(_e) => return Err(StatusCode::UNAUTHORIZED),
+        Err(_e) => {
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                "Unauthorzed user; invalid access_token".to_string(),
+            ))
+        }
     };
 
     Ok(Json(user))
@@ -38,6 +43,42 @@ pub async fn get_all_users(
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Failed to fetch users: {err}").to_string(),
         )),
+    }
+}
+
+#[axum::debug_handler]
+pub async fn scout_request_team(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<impl IntoResponse, (StatusCode, String)> {
+    let access_token = match headers.get("x-access-token") {
+        Some(token) => token
+            .to_str()
+            .expect("access_token was an invalid string")
+            .to_string(),
+        None => {
+            error!("Robot requested without access_token");
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                "Unauthorzed, no access_token provided".to_string(),
+            ));
+        }
+    };
+    get_user_helper(&state.db, access_token.clone()).await?;
+
+    let mut robot_queue = state.queue.lock().await;
+    match robot_queue.scout_get_robot(access_token.clone()) {
+        Some(team) => {
+            info!("Robot served to user {}", access_token);
+            Ok(Json(team))
+        }
+        None => {
+            info!("No robots in queue :D");
+            Err((
+                StatusCode::NO_CONTENT,
+                "No more robots in queue, happy break!".to_string(),
+            ))
+        }
     }
 }
 

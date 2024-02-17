@@ -65,7 +65,7 @@
         {/each}
     {/if}
     <div style="margin: 15px;">
-        <div
+        <button
             on:click={() => {
                 fileinput.click();
             }}
@@ -92,7 +92,7 @@
                     fill="#C2C2C2"
                 />
             </svg>
-        </div>
+        </button>
     </div>
 
     <input

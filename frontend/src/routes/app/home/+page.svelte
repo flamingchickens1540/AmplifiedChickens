@@ -6,7 +6,7 @@
     import Pie from "$lib/components/Pie.svelte";
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
-    import { current_event_key } from "$lib/stores/homeStores";
+    import { current_event_key } from "$lib/stores";
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
 
     export let data: PageData;

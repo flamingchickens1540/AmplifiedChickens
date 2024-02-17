@@ -12,7 +12,7 @@ use dotenv::dotenv;
 
 use reqwest::Client as ReqwestClient;
 use serde_json::json;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
 use tower_http::cors::CorsLayer;
@@ -47,6 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let queue = Arc::new(Mutex::new(model::RoboQueue {
         match_keys: vec![],
+        assigned: HashMap::new::<String, String>(),
         robots: vec![],
         scouts: vec![],
     }));
@@ -118,6 +119,7 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/inQueue", post(queue::in_queue)) // tested;
         .route("/scout/queue", post(queue::queue_user)) // tested
         .route("/scout/dequeue", post(queue::dequeue_user)) // tested
+        .route("/scout/request_team", get(queue::scout_request_team))
         .with_state(state)
         .layer(
             tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
