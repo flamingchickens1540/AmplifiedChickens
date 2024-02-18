@@ -6,6 +6,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	console.log(event.url.pathname)
 
     const access_token = event.cookies.get('access_token')
+    // const scout_access_key = event.cookies.get('scout_access_key')
 
     let auth_res = undefined
 
@@ -20,6 +21,11 @@ export const handle: Handle = async ({ event, resolve }) => {
             body: 'Unauthorized'
         })
     }
+
+    // if (event.url.pathname.startsWith('/app/scout')) {
+
+
+    // }
 
     if (event.url.pathname.startsWith('/app/admin')) {
         console.log("Checking admin auth")

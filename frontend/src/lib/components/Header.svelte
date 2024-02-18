@@ -1,10 +1,9 @@
 <script>
-    export let team = "1540";
-    export let teamcolor = "red";
+    import { match_data, team_color } from "$lib/stores";
     export let phase = "Auto"
 </script>
 <div class="header grid justify-items-center border border-outline_gray rounded mt-[-9px] visible">
-    <h1 style="margin: 1rem; color: {teamcolor}; font-size: 4.5rem">{team}</h1>
+    <h1 style="margin: 1rem; color: {team_color}; font-size: 4.5rem">{$match_data.team_key}</h1>
     <h2 style="margin: 0rem; font-size: 2.3rem">{phase}</h2>
 </div>
 

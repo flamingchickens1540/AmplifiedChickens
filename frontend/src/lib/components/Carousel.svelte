@@ -1,6 +1,6 @@
-<script>
+<script lang="ts">
     import { onMount } from "svelte";
-    import { match_data } from "$lib/stores/matchStores";
+    import { match_data } from "$lib/stores";
     let currentIndex = 0;
     let startX = 0;
 
@@ -23,11 +23,11 @@
         }
     }
 
-    function handleTouchStart(event) {
+    function handleTouchStart(event: any) {
         startX = event.touches[0].clientX;
     }
 
-    function handleTouchEnd(event) {
+    function handleTouchEnd(event: any) {
         const endX = event.changedTouches[0].clientX;
         const deltaX = endX - startX;
 
@@ -41,7 +41,7 @@
     }
 
     // Optional: Add this if you want to prevent scrolling during swipe
-    function preventDefault(event) {
+    function preventDefault(event: any) {
         event.preventDefault();
     }
 

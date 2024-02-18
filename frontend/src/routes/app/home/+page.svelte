@@ -27,9 +27,7 @@
     }
 
     let greeting = determine_greeting();
-
-    let scout_names: string[] = []
-    let scout_percents: number[] = []
+    
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
