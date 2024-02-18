@@ -16,10 +16,6 @@
 </center>
 
 <style>
-    img {
-        margin-top: 40px;
-        width: 200px;
-    }
     h2 {
         margin-top: 20px;
         font-family: "Poppins-bold";

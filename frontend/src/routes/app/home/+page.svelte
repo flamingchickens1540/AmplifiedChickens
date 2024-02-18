@@ -8,6 +8,7 @@
     import { onMount } from "svelte";
     import { current_event_key } from "$lib/stores";
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
+    import { subscribeToPush } from "$lib/swutil.js";
 
     export let data: PageData;
     export let nextMatchTime = 1706579944;
@@ -28,8 +29,12 @@
 
     let greeting = determine_greeting();
 
-    let scout_names: string[] = []
-    let scout_percents: number[] = []
+    let subscription = "";
+
+    onMount(() => {
+        subscription = localStorage.getItem("subscription") || "No subscription"; 
+    })
+
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -44,10 +49,10 @@
                 class="p-4 rounded"
             >
                 <h2 style="color: white;">Debug Menu:</h2>
-                <SubmitButton text="Subscribe!" />
+                <SubmitButton onClick={() => subscribeToPush(data?.access_token)} text="Subscribe!" />
                 <code
-                    style="font-size: 20px; font-family: poppins-medium; color: white; overflow: wrap;"
-                    >{data}</code
+                    style="font-size: 15px; color: white; overflow: wrap;"
+                    >{subscription}</code
                 >
             </Content>
             <Trigger>
@@ -59,14 +64,14 @@
     <div class="flex flex-col content-center items-stretch">
         <ScoutPercents />
         <div class="flex flex-row w-full content-center justify-around items-end">
-            <a href="https://www.thebluealliance.com/event/{current_event_key}" style="margin-left: 15px; margin-right: 15px;">
+            <a href="https://www.thebluealliance.com/event/{$current_event_key}" style="margin-left: 15px; margin-right: 15px;">
                 <button
                     style="margin-left:0px; width: 100%"
                 >
                     TheBlueAlliance
                 </button>
             </a>
-            <a href="https://www.statbotics.io/event/{current_event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
+            <a href="https://www.statbotics.io/event/{$current_event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
                 <button
                     style="width:100%; margin-right: 15px; margin-left: 0px; padding-left: 0px; padding-right: 0px;"
                 >

@@ -1,6 +1,6 @@
 use crate::model::{AppState, TeamEvent, TeamMatch};
-use axum::response::sse::{Event, KeepAlive, Sse};
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
+use axum::response::{IntoResponse, sse::{Event, KeepAlive, Sse}};
+use axum::{extract::State, http::StatusCode, Form, Json};
 use futures::stream::{self, Stream};
 use futures::StreamExt;
 use std::ops::Deref;

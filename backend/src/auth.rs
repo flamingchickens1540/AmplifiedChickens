@@ -92,8 +92,10 @@ pub async fn slack_callback(
         None,
         None,
         None,
-        access_token.clone(),
+        access_token.clone().replace("\"", ""),
     );
+
+    info!("Profile: {:?}", profile);
 
     let current_event_key =
         match sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
@@ -152,6 +154,7 @@ pub async fn logout(
     State(state): State<model::AppState>,
     Json(access_token): Json<String>,
 ) -> Result<impl IntoResponse, (String, StatusCode)> {
+    let frontend_url = std::env::var("REDIRECT_URL_TO_FRONTEND").expect("redirect to frontend not set");
     if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE acess_token = $1 LIMIT 1")
         .bind(access_token)
         .execute(&state.db.pool)
@@ -166,7 +169,7 @@ pub async fn logout(
 
     let response = axum::http::Response::builder()
         .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, "http://localhost:5173/app/home") // TODO: Change to /app/home
+        .header(LOCATION, frontend_url) 
         .header(
             SET_COOKIE,
             format!(
@@ -219,7 +222,7 @@ pub async fn check_auth(
     info!("All Users: {:?}", users);
 
     let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
-        .bind(format!("\"{}\"", req.access_token))
+        .bind(format!("{}", req.access_token))
         .fetch_optional(&state.db.pool)
         .await
     {
@@ -294,7 +297,7 @@ async fn get_user(access_token: String, db: &model::Db) -> Result<model::User, R
         Ok(res) => res,
         Err(e) => {
             error!("{}", e);
-            return Err(Redirect::to("http://localhost:5173/"));
+            return Err(Redirect::to("http://scout.team1540.org/"));
         }
     };
 

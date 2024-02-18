@@ -1,12 +1,12 @@
 <script lang="ts">
     let avatar, fileinput: any;
     export let images: string[] = [];
-    const onFileSelected = (e) => {
+    const onFileSelected = (e: any) => {
         let image = e.target.files[0];
         let reader = new FileReader();
         reader.readAsDataURL(image);
         reader.onload = (e) => {
-            avatar = e.target.result;
+            avatar = e.target?.result as string;
             images.push(avatar);
             images = images;
         };

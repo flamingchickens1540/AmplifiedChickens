@@ -2,18 +2,18 @@
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
 
-    export let red_teams: string[] = [];
+    export let red_teams:   string[] = [];
     export let blue_teams: string[] = [];
 
     export let blue_scouts: Scout[] = [];
-    export let red_scouts: Scout[] = [];
+    export let red_scouts: Scout[] = []
 
-    export let match_key = "";
-    export let queued_scouts: Scout[] = [];
+    export let match_key = ""
+    export let queued_scouts: Scout[] = []
 
-    export let auto_assign: boolean;
+    export let auto_assign: boolean
 
-    export let access_token = "";
+    export let access_token = ""
 
     async function auto_populate() {
         let res = await fetch(
@@ -61,25 +61,29 @@
         <input class="" bind:value={match_key} alt="Match Key" />
         <button on:click={auto_populate} class="rounded">Load Match</button>
     </div>
-    <div class="grid grid-cols-2 grid-rows-1">
-        <div>
-            <AssignStudent
-                bind:teams={red_teams}
-                bind:selected={red_scouts}
-                bind:queued={queued_scouts}
-                color="#ED1C24"
-            />
-        </div>
+    {#if auto_assign}
+        <div class="grid grid-cols-2 grid-rows-1">
+            <div>
+                <AssignStudent
+                    bind:teams={red_teams}
+                    bind:selected={red_scouts}
+                    bind:queued={queued_scouts}
+                    bind:auto_assign={auto_assign}
+                    color="#ED1C24"
+                />
+            </div>
 
-        <div>
-            <AssignStudent
-                bind:teams={blue_teams}
-                bind:selected={blue_scouts}
-                bind:queued={queued_scouts}
-                color="#0083E6"
-            />
+            <div>
+                <AssignStudent
+                    bind:teams={blue_teams}
+                    bind:selected={blue_scouts}
+                    bind:queued={queued_scouts}
+                    bind:auto_assign={auto_assign}
+                    color="#0083E6"
+                />
+            </div>
         </div>
-    </div>
+    {/if}
     <div class="grid grid-cols-2 grid-rows-1 place-items-center">
         <button on:click={() => auto_assign = !auto_assign} class="rounded {auto_assign? "green": "red"}">Auto Assign</button>
         <button

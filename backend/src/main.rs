@@ -3,19 +3,20 @@ use axum::{
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
     response::{IntoResponse, Redirect},
-    routing::{get, post},
+    routing::{any, get, post},
     BoxError, Json, Router,
 };
 
 use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
+use http::HeaderValue;
 use reqwest::Client as ReqwestClient;
 use serde_json::json;
 use std::{collections::HashMap, sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::cors::CorsLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tracing::{error, info};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, FmtSubscriber};
 
@@ -27,7 +28,7 @@ mod model;
 mod queue;
 mod submit;
 mod upload;
-
+mod webpush;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
@@ -72,7 +73,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         http: 7878,
         https: 3007,
     };
-
 
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
         .await
@@ -142,10 +142,11 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/queue", post(queue::queue_user)) // tested
         .route("/scout/dequeue", post(queue::dequeue_user)) // tested
         .route("/scout/request_team", get(queue::scout_request_team))
+        .route("/vapid.json", get(webpush::vapid))
+        .route("/register", post(webpush::register))
+        .route("/send", get(webpush::send))
         .with_state(state)
-        .layer(
-            tower::ServiceBuilder::new().layer(CorsLayer::permissive()), // Enable CORS policy
-        )
+        .layer(CorsLayer::permissive())
 }
 
 async fn health() -> Result<impl IntoResponse, Infallible> {

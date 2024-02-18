@@ -14,16 +14,14 @@
 
     let access_token = data.access_token as string;
 
-    let red_teams: TeamKey[] = ["frc1", "frc2", "frc3"];
-    let blue_teams: TeamKey[] = ["frc4", "frc5", "frc6"];
+    let red_teams: (TeamKey | "")[] = ["", "", ""];
+    let blue_teams: (TeamKey | "") [] = ["", "", ""];
 
     let all_scouts: Scout[] = [];
     let queued_scouts: Scout[] = [];
 
     let auto_assign: boolean = false;
 
-    let selected_red_scouts: Scout[] = [];
-    let selected_blue_scouts: Scout[] = [];
     let scouted_robots: TeamMatch[] = [];
 
     onMount(() => {
