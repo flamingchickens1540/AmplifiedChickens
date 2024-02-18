@@ -42,6 +42,9 @@
             body: JSON.stringify(req),
         });
         console.log(res);
+
+        $match_data
+    }
 </script>
 
 <Header phase="Post Match" />
