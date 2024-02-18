@@ -113,7 +113,7 @@ pub async fn slack_callback(
 
     Ok(axum::http::Response::builder()
         .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, "http://localhost:5173/app/home")
+        .header(LOCATION, "http://localhost:3020/app/home")
         .header(
             SET_COOKIE,
             format!(
@@ -165,7 +165,7 @@ pub async fn logout(
 
     let response = axum::http::Response::builder()
         .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, "http://localhost:5173/app/home") // TODO: Change to /app/home
+        .header(LOCATION, "http://localhost:3020/app/home") // TODO: Change to /app/home
         .header(
             SET_COOKIE,
             format!(
@@ -293,7 +293,7 @@ async fn get_user(access_token: String, db: &model::Db) -> Result<model::User, R
         Ok(res) => res,
         Err(e) => {
             error!("{}", e);
-            return Err(Redirect::to("http://localhost:5173/"));
+            return Err(Redirect::to("http://localhost:3020/"));
         }
     };
 
