@@ -66,6 +66,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return prod_server(router).await;
     }
 
+    error!("NOT IN PROD");
+
     let ports: Ports = Ports {
         http: 7878,
         https: 3007,
@@ -93,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
     let addr = std::env::var("SERVER_URL").expect("Server url not set");
-    let listener = tokio::net::TcpListener::bind("localhost:3021").await.unwrap();
+    let listener = tokio::net::TcpListener::bind(addr.clone()).await.unwrap();
     
     info!("Starting Prod Server");
     info!("Listening on {}", addr);
