@@ -2,7 +2,7 @@
     import Header from "$lib/components/Header.svelte";
     import Toggle from "$lib/components/Toggle.svelte";
     import Confirm from "$lib/components/Confirm.svelte";
-    import { match_data } from "$lib/stores/matchStores";
+    import { match_data } from "$lib/stores";
     let leavestatus = "";
     let leaveboolean = false;
     if ((leavestatus = "Left Home")) {
