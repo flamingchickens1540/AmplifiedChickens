@@ -93,7 +93,7 @@
 <Textarea bind:value={$pit.notes} />
 <ImageUpload />
 <div id="navbar">
-    <Navbar  />
+    <Navbar page="pit" />
 </div>
 
 <style>

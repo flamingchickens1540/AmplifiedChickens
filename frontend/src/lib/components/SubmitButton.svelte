@@ -1,15 +1,15 @@
 <script>
     export let text = "Submit!";
+
+    export let onClick = () => {};
 </script>
 
-<div class="grid grid-cols-5">
-    <button class="col-span-5">
-        <h3 class="col-span-5 rounded">{text}</h3>
-    </button>
-</div>
+<button on:click={onClick} class="rounded">
+    {text}
+</button>
 
 <style>
-    h3 {
+    button {
         margin: 17px;
         color: #ffffff;
         background-color: #5c5c5c;
