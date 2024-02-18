@@ -91,8 +91,10 @@ pub async fn slack_callback(
         None,
         None,
         None,
-        access_token.clone(),
+        access_token.clone().replace("\"", ""),
     );
+
+    info!("Profile: {:?}", profile);
 
     let current_event_key =
         match sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
@@ -218,7 +220,7 @@ pub async fn check_auth(
     info!("All Users: {:?}", users);
 
     let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
-        .bind(format!("\"{}\"", req.access_token))
+        .bind(format!("{}", req.access_token))
         .fetch_optional(&state.db.pool)
         .await
     {

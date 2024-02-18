@@ -8,6 +8,7 @@
     import { onMount } from "svelte";
     import { current_event_key } from "$lib/stores";
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
+    import { subscribeToPush } from "$lib/swutil.js";
 
     export let data: PageData;
     export let nextMatchTime = 1706579944;
@@ -28,6 +29,12 @@
 
     let greeting = determine_greeting();
 
+    let subscription = "";
+
+    onMount(() => {
+        subscription = localStorage.getItem("subscription") || "No subscription"; 
+    })
+
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -42,10 +49,10 @@
                 class="p-4 rounded"
             >
                 <h2 style="color: white;">Debug Menu:</h2>
-                <SubmitButton text="Subscribe!" />
+                <SubmitButton onClick={() => subscribeToPush(data?.access_token)} text="Subscribe!" />
                 <code
-                    style="font-size: 20px; font-family: poppins-medium; color: white; overflow: wrap;"
-                    >{data}</code
+                    style="font-size: 15px; color: white; overflow: wrap;"
+                    >{subscription}</code
                 >
             </Content>
             <Trigger>

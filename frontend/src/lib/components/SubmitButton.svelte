@@ -1,6 +1,5 @@
 <script>
     export let text = "Submit!";
-
     export let onClick = () => {};
 </script>
 
@@ -16,8 +15,8 @@
         font-size: 2rem;
         padding: 1rem;
         text-align: center;
-        /* Teams Remaining */
         font-family: "Poppins-medium";
         font-style: bold;
+        border-radius: 5px;
     }
 </style>

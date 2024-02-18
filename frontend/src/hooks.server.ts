@@ -1,11 +1,10 @@
-import { type Handle, redirect, json } from '@sveltejs/kit'
+import { type Handle, redirect, json } from "@sveltejs/kit"
 
 export const handle: Handle = async ({ event, resolve }) => {
-    const access_token = event.cookies.get('access_token')
-    // const scout_access_key = event.cookies.get('scout_access_key')
+    const access_token = event.cookies.get("access_token")
 
-    if (access_token == undefined && event.url.pathname != "/") {
-        return json({ status: 401, body: 'Unauthorized' });
+    if (access_token == undefined && event.url.pathname != "/" && !event.url.pathname.startsWith("/app/admin")) {
+        return redirect(302, "/");
     }
 
     let isAdminPath = event.url.pathname.startsWith('/app/admin');
@@ -19,8 +18,8 @@ export const handle: Handle = async ({ event, resolve }) => {
         body: JSON.stringify({ access_token: access_token, is_admin: isAdminPath }),
     });
 
-    if (auth_res.status != 200) {
-        return json({ status: 401, body: isAdminPath ? 'Unauthorized Request: Admin' : 'Unauthorized' });
+    if (auth_res.status != 200 && event.url.pathname != "/") {
+        return redirect(302, "/");
     }
 
     if (event.url.pathname == "/" && auth_res?.status == 200) {
