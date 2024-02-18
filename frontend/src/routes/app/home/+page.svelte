@@ -27,7 +27,7 @@
     }
 
     let greeting = determine_greeting();
-    
+
 </script>
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
@@ -57,14 +57,14 @@
     <div class="flex flex-col content-center items-stretch">
         <ScoutPercents />
         <div class="flex flex-row w-full content-center justify-around items-end">
-            <a href="https://www.thebluealliance.com/event/{current_event_key}" style="margin-left: 15px; margin-right: 15px;">
+            <a href="https://www.thebluealliance.com/event/{$current_event_key}" style="margin-left: 15px; margin-right: 15px;">
                 <button
                     style="margin-left:0px; width: 100%"
                 >
                     TheBlueAlliance
                 </button>
             </a>
-            <a href="https://www.statbotics.io/event/{current_event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
+            <a href="https://www.statbotics.io/event/{$current_event_key}" style="margin-left: 0px; margin-right: 15px; margin-top: 8px; width: 100%;">
                 <button
                     style="width:100%; margin-right: 15px; margin-left: 0px; padding-left: 0px; padding-right: 0px;"
                 >

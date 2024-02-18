@@ -92,6 +92,7 @@
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
 <ImageUpload />
+<SubmitButton text="Submit!" on:click={handle_submit} />
 <div id="navbar">
     <Navbar page="pit" />
 </div>
