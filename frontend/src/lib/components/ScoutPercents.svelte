@@ -11,6 +11,10 @@
             }
         })
 
+        if (!res.ok) {
+            console.error("Failed to fetch scout percents")
+        }
+
         console.log(res)
 
         return res.json()

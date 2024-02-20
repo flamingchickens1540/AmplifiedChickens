@@ -2,7 +2,7 @@
     import type { PageData } from "./$types";
     import { goto } from "$app/navigation";
     import { redirect } from "@sveltejs/kit";
-        const PUBLIC_OAUTH_REDIRECT_URL = import.meta.env.VITE_PUBLIC_REDIRECT_URL;
+    const PUBLIC_OAUTH_REDIRECT_URL = import.meta.env.VITE_PUBLIC_REDIRECT_URL;
 
 
     // export let data: PageData;

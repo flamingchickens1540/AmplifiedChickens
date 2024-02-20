@@ -11,12 +11,12 @@
     import { subscribeToPush } from "$lib/swutil.js";
 
     export let data: PageData;
-    export let nextMatchTime = 1706579944;
-    export let twitchURL = "https://www.twitch.tv/firstinspires";
+    let nextMatchTime = 1706579944;
+    let twitchURL = "https://www.twitch.tv/firstinspires";
 
     let name = data.scout_name;
 
-    current_event_key.set(data.current_event_key?.toString() || "2024orore");
+    $current_event_key = data.current_event_key?.toString() || "2024orore";
 
     function determine_greeting(): string {
         const currentTime = new Date().getHours();
@@ -31,8 +31,10 @@
 
     let subscription = "";
 
-    onMount(() => {
-        subscription = localStorage.getItem("subscription") || "No subscription"; 
+    onMount(async () => {
+        subscription = localStorage.getItem("subscription") || "No subscription";
+        
+        nextMatchTime = await fetch("")
     })
 
 </script>

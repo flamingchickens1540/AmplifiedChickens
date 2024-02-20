@@ -66,7 +66,7 @@
 
     <div class="grid grid-cols-5 gap-5">
         <div class="col-span-2">
-            <NumberScouted />
+            <NumberScouted {access_token}/>
         </div>
         <div class="col-span-3">
             <EventManagement
