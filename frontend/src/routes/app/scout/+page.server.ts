@@ -2,13 +2,15 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
 
-    let accessToken = cookies.get("access_token");
+    let accessToken = cookies.get("access_token")
+
+    console.log("access token scout: ", accessToken)
 
     let res = await fetch("https://scout.team1540.org/api/scout/request_team", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "x-access-token": accessToken
+            "x-access-token": accessToken ?? ""
         },
     })
 

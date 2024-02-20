@@ -1,10 +1,8 @@
 <script lang="ts">
     import Carousel from "$lib/components/Carousel.svelte";
-    import QueuePage from "$lib/components/MatchScoutHomepage.svelte";
+    import MatchScoutHomepage from "$lib/components/MatchScoutHomepage.svelte";
 
-    // Write the push notification system to modify each of these things
-    let queued = false;
-    let selected = true;
-    let started = false;
+    export let data: PageData
+
 </script>
-<QueuePage bind:clicked={queued} />
+<MatchScoutHomepage access_token={data.0}/>

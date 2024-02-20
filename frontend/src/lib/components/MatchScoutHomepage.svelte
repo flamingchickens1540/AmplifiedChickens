@@ -1,31 +1,31 @@
 <script lang="ts">
-    export let bteam1 = 5920;
-    export let bteam2 = 5920;
-    export let bteam3 = 5920;
-    export let rteam1 = 5920;
-    export let rteam2 = 5920;
-    export let rteam3 = 5920;
     import Game from "$lib/components/Lottery.svelte";
     import Pie from "$lib/components/Pie.svelte";
-    export let clicked = false;
     import { Modal, Content, Trigger } from "sv-popup";
-    export let selected = false;
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "./ScoutPercents.svelte";
+
+    export let blue: string[]
+    export let red: string[]
+    export let match: string
+    export let selected: boolean
+    export let timeuntilmatch: number
+    export let timegiven: number
+    export let access_token: string
+
+    let clicked = false;
 
     // messy time code (NO TOUCHIE)
     let minutes = 0;
     let time = 0;
-    export let timeuntilmatch = 60;
-    export let timegiven = 1706658804;
-    var date = new Date(timegiven * 1000);
-    var hours = date.getHours();
-    var min = date.getMinutes();
+    let date = new Date(timegiven * 1000);
+    let hours = date.getHours();
+    let min = date.getMinutes();
+    let formattedTime = hours + ":" + addLeadingZero(min);
+
     function addLeadingZero(number: number) {
         return number < 10 ? "0" + number : number;
     }
-    var formattedTime = hours + ":" + addLeadingZero(min);
-    export let match = 13;
     function getTimestamp() {
         return Math.floor(new Date().getTime() / 1000);
     }
@@ -43,6 +43,35 @@
         minutes = Math.max(minutes, 0);
     }
     // messy time code (NO TOUCHIE)
+    
+    async function joinQueue() {
+        let res = await fetch("https://team1540.org/api/scout/queue", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-access-token": access_token
+            },
+        })
+
+        if ((await res.json()).ok)
+            console.log("Queued user successfully")
+        }
+    }
+
+    async function leaveQueue() {
+        let res = await fetch("https://team1540.org/api/scout/dequeue", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "x-access-token": access_token
+            },
+        })
+
+        if ((await res.json()).ok) {
+            console.log("Dequeued user successfully")
+        }
+
+    }
 </script>
 
 <div class="grid content-end pt-10">

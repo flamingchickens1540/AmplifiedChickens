@@ -337,8 +337,18 @@ pub async fn in_queue(State(state): State<AppState>, Json(id): Json<String>) -> 
 #[axum::debug_handler]
 pub async fn queue_user(
     State(state): State<AppState>,
-    Json(access_token): Json<String>,
-) -> Result<(StatusCode, String), (StatusCode, String)> {
+    headers: HeaderMap,
+) -> Result<(), (StatusCode, String)> {
+    let access_token = match headers.get("x-access-token") {
+        Some(t) => t.to_str().unwrap().to_string(),
+        None => {
+            error!("Attempted to queue user without access_token header");
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                "Did not receive x-access_token in header".to_string(),
+            ));
+        }
+    };
     let mut queue = state.queue.lock().await;
     if queue.scouts.contains(&access_token) {
         error!("Scout already in queue attempted to enter queue");
@@ -350,24 +360,34 @@ pub async fn queue_user(
 
     queue.add_scout_auto_assign(access_token, &state.db).await;
 
-    Ok((StatusCode::OK, "Success".to_string()))
+    Ok(())
 }
 
 #[axum::debug_handler]
 pub async fn dequeue_user(
     State(state): State<AppState>,
-    Json(access_code): Json<String>,
+    headers: HeaderMap,
 ) -> Result<String, (StatusCode, String)> {
-    let mut queue = state.queue.lock().await;
+    let access_token = match headers.get("x-access-token") {
+        Some(t) => t.to_str().unwrap().to_string(),
+        None => {
+            error!("Attempted to queue user without access_token header");
+            return Err((
+                StatusCode::UNAUTHORIZED,
+                "Did not receive x-access_token in header".to_string(),
+            ));
+        }
+    };
 
-    if !queue.scouts.contains(&access_code) {
+    let mut queue = state.queue.lock().await;
+    if !queue.scouts.contains(&access_token) {
         return Err((StatusCode::BAD_REQUEST, "Scout not in queue".to_string()));
     }
 
     let index = queue
         .scouts
         .iter()
-        .position(|code| *code == access_code)
+        .position(|code| *code == access_token)
         .unwrap();
     queue.scouts.remove(index);
 
