@@ -45,7 +45,8 @@
     // messy time code (NO TOUCHIE)
     
     async function joinQueue() {
-        let res = await fetch("https://team1540.org/api/scout/queue", {
+    	clicked = true
+        let res = await fetch("https://scout.team1540.org/api/scout/queue", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -53,13 +54,14 @@
             },
         })
 
-        if ((await res.json()).ok)
+        if ((await res.json()).ok) {
             console.log("Queued user successfully")
         }
     }
 
     async function leaveQueue() {
-        let res = await fetch("https://team1540.org/api/scout/dequeue", {
+    	clicked = false
+        let res = await fetch("https://scout.team1540.org/api/scout/dequeue", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -91,29 +93,31 @@
     </p>
 </div>
 
+{#if blue.length != 0 || red.length != 0}
 <div
     class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
     style="background-color: #5C5C5C; margin: 15px; padding:15px"
 >
     <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{rteam1}</h2>
+        <h2 class="rounded" style="background-color: #ED1C24;">{red[0] ?? ""}</h2>
     </center>
     <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{rteam2}</h2>
+        <h2 class="rounded" style="background-color: #ED1C24;">{red[1] ?? ""}</h2>
     </center>
     <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{rteam3}</h2>
+        <h2 class="rounded" style="background-color: #ED1C24;">{red[2] ?? ""}</h2>
     </center>
     <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{bteam1}</h2>
+        <h2 class="rounded" style="background-color: #0083E6;">{blue[0] ?? ""}</h2>
     </center>
     <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{bteam2}</h2>
+        <h2 class="rounded" style="background-color: #0083E6;">{blue[1] ?? ""}</h2>
     </center>
     <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{bteam2}</h2>
+        <h2 class="rounded" style="background-color: #0083E6;">{blue[2] ?? ""}</h2>
     </center>
 </div>
+{/if}
 
 <ScoutPercents />
 {#if clicked == false}<!-- if queue is not full -->
@@ -122,7 +126,7 @@
             <button
                 style="padding: 2.5rem"
                 id="Match-Scounts"
-                on:click={() => (clicked = true)}
+                on:click={joinQueue}
             >
                 Join Queue
             </button>
@@ -134,7 +138,7 @@
             <button
                 style="padding: 2.8rem"
                 id="Match-Scouts"
-                on:click={() => (clicked = false)}
+                on:click={leaveQueue}
             >
                 Leave Queue</button
             >

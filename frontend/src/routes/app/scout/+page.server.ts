@@ -6,7 +6,7 @@ export const load = (async ({ cookies }) => {
 
     console.log("access token scout: ", accessToken)
 
-    let res = await fetch("https://scout.team1540.org/api/scout/request_team", {
+    let res = await fetch("http://localhost:3021/scout/request_team", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

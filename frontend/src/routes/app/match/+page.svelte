@@ -4,5 +4,9 @@
 
     export let data: PageData
 
+    let red = []
+
+    let blue = []
+
 </script>
-<MatchScoutHomepage access_token={data.0}/>
+<MatchScoutHomepage {blue} {red} access_token={data.accessToken}/>

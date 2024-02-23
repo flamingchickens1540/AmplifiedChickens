@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db, // Database
         ctx,
         queue,
-        team_match_upstreams: Arc::new(Mutex::new(vec![])),
+        sse_stream: Arc::new(Mutex::new(None))
     };
     let router = init_router(state);
 
@@ -150,6 +150,7 @@ fn init_router(state: model::AppState) -> Router {
 }
 
 async fn health() -> Result<impl IntoResponse, Infallible> {
+    info!("Health");
     Ok(())
 }
 

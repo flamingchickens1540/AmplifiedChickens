@@ -358,8 +358,9 @@ pub async fn queue_user(
         ));
     }
 
-    queue.add_scout_auto_assign(access_token, &state.db).await;
+    queue.add_scout_auto_assign(access_token.clone(), &state.db).await;
 
+    info!("Scout {} queued", access_token);
     Ok(())
 }
 
@@ -387,10 +388,11 @@ pub async fn dequeue_user(
     let index = queue
         .scouts
         .iter()
-        .position(|code| *code == access_token)
+        .position(|code| *code == access_token.clone())
         .unwrap();
     queue.scouts.remove(index);
 
+    info!("Scout {} dequeued", access_token);
     Ok("User removed from queue".to_string())
 }
 

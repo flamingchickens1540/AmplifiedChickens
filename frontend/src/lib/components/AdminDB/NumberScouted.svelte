@@ -10,7 +10,7 @@
     onMount(async () => {
         console.log("mounted")
 
-        let res = await fetch("https://localhost:3007/admin/users/get/all", {
+        let res = await fetch("https://scout.team1540.org/api/admin/users/get/all", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

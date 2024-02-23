@@ -37,7 +37,8 @@ pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
     pub queue: Arc<Mutex<RoboQueue>>,
-    pub team_match_upstreams: Arc<Mutex<Vec<Sender<Result<Event, Infallible>>>>>,
+    pub sse_stream: Arc<Mutex<Option<Sender<Result<Event, Infallible>>>>>,
+    pub temp_rx: Option<Arc<Mutex<Receiver<Result<Event, Infalliable>>>>>
 }
 
 #[derive(Debug, Clone)]

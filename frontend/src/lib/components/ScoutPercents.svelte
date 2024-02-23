@@ -3,7 +3,7 @@
     import Pie from "./Pie.svelte";
 
     async function get_scout_percents(): Promise<readonly [string[], number[]]> {
-        let res = await fetch("https://localhost:3007/admin/users/get/all", {
+        let res = await fetch("https://scout.team1540.org/api/admin/users/get/all", {
             method: "GET",
             headers: {
                 Accept: "application/json",
