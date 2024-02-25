@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
 
-use crate::model::{self, AppState, Db, EventState, User};
+use crate::{submit, model::{self, AppState, Db, EventState, User}};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -360,6 +360,14 @@ pub async fn queue_user(
 
     queue.add_scout_auto_assign(access_token.clone(), &state.db).await;
 
+    let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
+
+    let mut upstream = state.sse_upstream.lock().await;
+
+    let ret = submit::SseReturn::QueuedScout(user.name.clone());
+
+    upstream.send(Ok(axum::response::sse::Event::default().data(serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"))));
+
     info!("Scout {} queued", access_token);
     Ok(())
 }
@@ -391,6 +399,14 @@ pub async fn dequeue_user(
         .position(|code| *code == access_token.clone())
         .unwrap();
     queue.scouts.remove(index);
+
+let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
+
+    let mut upstream = state.sse_upstream.lock().await;
+
+    let ret = submit::SseReturn::DeQueuedScout(user.name.clone());
+
+    upstream.send(Ok(axum::response::sse::Event::default().data(serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"))));
 
     info!("Scout {} dequeued", access_token);
     Ok("User removed from queue".to_string())

@@ -3,14 +3,14 @@
     import type { Scout } from "$lib/types.ts";
 
     // This needs to be passed in through sse stream
-    export let queued: Scout[] = [];
+    export let queued: string[];
 </script>
 
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">
     <h3 style="margin:0.5rem">Queued Scouts</h3>
     {#each queued as scout}
         <h3 class="rounded" style="padding: 1rem; background-color: #5C5C5C">
-            {scout.name}
+            {scout}
         </h3>
     {/each}
 </div>

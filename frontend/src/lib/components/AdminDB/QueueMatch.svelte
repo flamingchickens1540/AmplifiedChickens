@@ -34,7 +34,7 @@
     }
 
     async function queue_match() {
-        let res = await fetch("https://localhost:3007/admin/new/match/auto", {
+        let res = await fetch("https://scout.team1540.org/api/admin/new/match/auto", {
             method: "POST",
             headers: {
                 Accept: "application/json",
@@ -61,7 +61,6 @@
         <input class="" bind:value={match_key} alt="Match Key" />
         <button on:click={auto_populate} class="rounded">Load Match</button>
     </div>
-    {#if auto_assign}
         <div class="grid grid-cols-2 grid-rows-1">
             <div>
                 <AssignStudent
@@ -83,7 +82,6 @@
                 />
             </div>
         </div>
-    {/if}
     <div class="grid grid-cols-2 grid-rows-1 place-items-center">
         <button on:click={() => auto_assign = !auto_assign} class="rounded {auto_assign? "green": "red"}">Auto Assign</button>
         <button

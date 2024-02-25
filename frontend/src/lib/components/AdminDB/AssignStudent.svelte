@@ -4,7 +4,7 @@
 
     export let color: string
     export let teams: string[] = []
-    export const selected: Scout[] = []
+    export let selected: Scout[] = []
     export let queued: Scout[] = []
     export let auto_assign: boolean
 

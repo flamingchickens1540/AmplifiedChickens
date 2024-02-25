@@ -37,8 +37,7 @@ pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
     pub queue: Arc<Mutex<RoboQueue>>,
-    pub sse_stream: Arc<Mutex<Option<Sender<Result<Event, Infallible>>>>>,
-    pub temp_rx: Option<Arc<Mutex<Receiver<Result<Event, Infalliable>>>>>
+    pub sse_upstream: Arc<Mutex<Sender<Result<Event, Infallible>>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -84,6 +83,7 @@ impl RoboQueue {
             } else {
                 String::from("blue")
             };
+            info!("Robot pushed to scout");
             let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
             self.assigned.insert(scouts[i].clone(), robots[i].clone());
             // Push to user, then they lookup in the map
@@ -123,6 +123,7 @@ impl RoboQueue {
     pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
             let _endpoint = self.get_user_endpoint(&scout, db);
+            info!("Robot pushed to scout");
             // Push to scout
         }
 

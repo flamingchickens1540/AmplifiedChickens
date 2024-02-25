@@ -115,5 +115,5 @@ export type DrivetrainEnum = "swerve" | "tank" | "other"
 export type TeamMatch = {
     number: string
     scout_name: string
-    status: string
+    status: MatchStatus 
 }

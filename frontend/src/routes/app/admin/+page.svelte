@@ -18,17 +18,20 @@
     let blue_teams: (TeamKey | "") [] = ["", "", ""];
 
     let all_scouts: Scout[] = [];
-    let queued_scouts: Scout[] = [];
+    let queued_scouts: string[] = []//data.queued_scouts
 
     let auto_assign: boolean = false;
 
     let scouted_robots: TeamMatch[] = [];
 
-    onMount(() => {
+    onMount(async () => {
         console.log("mounted") // THIS DOESN'T TRIGGER :-{
-    })
+	const sse_src = new EventSource("https://scout.team1540.org/api/admin/sse/get/stream");
+    sse_src.onmessage = (event) => {
+                console.log(event)
 
-    console.log("past mounting")
+        };
+    })
 
     // console.log(data)
 

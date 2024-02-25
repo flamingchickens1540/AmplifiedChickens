@@ -2,7 +2,7 @@ use axum::{
     extract::{DefaultBodyLimit, Host},
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
-    response::{IntoResponse, Redirect},
+    response::{IntoResponse, Redirect, sse::Event},
     routing::{any, get, post},
     BoxError, Json, Router,
 };
@@ -48,6 +48,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ctx = ReqwestClient::new();
 
+    let (tx, rx) = tokio::sync::watch::channel(Ok(Event::default())); // tx is the upstream, while rx is the downstream
+
     let queue = Arc::new(Mutex::new(model::RoboQueue {
         match_keys: vec![],
         assigned: HashMap::new(),
@@ -59,7 +61,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db, // Database
         ctx,
         queue,
-        sse_stream: Arc::new(Mutex::new(None))
+        sse_upstream: Arc::new(Mutex::new(tx)),
     };
     let router = init_router(state);
 
@@ -132,7 +134,7 @@ fn init_router(state: model::AppState) -> Router {
             post(queue::set_user_permissions),
         )
         .route(
-            "/admin/sse/lastMatchStream",
+            "/admin/sse/get/stream",
             post(submit::admin_sse_connect),
         )
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
