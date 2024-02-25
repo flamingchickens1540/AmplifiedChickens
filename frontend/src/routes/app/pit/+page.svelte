@@ -14,6 +14,7 @@
     import type { Team } from "$lib/types";
     import type { PageData } from "./$types";
     import { onMount } from "svelte";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData
     export let team_key = ""
@@ -41,7 +42,7 @@
         let req: any = { id: data.scout_id }
         req.push($pit)
 
-        let res = fetch("https://scout.team1540.org/api/submit/pit", {
+        let res = fetch(`${BACKEND_URL}/submit/pit`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -51,7 +52,7 @@
     }
 
     async function get_remaining_teams() {
-        let res = await fetch("https://scout.team1540.org/api/scout/get/unpitted");
+        let res = await fetch(`${BACKEND_URL}/scout/get/unpitted`);
         let json = await res.json();
         console.log("remaining teams: ", json);
         return json;

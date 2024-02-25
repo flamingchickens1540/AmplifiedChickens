@@ -1,6 +1,7 @@
 <script lang="ts">
     import TextInput from "$lib/components/TextInput.svelte";
     import { createEventDispatcher } from 'svelte';
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     const dispatch = createEventDispatcher();
 
@@ -18,7 +19,7 @@
             },
             body: JSON.stringify(event_name), // body data type must match "Content-Type" header
         };
-        let res = await fetch("https://localhost:3007/admin/newEvent", opts);
+        let res = await fetch(`${BACKEND_URL}/admin/newEvent`, opts);
         if (res.ok) {
             console.log("Event set");
         } else {
@@ -27,7 +28,7 @@
     }
 
     async function refresh_tba() {
-        let res = await fetch("https://localhost:3007/admin/tba/refresh", {
+        let res = await fetch(`${BACKEND_URL}/admin/tba/refresh`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -39,7 +40,7 @@
     }
 
     async function load_teams() {
-        let res = await fetch("https://localhost:3007/admin/tba/loadTeams", {
+        let res = await fetch(`${BACKEND_URL}/admin/tba/loadTeams`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

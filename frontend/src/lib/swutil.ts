@@ -1,3 +1,5 @@
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+
 export async function subscribeToPush(access_token: string | undefined) {
   console.log("ACCESS TOKEN: ", access_token);
   if (!access_token) return;
@@ -18,7 +20,7 @@ export async function subscribeToPush(access_token: string | undefined) {
 
     localStorage.setItem("subscription", JSON.stringify(subscription));
 
-    await fetch("https://localhost:3007/register", {
+    await fetch(`${BACKEND_URL}register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -33,7 +35,7 @@ export async function subscribeToPush(access_token: string | undefined) {
 }
 
 async function fetchVapidKeys() {
-  return fetch("https://localhost:3007/vapid").then((resp) => resp.json().then(data => data.public_key));
+  return fetch(`${BACKEND_URL}/vapid`).then((resp) => resp.json().then(data => data.public_key));
 }
 
 function base64UrlToUint8Array(base64UrlData: string) {

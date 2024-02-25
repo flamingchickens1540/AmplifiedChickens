@@ -1,6 +1,7 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let red_teams:   string[] = [];
     export let blue_teams: string[] = [];
@@ -34,7 +35,7 @@
     }
 
     async function queue_match() {
-        let res = await fetch("https://localhost:3007/admin/new/match/auto", {
+        let res = await fetch(`${BACKEND_URL}/admin/new/match/auto`, {
             method: "POST",
             headers: {
                 Accept: "application/json",

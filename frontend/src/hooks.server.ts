@@ -1,4 +1,5 @@
-import { type Handle, redirect, json } from "@sveltejs/kit"
+import { type Handle, redirect } from "@sveltejs/kit"
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const handle: Handle = async ({ event, resolve }) => {
     const access_token = event.cookies.get("access_token")
@@ -9,7 +10,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     let isAdminPath = event.url.pathname.startsWith('/app/admin');
 
-    let auth_res = await fetch("https://localhost:3007/auth/check", {
+    let auth_res = await fetch(`${BACKEND_URL}/auth/check`, {
         method: "POST",
         headers: {
             Accept: "application/json",

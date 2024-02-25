@@ -5,6 +5,7 @@
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let scout_id = "";
 
@@ -33,7 +34,7 @@
         let req: any = { id: scout_id };
         req.push($match_data);
 
-        let res = await fetch("https://localhost:3007/submit/match", {
+        let res = await fetch(`${BACKEND_URL}/submit/match`, {
             method: "POST",
             headers: {
                 Accept: "application/json",

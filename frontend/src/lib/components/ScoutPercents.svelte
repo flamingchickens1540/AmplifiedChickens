@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Pie from "./Pie.svelte";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     async function get_scout_percents(): Promise<readonly [string[], number[]]> {
-        let res = await fetch("https://localhost:3007/admin/users/get/all", {
+        let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
             method: "GET",
             headers: {
                 Accept: "application/json",
