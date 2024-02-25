@@ -15,8 +15,6 @@
             console.error("Failed to fetch scout percents")
         }
 
-        console.log(res)
-
         return res.json()
     }
 
@@ -25,8 +23,6 @@
 
     onMount(async () => {
         let result = await get_scout_percents()
-
-        console.log(result)
 
         scout_names = result[0]
         scout_percents = result[1]

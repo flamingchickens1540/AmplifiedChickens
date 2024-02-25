@@ -9,7 +9,7 @@ export async function subscribeToPush(access_token: string | undefined) {
 
   let subscriptionOptions = {
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    applicationServerKey: base64UrlToUint8Array(VAPID_PUBLIC_KEY),
   };
   try {
     let subscription = await pushManager?.subscribe(subscriptionOptions);
@@ -33,18 +33,20 @@ export async function subscribeToPush(access_token: string | undefined) {
 }
 
 async function fetchVapidKeys() {
-  return fetch("https://localhost:3007/vapid.json").then((resp) => resp.json().then(data => data.public_key));
+  return fetch("https://localhost:3007/vapid").then((resp) => resp.json().then(data => data.public_key));
 }
 
-function urlBase64ToUint8Array(base64String: String) {
-  var padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  var base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+function base64UrlToUint8Array(base64UrlData: string) {
+  const padding = '='.repeat((4 - base64UrlData.length % 4) % 4);
+  const base64 = (base64UrlData + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
 
-  var rawData = window.atob(base64);
-  var outputArray = new Uint8Array(rawData.length);
+  const rawData = window.atob(base64);
+  const buffer = new Uint8Array(rawData.length);
 
-  for (var i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
+  for (let i = 0; i < rawData.length; ++i) {
+    buffer[i] = rawData.charCodeAt(i);
   }
-  return outputArray;
+  return buffer;
 }

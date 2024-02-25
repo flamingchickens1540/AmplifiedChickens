@@ -9,7 +9,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     let isAdminPath = event.url.pathname.startsWith('/app/admin');
 
-    let auth_res = await fetch("https://scout.team1540.org/api/auth/check", {
+    let auth_res = await fetch("https://localhost:3007/auth/check", {
         method: "POST",
         headers: {
             Accept: "application/json",
