@@ -28,7 +28,7 @@ pub async fn upload(
     mut multipart: Multipart,
 ) -> impl IntoResponse {
     let mut tasks = Vec::new();
-    let _image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
+    let image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
 
     while let Some(field) = multipart.next_field().await.unwrap() {
         let data = field.bytes().await.unwrap();
@@ -37,10 +37,11 @@ pub async fn upload(
         let new_db = state.db.pool.clone();
 
         let task = tokio::spawn(async move {
+            let image_url: String = std::env::var("IMAGE_URL").expect("IMAGE_URL is not set");
             let name = Uuid::new_v4().to_string();
             let img = image::load_from_memory(&data).unwrap();
 
-            let path = format!("https://localhost:3007/image/{name}.png");
+            let path = format!("{image_url}/{name}.png");
             let file = File::create(&path).unwrap();
             let mut writer = BufWriter::new(file);
             img.write_to(&mut writer, image::ImageOutputFormat::Png)

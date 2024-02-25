@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Pie from "./Pie.svelte";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     async function get_scout_percents(): Promise<readonly [string[], number[]]> {
-        let res = await fetch("https://scout.team1540.org/api/admin/users/get/all", {
+        let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
             method: "GET",
             headers: {
                 Accept: "application/json",
@@ -15,8 +16,6 @@
             console.error("Failed to fetch scout percents")
         }
 
-        console.log(res)
-
         return res.json()
     }
 
@@ -25,8 +24,6 @@
 
     onMount(async () => {
         let result = await get_scout_percents()
-
-        console.log(result)
 
         scout_names = result[0]
         scout_percents = result[1]

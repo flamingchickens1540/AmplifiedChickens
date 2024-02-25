@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const load = (async ({ cookies }) => {
 
@@ -6,7 +7,7 @@ export const load = (async ({ cookies }) => {
 
     console.log("access token scout: ", accessToken)
 
-    let res = await fetch("http://localhost:3021/scout/request_team", {
+    let res = await fetch(`${BACKEND_URL}/scout/request_team`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

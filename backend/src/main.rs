@@ -144,9 +144,8 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/queue", post(queue::queue_user)) // tested
         .route("/scout/dequeue", post(queue::dequeue_user)) // tested
         .route("/scout/request_team", get(queue::scout_request_team))
-        .route("/vapid.json", get(webpush::vapid))
+        .route("/vapid", get(webpush::vapid))
         .route("/register", post(webpush::register))
-        .route("/send", get(webpush::send))
         .with_state(state)
         .layer(CorsLayer::permissive())
 }

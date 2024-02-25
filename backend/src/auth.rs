@@ -20,9 +20,9 @@ pub async fn slack_callback(
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
     let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
-    let frontend_redirect_url = dotenv::var("REDIRECT_URL_TO_FRONTEND").expect("REDIRECT_URL_TO_FRONTEND not set");
+    let frontend_url = format!("{}/app/home", dotenv::var("FRONTEND_URL").expect("REDIRECT_URL"));
     info!("Redirect URL: {}", redirect_url);
-    //let nonce = "test_nonce";
+//let nonce = "test_nonce";
 
     let token_res: serde_json::Value = state
         .ctx
@@ -116,7 +116,7 @@ pub async fn slack_callback(
 
     Ok(axum::http::Response::builder()
         .status(StatusCode::SEE_OTHER)
-        .header(LOCATION, frontend_redirect_url) 
+        .header(LOCATION, frontend_url) 
         .header(
             SET_COOKIE,
             format!(

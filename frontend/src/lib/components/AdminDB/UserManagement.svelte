@@ -1,11 +1,12 @@
 <script lang="ts">
     import type { Scout } from "$lib/types.ts";
-    export let scouts: Scout[] = [];
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
+    export let scouts: Scout[] = [];
     export let access_token: string;
 
     async function set_admin(scout: Scout, is_admin: boolean) {
-        let res = await fetch("https://localhost:3007/admin/set", {
+        let res = await fetch(`${BACKEND_URL}/admin/set`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

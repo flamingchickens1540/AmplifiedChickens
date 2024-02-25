@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { Scout } from "$lib/types"
     import { onMount } from "svelte";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let access_token: string
 
@@ -10,7 +11,7 @@
     onMount(async () => {
         console.log("mounted")
 
-        let res = await fetch("https://scout.team1540.org/api/admin/users/get/all", {
+        let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

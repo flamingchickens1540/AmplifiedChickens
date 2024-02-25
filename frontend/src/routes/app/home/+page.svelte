@@ -32,8 +32,10 @@
     let subscription = "";
 
     onMount(async () => {
+        // TODO: make subscription reactively update
         subscription = localStorage.getItem("subscription") || "No subscription";
         
+        // TODO: fetch next match time
         nextMatchTime = await fetch("")
     })
 

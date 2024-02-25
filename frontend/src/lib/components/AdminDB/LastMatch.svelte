@@ -6,9 +6,10 @@
     // The dashboard page needs to pass these in through the SSE Stream or smth
     export let scouted_robots: TeamMatch[] = [];
     export let last_match = "";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     // const server_source = new EventSource(
-        // "https://localhost:3007/admin/lastMatchStream",
+        // `${BACKEND_URL}/admin/lastMatchStream`,
     // );
 
     // server_source.addEventListener("new_scouted_match", (event) => {
