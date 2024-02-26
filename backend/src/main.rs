@@ -3,22 +3,22 @@ use axum::{
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
     response::{IntoResponse, Redirect, sse::Event},
-    routing::{any, get, post},
+    routing::{get, post},
     BoxError, Json, Router,
 };
 
 use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
-use http::HeaderValue;
+
 use reqwest::Client as ReqwestClient;
-use serde_json::json;
+
 use std::{collections::HashMap, sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{CorsLayer};
 use tracing::{error, info};
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt, FmtSubscriber};
+use tracing_subscriber::{FmtSubscriber};
 
 use self::model::TeamMatch;
 
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ctx = ReqwestClient::new();
 
-    let (tx, rx) = tokio::sync::watch::channel(Ok(Event::default())); // tx is the upstream, while rx is the downstream
+    let (tx, _rx) = tokio::sync::watch::channel(Ok(Event::default())); // tx is the upstream, while rx is the downstream
 
     let queue = Arc::new(Mutex::new(model::RoboQueue {
         match_keys: vec![],

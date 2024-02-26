@@ -10,11 +10,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     let isAdminPath = event.url.pathname.startsWith('/app/admin');
 
-<<<<<<< HEAD
-    let auth_res = await fetch("http://localhost:3021/auth/check", {
-=======
     let auth_res = await fetch(`${BACKEND_URL}/auth/check`, {
->>>>>>> 1725b53f33a79533bf79416d13d3be84c582520d
         method: "POST",
         headers: {
             Accept: "application/json",

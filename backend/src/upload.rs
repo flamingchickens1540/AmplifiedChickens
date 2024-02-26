@@ -28,7 +28,7 @@ pub async fn upload(
     mut multipart: Multipart,
 ) -> impl IntoResponse {
     let mut tasks = Vec::new();
-    let image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
+    let _image_dir: String = std::env::var("IMAGE_DIR").expect("IMAGE_DIR is not set");
 
     while let Some(field) = multipart.next_field().await.unwrap() {
         let data = field.bytes().await.unwrap();

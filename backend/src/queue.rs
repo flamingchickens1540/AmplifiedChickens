@@ -1,11 +1,11 @@
 use std::convert::Infallible;
 
-use axum::response::Sse;
+
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
 
-use dotenv::dotenv;
+
 use http::HeaderMap;
-use reqwest::Method;
+
 use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
@@ -362,7 +362,7 @@ pub async fn queue_user(
 
     let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
 
-    let mut upstream = state.sse_upstream.lock().await;
+    let upstream = state.sse_upstream.lock().await;
 
     let ret = submit::SseReturn::QueuedScout(user.name.clone());
 
@@ -402,7 +402,7 @@ pub async fn dequeue_user(
 
 let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
 
-    let mut upstream = state.sse_upstream.lock().await;
+    let upstream = state.sse_upstream.lock().await;
 
     let ret = submit::SseReturn::DeQueuedScout(user.name.clone());
 

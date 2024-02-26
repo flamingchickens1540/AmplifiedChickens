@@ -1,15 +1,15 @@
 use crate::model::{AppState, TeamEvent, TeamMatch, User};
 use serde::{Deserialize, Serialize};
 use axum::response::{IntoResponse, sse::{Event, KeepAlive, Sse}};
-use axum::{extract::State, http::StatusCode, Form, Json};
-use futures::stream::{self, Stream};
+use axum::{extract::State, http::StatusCode, Json};
+use futures::stream::{Stream};
 use futures::StreamExt;
-use std::ops::Deref;
-use std::{convert::Infallible, path::PathBuf, time::Duration};
-use tokio::sync::watch;
-use tokio::time;
+
+use std::{convert::Infallible};
+
+
 use tokio_stream::wrappers::WatchStream;
-use tracing::{info, error};
+use tracing::{info};
 
 pub async fn admin_sse_connect(
     State(state): State<AppState>,
@@ -48,7 +48,7 @@ pub async fn submit_team_match(
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR
     };
 
-    let mut upstream = state.sse_upstream.lock().await;
+    let upstream = state.sse_upstream.lock().await;
 
     let team_match = SseReturn::TeamMatchScouted { scout_name: user.name, team_key: form.team_key, match_key: form.match_key };
 

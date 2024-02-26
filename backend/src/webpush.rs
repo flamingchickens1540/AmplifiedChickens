@@ -1,14 +1,14 @@
 use crate::queue::get_user_helper;
 use crate::{
     error,
-    model::{AppState, Db, User},
+    model::{AppState, Db},
 };
 use axum::{
-    extract::{Json, Request, State},
+    extract::{Json, State},
     response::IntoResponse,
 };
 use base64ct::{Base64UrlUnpadded, Encoding};
-use http::{request, HeaderMap, Uri};
+use http::{HeaderMap, Uri};
 use hyper::StatusCode;
 use hyper_util::{client::legacy::Client, rt::TokioExecutor};
 use serde::{Deserialize, Serialize};
