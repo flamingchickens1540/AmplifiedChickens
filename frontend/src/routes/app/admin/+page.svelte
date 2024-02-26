@@ -25,8 +25,9 @@
     let scouted_robots: TeamMatch[] = [];
 
     onMount(async () => {
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
         console.log("mounted") // THIS DOESN'T TRIGGER :-{
-	const sse_src = new EventSource("https://scout.team1540.org/api/admin/sse/get/stream");
+	const sse_src = new EventSource(`${BACKEND_URL}/admin/sse/get/stream`);
     sse_src.onmessage = (event) => {
                 console.log(event)
 

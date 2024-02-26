@@ -2,7 +2,7 @@ use axum::{
     extract::{DefaultBodyLimit, Host},
     handler::HandlerWithoutStateExt,
     http::{StatusCode, Uri},
-    response::{IntoResponse, Redirect, sse::Event},
+    response::{sse::Event, IntoResponse, Redirect},
     routing::{get, post},
     BoxError, Json, Router,
 };
@@ -10,15 +10,14 @@ use axum::{
 use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
-
 use reqwest::Client as ReqwestClient;
 
 use std::{collections::HashMap, sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
-use tower_http::cors::{CorsLayer};
+use tower_http::cors::CorsLayer;
 use tracing::{error, info};
-use tracing_subscriber::{FmtSubscriber};
+use tracing_subscriber::FmtSubscriber;
 
 use self::model::TeamMatch;
 
@@ -73,14 +72,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let ports: Ports = Ports {
         http: 7878,
-        https: 3007,
+        https: 3021,
     };
 
     let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
         .await
         .unwrap();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
 
     tokio::spawn(redirect_http_to_https(ports));
 
@@ -98,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
     let addr = std::env::var("SERVER_URL").expect("Server url not set");
     let listener = tokio::net::TcpListener::bind(addr.clone()).await.unwrap();
-    
+
     info!("Starting Prod Server");
     info!("Listening on {}", addr);
 
@@ -133,10 +132,7 @@ fn init_router(state: model::AppState) -> Router {
             "/admin/users/setPermissions",
             post(queue::set_user_permissions),
         )
-        .route(
-            "/admin/sse/get/stream",
-            post(submit::admin_sse_connect),
-        )
+        .route("/admin/sse/get/stream", post(submit::admin_sse_connect))
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
         .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))

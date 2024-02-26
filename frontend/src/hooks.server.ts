@@ -2,6 +2,7 @@ import { type Handle, redirect } from "@sveltejs/kit"
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const handle: Handle = async ({ event, resolve }) => {
+
     const access_token = event.cookies.get("access_token")
 
     if (access_token == undefined && event.url.pathname != "/" && !event.url.pathname.startsWith("/app/admin")) {
