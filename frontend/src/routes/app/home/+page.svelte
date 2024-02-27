@@ -36,7 +36,6 @@
         subscription = localStorage.getItem("subscription") || "No subscription";
         
         // TODO: fetch next match time
-        nextMatchTime = await fetch("")
     })
 
 </script>

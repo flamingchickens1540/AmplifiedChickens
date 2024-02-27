@@ -11,6 +11,7 @@
                 "Content-Type": "application/json",
             }
         })
+        console.log(res)
 
         if (!res.ok) {
             console.error("Failed to fetch scout percents")

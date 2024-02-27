@@ -12,29 +12,24 @@
 
     export let data: PageData;
 
+    console.log("DATA ", data)
+
     let access_token = data.access_token as string;
 
     let red_teams: (TeamKey | "")[] = ["", "", ""];
-    let blue_teams: (TeamKey | "") [] = ["", "", ""];
+    let blue_teams: (TeamKey | "")[] = ["", "", ""];
 
     let all_scouts: Scout[] = [];
-    let queued_scouts: string[] = []//data.queued_scouts
+    let queued_scouts: string[] = []; //data.queued_scouts
 
     let auto_assign: boolean = false;
 
     let scouted_robots: TeamMatch[] = [];
 
     onMount(async () => {
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
-        console.log("mounted") // THIS DOESN'T TRIGGER :-{
-	const sse_src = new EventSource(`${BACKEND_URL}/admin/sse/get/stream`);
-    sse_src.onmessage = (event) => {
-                console.log(event)
-
-        };
-    })
-
-    // console.log(data)
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+        console.log("mounted");
+    });
 
     function clear_teams() {
         red_teams = [];
@@ -68,9 +63,10 @@
         </div>
     </div>
 
+
     <div class="grid grid-cols-5 gap-5">
         <div class="col-span-2">
-            <NumberScouted {access_token}/>
+            <NumberScouted {access_token} />
         </div>
         <div class="col-span-3">
             <EventManagement

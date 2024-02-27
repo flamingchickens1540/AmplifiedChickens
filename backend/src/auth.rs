@@ -18,9 +18,10 @@ pub async fn slack_callback(
 ) -> Result<axum::http::Response<String>, (axum::http::StatusCode, String)> {
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
-    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
+    let redirect_url = dotenv::var("FRONTEND_REDIRECT_URL").unwrap();
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
-    let frontend_url = format!("{}/app/home", dotenv::var("FRONTEND_URL").expect("REDIRECT_URL"));
+    let frontend_url = format!("{}/app/home", dotenv::var("VITE_FRONTEND_URL").expect("REDIRECT_URL"));
+    let backend_url = format!("{}/auth/slack", dotenv::var("VITE_BACKEND_URL").expect("REDIRECT_URL"));
     info!("Redirect URL: {}", redirect_url);
 //let nonce = "test_nonce";
 
@@ -31,7 +32,7 @@ pub async fn slack_callback(
             ("client_id", client_id),
             ("client_secret", client_secret),
             ("code", query.code),
-            ("redirect_uri", redirect_url),
+            ("redirect_uri", backend_url),
             ("grant_type", "authorization_code".to_string()),
         ])
         .send()
@@ -206,7 +207,6 @@ pub struct AuthRequest {
     is_admin: bool,
 }
 
-//
 pub async fn check_auth(
     State(state): State<AppState>,
     Json(req): Json<AuthRequest>,
@@ -214,10 +214,9 @@ pub async fn check_auth(
     info!("Check auth");
     info!("Access Token: {}", req.access_token);
 
-    let users = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
+    let users: Vec<model::User> = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
         .fetch_all(&state.db.pool)
-        .await
-        .expect("Some users to exist");
+        .await.unwrap_or(vec![]);
 
     info!("All Users: {:?}", users);
 

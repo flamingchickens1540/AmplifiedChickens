@@ -4,17 +4,20 @@
 
     export let color: string
     export let teams: string[] = []
-    export let selected: Scout[] = []
+    export const selected: Scout[] = []
     export let queued: Scout[] = []
     export let auto_assign: boolean
 
     let scout_opts: string[] = []
     let scout_names: string[] = []
 
-    $: {
-        scout_opts = queued.map((scout) => scout.name ?? "")
-        scout_names = queued.map((scout) => scout.name ?? "")
-    }
+    /// NOTE: THIS WAS LOOKING FOREVER BECAUSE IT WAS REACTIVE WITH A BINDING, SO IT UPDATING EVERY TIME THE BINDING REFRESHED / THE STATE CHANGED. 
+    /// NEVER DO THIS AGAIN!!!
+    /// WE LITERALLY LOST 3 DAYS OF DEVELOPMENT ON THE ADMIN DASHBOARD BECAUSE OF THIS
+    // $: {
+    //     scout_opts = queued.map((scout) => scout.name ?? "")
+    //     scout_names = queued.map((scout) => scout.name ?? "")
+    // }
 </script>
 
 <div
@@ -23,16 +26,18 @@
 >
     {#each teams as team, i}
         <div
-            class="flex justify-between items-center rounded"
-            style="background-color: {{ color }}; padding:0.2rem; margin:10px;"
+            class="grid grid-cols-2 grid-rows-1 place-items-center rounded"
+            style="background-color: { color }; padding:0.2rem; margin:10px;"
         >
-            <h3>{team ?? "Team"}</h3>
+            <!-- <input bind:value={team}/> -->
+            <Combobox bind:value={team} {color} options={[]} placeholder="Team Number"/>
             {#if !auto_assign}
                 <div>
                     <Combobox
                         bind:value={scout_names[i]}
                         {color}
-                        bind:options={scout_opts}
+                        options={scout_opts}
+                        placeholder="Scout Name"
                     />
                 </div>
             {/if}
