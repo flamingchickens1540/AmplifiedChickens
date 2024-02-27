@@ -29,6 +29,24 @@
     onMount(async () => {
         const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
         console.log("mounted");
+	const sse_source = new EventSource(BACKEND_URL + "/admin/sse/get/stream")
+	sse_source.onmessage = (event) => {
+		let data = JSON.parse(event.data)
+	    if (data["DeQueuedScout"] != undefined) {
+	        let scout_name = data["DeQueuedScout"]
+		let index = queued_scouts.indexOf(scout_name)
+		if (index != -1) {
+			queued_scouts.splice(index, 1)
+		}
+		console.log(scout_name)
+	    } else if (data["QueuedScout"] != undefined) {
+	        let scout_name = data["QueuedScout"]
+		queued_scouts.push(scout_name)
+	        console.log(scout_name)
+	    } 
+	    queued_scouts = queued_scouts
+	    console.log(queued_scouts)
+	}
     });
 
     function clear_teams() {
