@@ -21,7 +21,6 @@ pub async fn slack_callback(
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
     let frontend_url = format!("{}/app/home", dotenv::var("VITE_FRONTEND_URL").expect("REDIRECT_URL"));
     let backend_url = format!("{}/auth/slack", dotenv::var("BACKEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
-//let nonce = "test_nonce";
 
     let token_res: serde_json::Value = state
         .ctx
