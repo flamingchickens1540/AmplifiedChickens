@@ -4,7 +4,7 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "./ScoutPercents.svelte";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     export let blue: string[]
     export let red: string[]
@@ -47,6 +47,7 @@
     
     async function joinQueue() {
     	clicked = true
+	console.log(BACKEND_URL)
         let res = await fetch(`${BACKEND_URL}/scout/queue`, {
             method: "POST",
             headers: {
@@ -55,7 +56,9 @@
             },
         })
 
-        if ((await res.json()).ok) {
+	console.log(res)
+
+        if (res.ok) {
             console.log("Queued user successfully")
         }
     }
@@ -70,7 +73,7 @@
             },
         })
 
-        if ((await res.json()).ok) {
+        if (res.ok) {
             console.log("Dequeued user successfully")
         }
 

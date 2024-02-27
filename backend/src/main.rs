@@ -132,7 +132,7 @@ fn init_router(state: model::AppState) -> Router {
             "/admin/users/setPermissions",
             post(queue::set_user_permissions),
         )
-        .route("/admin/sse/get/stream", post(submit::admin_sse_connect))
+        .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
         .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))

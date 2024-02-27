@@ -64,7 +64,8 @@ impl RoboQueue {
                 break;
             }
             let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
-            // Push robot and team color to user
+            // TODO: Push notification to user 
+            info!("Scout {} automatically assigned to team {}", self.scouts[i], robots[i])
         }
         Ok(())
     }
@@ -78,15 +79,11 @@ impl RoboQueue {
     ) -> Result<(), (QueueError, String)> {
         assert_eq!(robots.len(), scouts.len());
         for (i, _) in robots.iter().enumerate() {
-            let _color = if robots.len() <= 3 {
-                String::from("red")
-            } else {
-                String::from("blue")
-            };
             info!("Robot pushed to scout");
-            let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
+            let _endpoint: String = Self::get_user_endpoint(&self, &scouts[i], db).await?;
             self.assigned.insert(scouts[i].clone(), robots[i].clone());
-            // Push to user, then they lookup in the map
+            // TODO: Push to user, then they lookup in the map
+            info!("Scout {} manually assigned to team {}", scouts[i], robots[i])
         }
         Ok(())
     }

@@ -51,6 +51,7 @@ pub async fn scout_request_team(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
+    info!("Scout requested teammatch");
     let access_token = match headers.get("x-access-token") {
         Some(token) => token
             .to_str()
@@ -64,12 +65,12 @@ pub async fn scout_request_team(
             ));
         }
     };
-    get_user_helper(&state.db, access_token.clone()).await?;
+    let user = get_user_helper(&state.db, access_token.clone()).await?;
 
     let mut robot_queue = state.queue.lock().await;
     match robot_queue.scout_get_robot(access_token.clone()) {
         Some(team) => {
-            info!("Robot served to user {}", access_token);
+            info!("Robot {}, served to user {} aka {}", team, user.name, access_token);
             Ok(Json(team))
         }
         None => {

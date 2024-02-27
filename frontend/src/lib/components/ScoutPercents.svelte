@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import Pie from "./Pie.svelte";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     async function get_scout_percents(): Promise<readonly [string[], number[]]> {
         let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
