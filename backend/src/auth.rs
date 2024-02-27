@@ -21,7 +21,7 @@ pub async fn slack_callback(
     let redirect_url = dotenv::var("FRONTEND_REDIRECT_URL").unwrap();
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
     let frontend_url = format!("{}/app/home", dotenv::var("VITE_FRONTEND_URL").expect("REDIRECT_URL"));
-    let backend_url = format!("{}/auth/slack", dotenv::var("VITE_BACKEND_URL").expect("REDIRECT_URL"));
+    let backend_url = format!("{}/auth/slack", dotenv::var("BACKEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
     info!("Redirect URL: {}", redirect_url);
 //let nonce = "test_nonce";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     export let red_teams: string[] = [];
     export let blue_teams: string[] = [];
@@ -35,12 +35,12 @@
 
     async function queue_match() {
         console.log("Auto Assign: ", auto_assign)
-        console.log("url",  BACKEND_URL)
+        console.log("url ",  BACKEND_URL)
         if (auto_assign) {
             let res = await fetch(`${BACKEND_URL}/admin/new/match/auto`, {
                 method: "POST",
                 headers: {
-                    // Accept: "application/json",
+                    "Accept": "application/json",
                     "Content-Type": "application/json",
                     "x-access-token": access_token,
                 },
@@ -49,8 +49,8 @@
 
             console.log(res);
 
-            red_teams = [];
-            blue_teams = [];
+            red_teams = ["", "", ""];
+            blue_teams = ["", "", ""];
             blue_scouts = [];
             red_scouts = [];
 

@@ -27,7 +27,7 @@
     let scouted_robots: TeamMatch[] = [];
 
     onMount(async () => {
-        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+        const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
         console.log("mounted");
     });
 
