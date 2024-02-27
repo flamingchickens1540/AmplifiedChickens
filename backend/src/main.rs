@@ -79,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
 
     tokio::spawn(redirect_http_to_https(ports));
 

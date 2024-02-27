@@ -4,7 +4,6 @@
     import { redirect } from "@sveltejs/kit";
 	const REDIRECT_URL = import.meta.env.VITE_SLACK_REDIRECT_URL;
 
-    console.log(REDIRECT_URL)
     // export let data: PageData;
 
 </script>

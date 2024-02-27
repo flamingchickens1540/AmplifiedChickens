@@ -5,6 +5,7 @@
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
+    import SubmitButton from "./SubmitButton.svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let scout_id = "";
@@ -54,16 +55,4 @@
 <Toggle text1="Undamaged" text2="Broken" bind:value={brokenstatus} />
 <Toggle text1="Functional" text2="Died on Field" bind:value={deadstatus} />
 <TextArea bind:value={$match_data.notes} />
-<button on:click={submit_match}> Submit! </button>
-
-<style>
-    button {
-        margin: 17px;
-        font-family: poppins-medium;
-        color: #ffffff;
-        background-color: #5c5c5c;
-        font-size: 2rem;
-        padding: 2rem;
-        text-align: center;
-    }
-</style>
+<SubmitButton text="Submit" onClick={submit_match} />

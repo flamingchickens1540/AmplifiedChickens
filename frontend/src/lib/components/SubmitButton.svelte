@@ -3,9 +3,9 @@
     export let onClick = () => {};
 </script>
 
-<button on:click={onClick} class="rounded">
+<center><button on:click={onClick} class="rounded">
     {text}
-</button>
+</button></center>
 
 <style>
     button {

@@ -18,10 +18,10 @@ pub async fn slack_callback(
 ) -> Result<axum::http::Response<String>, (axum::http::StatusCode, String)> {
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
-    let redirect_url = dotenv::var("SLACK_REDIRECT_URL").unwrap();
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
-    let frontend_url = format!("{}/app/home", dotenv::var("FRONTEND_URL").expect("REDIRECT_URL"));
-    info!("Redirect URL: {}", redirect_url);
+    let frontend_url = format!("{}/app/home", dotenv::var("VITE_FRONTEND_URL").expect("REDIRECT_URL"));
+    let backend_url = format!("{}/auth/slack", dotenv::var("VITE_BACKEND_URL").expect("REDIRECT_URL"));
+    info!("Redirect URL: {}", backend_url);
 //let nonce = "test_nonce";
 
     let token_res: serde_json::Value = state
@@ -31,7 +31,7 @@ pub async fn slack_callback(
             ("client_id", client_id),
             ("client_secret", client_secret),
             ("code", query.code),
-            ("redirect_uri", redirect_url),
+            ("redirect_uri", backend_url),
             ("grant_type", "authorization_code".to_string()),
         ])
         .send()

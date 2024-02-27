@@ -16,15 +16,15 @@
     import { onMount } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    export let data: PageData
-    export let team_key = ""
+    export let data: PageData;
+    export let team_key = "";
 
-    let intake = ""
-    let remaining_teams: string[] = []
+    let intake = "";
+    let remaining_teams: string[] = [];
     onMount(async () => {
-        remaining_teams = await get_remaining_teams()
-    })
-    
+        remaining_teams = await get_remaining_teams();
+    });
+
     $: {
         if (intake == "Both") {
             $pit.is_ground_intake = true;
@@ -39,8 +39,8 @@
     }
 
     async function handle_submit() {
-        let req: any = { id: data.scout_id }
-        req.push($pit)
+        let req: any = { id: data.scout_id };
+        req.push($pit);
 
         let res = fetch(`${BACKEND_URL}/submit/pit`, {
             method: "POST",
@@ -57,8 +57,6 @@
         console.log("remaining teams: ", json);
         return json;
     }
-
-    
 </script>
 
 <Modal>
@@ -67,14 +65,14 @@
             style="background-color: #2C2C2C; width:92%; margin:auto"
             class="p-4 rounded"
         >
-            <TeamsRemainingPopup bind:value={team_key} bind:remaining_teams={remaining_teams} />
+            <TeamsRemainingPopup bind:value={team_key} bind:remaining_teams />
         </Content>
     {/if}
     <Trigger>
         <SubmitButton text="Teams Remaining" />
     </Trigger>
 </Modal>
-<TextInput  name="Team Number" bind:value={$pit.team_key} />
+<TextInput name="Team Number" bind:value={$pit.team_key} />
 <NumberInput name="Width (ft)" bind:value={$pit.width} />
 <NumberInput name="Length (ft)" bind:value={$pit.length} />
 <NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
@@ -92,19 +90,5 @@
 <Threeoption text1="Chute" text2="Ground" text3="Both" bind:value={intake} />
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
-<ImageUpload />
 <SubmitButton text="Submit!" on:click={handle_submit} />
-<div id="navbar">
-    <Navbar page="pit" />
-</div>
-
-<style>
-    #navbar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #f0f0f0; /* Just for visualization */
-        text-align: center;
-    }
-</style>
+<Navbar page="pit" />
