@@ -206,7 +206,6 @@ pub struct AuthRequest {
     is_admin: bool,
 }
 
-//
 pub async fn check_auth(
     State(state): State<AppState>,
     Json(req): Json<AuthRequest>,
@@ -214,10 +213,9 @@ pub async fn check_auth(
     info!("Check auth");
     info!("Access Token: {}", req.access_token);
 
-    let users = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
+    let users: Vec<model::User> = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
         .fetch_all(&state.db.pool)
-        .await
-        .expect("Some users to exist");
+        .await.unwrap_or(vec![]);
 
     info!("All Users: {:?}", users);
 

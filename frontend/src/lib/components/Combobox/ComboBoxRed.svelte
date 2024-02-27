@@ -4,12 +4,13 @@
 	export let value = "";
 	export let color = "";
 	export let options: string[] = [];
+	export let placeholder = "";
 	//   const getFlag = code => String.fromCodePoint(...[...code.toUpperCase()].map(char => 127397 + char.charCodeAt()))
 </script>
 
 <Context>
 	<div class="stack">
-		<ComboBox name="Assignment" bind:value {color} {options} />
+		<ComboBox name="Assignment" bind:value {color} {options} {placeholder}/>
 	</div>
 </Context>
 
