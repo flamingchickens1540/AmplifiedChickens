@@ -1,19 +1,19 @@
 use axum::response::sse::Event;
 
-use futures::{StreamExt};
+use futures::StreamExt;
 
 use std::collections::HashMap;
 use std::convert::Infallible;
 
 use std::sync::Arc;
 
-use tokio::sync::watch::{Sender};
+use tokio::sync::watch::Sender;
 use tokio::sync::Mutex;
 
-use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use crate::webpush;
 use reqwest::Client as ReqwestClient;
+use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tracing::{error, info};
 
 #[derive(Debug, Clone)]
@@ -62,11 +62,13 @@ impl RoboQueue {
                 self.robots.append(&mut robots);
                 break;
             }
-            let _ = webpush::send_web_push(db, self.scouts[i].clone()).await.unwrap();
-            info!("Scout {} automatically assigned to team {}", self.scouts[i], robots[i]);
+            webpush::send_web_push(db, self.scouts[i].clone())
+                .await
+                .unwrap();
+            info!("Scout {} automatically assigned", self.scouts[i]);
             self.scouts.pop();
         }
-        Ok(()) 
+        Ok(())
     }
     // Manual assign
     pub async fn new_match_manual_assign(
@@ -78,48 +80,21 @@ impl RoboQueue {
         assert_eq!(robots.len(), scouts.len());
         for (i, _) in robots.iter().enumerate() {
             info!("Robot pushed to scout");
-            let _endpoint: String = Self::get_user_endpoint(&self, &scouts[i], db).await?;
             self.assigned.insert(scouts[i].clone(), robots[i].clone());
-            let _ = webpush::send_web_push(db, scouts[i].clone());
-            info!("Scout {} manually assigned to team {}", scouts[i], robots[i]);
+            webpush::send_web_push(db, scouts[i].clone()).await.unwrap();
+            info!(
+                "Scout {} manually assigned to team {}",
+                scouts[i], robots[i]
+            );
             self.scouts.pop();
         }
         Ok(())
     }
 
-    async fn get_user_endpoint(
-        &self,
-        id: &String,
-        db: &Db,
-    ) -> Result<String, (QueueError, String)> {
-        match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE access_token = $1")
-            .bind(id)
-            .fetch_one(&db.pool)
-            .await
-        {
-            Ok(user) => {
-                info!("Sent push notification to endpoint: {:?}", user);
-                match user.endpoint {
-                    Some(endpoint) => Ok(endpoint),
-                    None => {
-                        return Err((
-                            QueueError::EndpointNotSet,
-                            String::from("Scout endpoint not set, user must auth"),
-                        ))
-                    }
-                }
-            }
-            Err(err) => {
-                error!("{}", err);
-                return Err((QueueError::QueryFailed, err.to_string()));
-            }
-        }
-    }
-
     pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
             info!("Robot pushed to scout");
-            webpush::send_web_push(db, scout.clone());
+            webpush::send_web_push(db, scout.clone()).await.unwrap();
         } else {
             self.scouts.push(scout);
         }
