@@ -10,7 +10,7 @@
 
 <Context>
 	<div class="stack">
-		<ComboBox name="Assignment" bind:value {color} {options} {placeholder}/>
+		<input bind:value placeholder="Team Number"/>
 	</div>
 </Context>
 
