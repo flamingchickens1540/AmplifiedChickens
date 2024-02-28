@@ -29,18 +29,27 @@
         scout_names = result[0]
         scout_percents = result[1]
     })
+  
+    let scout_firstnames: string[] = [];
+
+    for (const name of scout_names) {
+        scout_firstnames.push(name.split(' ')[0]);
+    }
 </script>
 
 <div
-    style=""
-    class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md"
+    style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));"
+    class="bg-btn_grey mx-3 p-1 grid gap-2 content-center rounded-md items-start"
 >
     {#each scout_percents as _, i}
         {#if i < 8}
-            <div class="p-1 flex flex-col items-center">
-                <Pie size={46} percent={scout_percents[i]} />
-                <p class="text-text_white">{scout_names[i]}</p>
+            <div class="flex flex-col items-center">
+                <Pie size={40} percent={scout_percents[i]} />
+                <p class="text-text_white text-center break-all max-w-[80px]">{scout_firstnames[i]}</p>
             </div>
         {/if}
     {/each}
 </div>
+
+
+
