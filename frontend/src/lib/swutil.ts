@@ -1,4 +1,4 @@
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
 export async function subscribeToPush(access_token: string | undefined) {
   console.log("ACCESS TOKEN: ", access_token);
@@ -20,7 +20,7 @@ export async function subscribeToPush(access_token: string | undefined) {
 
     localStorage.setItem("subscription", JSON.stringify(subscription));
 
-    await fetch(`${BACKEND_URL}register`, {
+    await fetch(`${BACKEND_URL}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

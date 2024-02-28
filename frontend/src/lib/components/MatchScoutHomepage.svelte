@@ -73,6 +73,8 @@
             },
         })
 
+	console.log(res)
+
         if (res.ok) {
             console.log("Dequeued user successfully")
         }
