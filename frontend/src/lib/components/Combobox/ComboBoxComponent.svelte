@@ -9,14 +9,6 @@
 <Context>
 	<div class="stack">
 	<input type="text" bind:value>
-	<!-- <ComboBox
-		name="Assignment"
-		bind:value
-		color="#0083E6"
-		options={options}
-	/> -->
-	
-	
 	</div>
 		
 </Context>

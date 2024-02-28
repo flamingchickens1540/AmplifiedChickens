@@ -19,6 +19,8 @@ use web_push_native::{
 };
 
 pub async fn send_web_push(db: &Db, token: String) -> Result<(), (StatusCode, String)> {
+    // THis is not being called
+    info!("Send webpush called");
     let user = get_user_helper(db, token).await?;
 
     let VAPID_PRIVATE = std::env::var("VAPID_PRIVATE").expect("VAPID_PRIVATE not set");
@@ -41,14 +43,18 @@ pub async fn send_web_push(db: &Db, token: String) -> Result<(), (StatusCode, St
       });
 
     let builder = WebPushBuilder::new(endpoint, ua_public, ua_auth)
-        .with_vapid(&key_pair, "mailto:john.doe@example.com") // TODO: change
+        .with_vapid(&key_pair, "colburna@team1540.catlin.edu") 
         .build(message.to_string())
         .unwrap()
         .map(axum::body::Body::from);
 
+    info!("builder: {:?}", builder);
+
     let https = hyper_tls::HttpsConnector::new();
     let client = Client::builder(TokioExecutor::new()).build(https);
-    client.request(builder).await.unwrap();
+    info!("Client sent push notification: {:?}", client);
+    let test = client.request(builder).await.unwrap();
+    info!("test: {:?}", test); 
 
     Ok(())
 }
