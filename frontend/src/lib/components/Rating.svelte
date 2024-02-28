@@ -1,4 +1,4 @@
-fo<script>
+<script>
   export let name = "";
   export let value = 3;
 </script>

@@ -79,7 +79,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
 
     tokio::spawn(redirect_http_to_https(ports));
 
@@ -132,7 +132,7 @@ fn init_router(state: model::AppState) -> Router {
             "/admin/users/setPermissions",
             post(queue::set_user_permissions),
         )
-        .route("/admin/sse/get/stream", post(submit::admin_sse_connect))
+        .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
         .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))

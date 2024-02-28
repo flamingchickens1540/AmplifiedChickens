@@ -1,7 +1,8 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
+    const TBA_API_KEY = import.meta.env.VITE_TBA_API_KEY
 
     export let red_teams: string[] = [];
     export let blue_teams: string[] = [];
@@ -22,7 +23,7 @@
             {
                 // FIXME: DO NOT COMMIT API KEY
                 headers: {
-                    "X-TBA-Auth-Key": "",
+                    "X-TBA-Auth-Key": TBA_API_KEY,
                 },
             },
         );
@@ -31,16 +32,20 @@
         console.log(match);
         red_teams = match.alliances.red.team_keys;
         blue_teams = match.alliances.blue.team_keys;
+	console.log(blue_teams)
+	console.log(red_teams)
+	red_teams = red_teams
+	blue_teams = blue_teams
     }
 
     async function queue_match() {
         console.log("Auto Assign: ", auto_assign)
-        console.log("url",  BACKEND_URL)
+        console.log("url ",  BACKEND_URL)
         if (auto_assign) {
             let res = await fetch(`${BACKEND_URL}/admin/new/match/auto`, {
                 method: "POST",
                 headers: {
-                    // Accept: "application/json",
+                    "Accept": "application/json",
                     "Content-Type": "application/json",
                     "x-access-token": access_token,
                 },
@@ -49,8 +54,8 @@
 
             console.log(res);
 
-            red_teams = [];
-            blue_teams = [];
+            red_teams = ["", "", ""];
+            blue_teams = ["", "", ""];
             blue_scouts = [];
             red_scouts = [];
 
@@ -74,9 +79,9 @@
 
             console.log(res);
 
-            red_teams = [];
-            blue_teams = [];
-            blue_scouts = [];
+            red_teams = ["", "", ""];
+            blue_teams = ["", "", ""];
+            blue_scouts = [] 
             red_scouts = [];
 
             red_teams = red_teams
