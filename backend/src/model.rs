@@ -10,12 +10,9 @@ use std::sync::Arc;
 use tokio::sync::watch::{Sender};
 use tokio::sync::Mutex;
 
-
-
-
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-
+use crate::webpush;
 use reqwest::Client as ReqwestClient;
 use tracing::{error, info};
 
@@ -58,18 +55,19 @@ impl RoboQueue {
         mut robots: Vec<String>,
         db: &Db,
     ) -> Result<(), (QueueError, String)> {
+        info!("Scouts {:?}", self.scouts);
+        info!("Robots: {:?}", robots);
         for (i, _) in robots.iter().enumerate() {
             if self.scouts.is_empty() {
                 self.robots.append(&mut robots);
                 break;
             }
-            let _endpoint: String = Self::get_user_endpoint(&self, &self.scouts[i], db).await?;
-            // TODO: Push notification to user 
-            info!("Scout {} automatically assigned to team {}", self.scouts[i], robots[i])
+            let _ = webpush::send_web_push(db, self.scouts[i].clone()).await.unwrap();
+            info!("Scout {} automatically assigned to team {}", self.scouts[i], robots[i]);
+            self.scouts.pop();
         }
-        Ok(())
+        Ok(()) 
     }
-
     // Manual assign
     pub async fn new_match_manual_assign(
         &mut self,
@@ -82,8 +80,9 @@ impl RoboQueue {
             info!("Robot pushed to scout");
             let _endpoint: String = Self::get_user_endpoint(&self, &scouts[i], db).await?;
             self.assigned.insert(scouts[i].clone(), robots[i].clone());
-            // TODO: Push to user, then they lookup in the map
-            info!("Scout {} manually assigned to team {}", scouts[i], robots[i])
+            let _ = webpush::send_web_push(db, scouts[i].clone());
+            info!("Scout {} manually assigned to team {}", scouts[i], robots[i]);
+            self.scouts.pop();
         }
         Ok(())
     }
@@ -119,12 +118,11 @@ impl RoboQueue {
 
     pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
         if !self.robots.is_empty() {
-            let _endpoint = self.get_user_endpoint(&scout, db);
             info!("Robot pushed to scout");
-            // Push to scout
+            webpush::send_web_push(db, scout.clone());
+        } else {
+            self.scouts.push(scout);
         }
-
-        self.scouts.push(scout);
     }
 
     pub fn scout_get_robot_auto(&mut self) -> Option<String> {

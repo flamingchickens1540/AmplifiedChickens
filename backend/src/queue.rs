@@ -1,8 +1,6 @@
 use std::convert::Infallible;
 
-
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
-
 
 use http::HeaderMap;
 
@@ -91,6 +89,7 @@ pub async fn new_match_auto(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
+    info!("Robots in new match auto: {:?}", robots);
     match queue.new_match_auto_assign(robots, &state.db).await {
         Ok(()) => Ok(()),
         Err(err) => match err.0 {
@@ -390,6 +389,7 @@ pub async fn dequeue_user(
     };
 
     let mut queue = state.queue.lock().await;
+    info!("Queue during dequeue: {:?}", queue);
     if !queue.scouts.contains(&access_token) {
         return Err((StatusCode::BAD_REQUEST, "Scout not in queue".to_string()));
     }
