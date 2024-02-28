@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
 
-use crate::{submit, model::{self, AppState, Db, EventState, User}};
+use crate::{
+    model::{self, AppState, Db, EventState, User},
+    submit,
+};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -68,7 +71,10 @@ pub async fn scout_request_team(
     let mut robot_queue = state.queue.lock().await;
     match robot_queue.scout_get_robot(access_token.clone()) {
         Some(team) => {
-            info!("Robot {}, served to user {} aka {}", team, user.name, access_token);
+            info!(
+                "Robot {}, served to user {} aka {}",
+                team, user.name, access_token
+            );
             Ok(Json(team))
         }
         None => {
@@ -358,15 +364,21 @@ pub async fn queue_user(
         ));
     }
 
-    queue.add_scout_auto_assign(access_token.clone(), &state.db).await;
+    queue
+        .add_scout_auto_assign(access_token.clone(), &state.db)
+        .await;
 
-    let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
+    let user = get_user_helper(&state.db, access_token.clone())
+        .await
+        .unwrap();
 
     let upstream = state.sse_upstream.lock().await;
 
     let ret = submit::SseReturn::QueuedScout(user.name.clone());
 
-    upstream.send(Ok(axum::response::sse::Event::default().data(serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"))));
+    upstream.send(Ok(axum::response::sse::Event::default().data(
+        serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"),
+    )));
 
     info!("Scout {} queued", access_token);
     Ok(())
@@ -401,13 +413,17 @@ pub async fn dequeue_user(
         .unwrap();
     queue.scouts.remove(index);
 
-let user = get_user_helper(&state.db, access_token.clone()).await.unwrap();
+    let user = get_user_helper(&state.db, access_token.clone())
+        .await
+        .unwrap();
 
     let upstream = state.sse_upstream.lock().await;
 
     let ret = submit::SseReturn::DeQueuedScout(user.name.clone());
 
-    upstream.send(Ok(axum::response::sse::Event::default().data(serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"))));
+    upstream.send(Ok(axum::response::sse::Event::default().data(
+        serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"),
+    )));
 
     info!("Scout {} dequeued", access_token);
     Ok("User removed from queue".to_string())
