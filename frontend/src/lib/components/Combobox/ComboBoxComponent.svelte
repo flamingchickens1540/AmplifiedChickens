@@ -8,12 +8,13 @@
 
 <Context>
 	<div class="stack">
-	<ComboBox
+	<input type="text" bind:value>
+	<!-- <ComboBox
 		name="Assignment"
-		bind:value = {value}
+		bind:value
 		color="#0083E6"
 		options={options}
-	/>
+	/> -->
 	
 	
 	</div>
