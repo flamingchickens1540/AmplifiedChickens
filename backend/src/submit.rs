@@ -1,9 +1,9 @@
-use crate::model::{AppState, Db, TeamEvent, TeamMatch, User};
+use crate::model::{AppState, TeamEvent, TeamMatch, User};
 use axum::response::{
     sse::{Event, KeepAlive, Sse},
     IntoResponse,
 };
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{extract::State, http::StatusCode};
 use futures::stream::Stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};

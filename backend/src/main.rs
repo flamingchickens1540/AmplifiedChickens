@@ -13,7 +13,7 @@ use dotenv::dotenv;
 use reqwest::Client as ReqwestClient;
 use socketioxide::SocketIo;
 
-use std::{collections::HashMap, sync::Arc};
+use std::{sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
 use tokio::sync::Mutex;
 use tower_http::cors::CorsLayer;

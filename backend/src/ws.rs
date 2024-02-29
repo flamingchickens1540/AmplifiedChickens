@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use socketioxide::{
     extract::{Data, SocketRef, State},
     socket::Sid,
-    SocketIo,
 };
 use tracing::{error, info};
 
@@ -59,16 +58,6 @@ impl QueueManager {
 
     pub fn get_next_robot(&mut self) -> Option<(String, String)> {
         self.robot_queue.pop()
-    }
-
-    pub async fn free_scout(io: SocketIo, client_id: Sid) {
-        let mut assigned_scouts = io.to("assigned_scouts").sockets().unwrap_or(vec![]);
-        assigned_scouts.iter_mut().for_each(|socket| {
-            // TODO: Right now this removes the scout in every sense if they have multiple instances
-            if socket.id == client_id {
-                socket.leave("assigned_scouts");
-            }
-        });
     }
 
     pub async fn assign_robots(
@@ -128,14 +117,16 @@ impl QueueManager {
             red_scouts,
             state,
             "red".to_string(),
-        );
+        )
+        .await;
         self.assign_robots(
             admin_socket,
             blue_robots,
             blue_scouts,
             state,
             "blue".to_string(),
-        );
+        )
+        .await;
     }
 }
 pub async fn queue_scout_handler(

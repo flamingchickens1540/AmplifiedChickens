@@ -1,6 +1,6 @@
 use axum::response::sse::Event;
 
-use futures::StreamExt;
+
 
 use std::collections::HashMap;
 use std::convert::Infallible;
@@ -10,11 +10,11 @@ use std::sync::Arc;
 use tokio::sync::watch::Sender;
 use tokio::sync::Mutex;
 
-use crate::{webpush, ws};
+use crate::{ws};
 use reqwest::Client as ReqwestClient;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use tracing::{error, info};
+
 
 #[derive(Debug, Clone)]
 pub struct Db {
