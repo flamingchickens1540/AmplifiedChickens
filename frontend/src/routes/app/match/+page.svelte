@@ -17,7 +17,7 @@
 
     let scouting: boolean = false
 
-    const socket = io();
+    const socket = io("https://scout.team1540.org/api);
 
     socket.on("connect", () => {
         console.log("Connected to server");
