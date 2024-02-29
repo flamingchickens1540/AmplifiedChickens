@@ -13,9 +13,9 @@ use socketioxide::{
 use tracing::{error, info};
 
 pub struct QueueManager {
-    robot_queue: Vec<String>, // team_key
+    robot_queue: Vec<(String, String)>, // team_key, team_color
     name_to_sid: BiMap<String, Sid>,
-    matches: Vec<String>, // match keys matches.len() - 1 is the furthest
+    pub matches: Vec<String>, // match keys matches.len() - 1 is the furthest
 }
 
 #[derive(Serialize)]
@@ -27,14 +27,17 @@ pub struct AdminRet {
 
 #[derive(Deserialize)]
 pub struct NewMatchAuto {
-    teams: Vec<String>,
+    red_teams: Vec<String>,
+    blue_teams: Vec<String>,
     match_key: String,
 }
 
 #[derive(Deserialize)]
 pub struct NewMatchManual {
-    teams: Vec<String>,
-    scouts: Vec<String>,
+    red_teams: Vec<String>,
+    blue_teams: Vec<String>,
+    red_scouts: Vec<String>,
+    blue_scouts: Vec<String>,
     match_key: String,
 }
 
@@ -54,7 +57,7 @@ impl QueueManager {
         }
     }
 
-    pub fn get_next_robot(&mut self) -> Option<String> {
+    pub fn get_next_robot(&mut self) -> Option<(String, String)> {
         self.robot_queue.pop()
     }
 
@@ -68,23 +71,30 @@ impl QueueManager {
         });
     }
 
-    /// For manual matches, scouts should be the scout list, for auto matches, the scout should be pending_scouts
-    pub async fn create_match(
+    pub async fn assign_robots(
         &mut self,
         admin_socket: &SocketRef,
-        mut robots: Vec<String>,
+        robots: Vec<String>,
         scouts: &mut Vec<Sid>,
-        state: &model::AppState,
+        state: &AppState,
+        color: String,
     ) {
         let upstream = state.sse_upstream.lock().await;
         for team in robots.iter() {
-            if scouts.is_empty() {
-                self.robot_queue.append(&mut robots);
+            if robots.is_empty() {
+                let mut robots_colors = robots
+                    .into_iter()
+                    .map(|robot| (robot, color.clone()))
+                    .collect::<Vec<(String, String)>>();
+                self.robot_queue.append(&mut robots_colors);
                 info!("Out of scouts");
-                break;
+                return;
             }
             let scout = scouts.pop().expect("Scout queue is empty");
-            admin_socket.to(scout).emit("team_to_scout", team);
+            match admin_socket.to(scout).emit("team_to_scout", team) {
+                Ok(_) => info!("Team sent to scout"),
+                Err(e) => error!("Error sending team to scout: {}", e),
+            }
 
             let data = submit::SseReturn::DeQueuedScout(
                 self.name_to_sid
@@ -101,8 +111,33 @@ impl QueueManager {
             }
         }
     }
-}
 
+    /// For manual matches, scouts should be the scout list, for auto matches, the scout should be pending_scouts
+    pub async fn create_match(
+        &mut self,
+        admin_socket: &SocketRef,
+        red_robots: Vec<String>,
+        blue_robots: Vec<String>,
+        red_scouts: &mut Vec<Sid>,
+        blue_scouts: &mut Vec<Sid>,
+        state: &model::AppState,
+    ) {
+        self.assign_robots(
+            admin_socket,
+            red_robots,
+            red_scouts,
+            state,
+            "red".to_string(),
+        );
+        self.assign_robots(
+            admin_socket,
+            blue_robots,
+            blue_scouts,
+            state,
+            "blue".to_string(),
+        );
+    }
+}
 pub async fn queue_scout_handler(
     socket: SocketRef,
     scout_name: Data<String>,
@@ -167,7 +202,7 @@ pub async fn queue_scout_handler(
             let curr_match = manager.matches[manager.matches.len() - num_of_queued_matches].clone();
 
             let admin_ret = AdminRet {
-                team_key: robot,
+                team_key: robot.0,
                 scout_name: scout_name.0,
                 match_key: curr_match,
             };
@@ -234,16 +269,26 @@ pub async fn new_match_auto_handler(
 
     manager.matches.push(match_info.0.match_key);
 
-    let mut queued_scouts = socket
+    let queued_scouts: Vec<Vec<Sid>> = socket
         .to("pending_scouts")
         .sockets()
         .unwrap_or(vec![])
         .into_iter()
         .map(|socket| socket.id)
-        .collect::<Vec<Sid>>();
+        .collect::<Vec<Sid>>()
+        .chunks(3)
+        .map(|t| t.into())
+        .collect();
 
     manager
-        .create_match(&socket, match_info.0.teams, &mut queued_scouts, state.0)
+        .create_match(
+            &socket,
+            match_info.0.red_teams,
+            match_info.0.blue_teams,
+            &mut queued_scouts[0].clone(), // this is fine because a mutable reference is just needed to appened scouts to
+            &mut queued_scouts[1].clone(),
+            state.0,
+        )
         .await;
 }
 
@@ -256,9 +301,22 @@ pub async fn new_match_manual_handler(
 
     manager.matches.push(match_info.0.match_key);
 
-    let mut scouts = match_info
+    let mut red_scouts = match_info
         .0
-        .scouts
+        .red_scouts
+        .into_iter()
+        .map(|scout| {
+            manager
+                .name_to_sid
+                .get_by_left(&scout)
+                .expect("Fatal: Scout SID is unknown")
+                .clone()
+        })
+        .collect::<Vec<Sid>>();
+
+    let mut blue_scouts = match_info
+        .0
+        .blue_scouts
         .into_iter()
         .map(|scout| {
             manager
@@ -270,8 +328,27 @@ pub async fn new_match_manual_handler(
         .collect::<Vec<Sid>>();
 
     manager
-        .create_match(&socket, match_info.0.teams, &mut scouts, state.0)
+        .create_match(
+            &socket,
+            match_info.0.red_teams,
+            match_info.0.blue_teams,
+            &mut red_scouts,
+            &mut blue_scouts,
+            state.0,
+        )
         .await;
+}
+
+pub async fn submit_team_match_handler(
+    socket: SocketRef,
+    team_match_data: Data<model::TeamMatch>,
+    state: State<model::AppState>,
+) {
+    match socket.leave("assigned_scouts") {
+        Ok(_) => info!("Scout left "),
+        Err(err) => error!("Failed to remove scout from assigned scouts: {}", err),
+    }
+    submit::submit_team_match(&state, team_match_data.0).await;
 }
 
 pub async fn on_connect(
@@ -286,4 +363,5 @@ pub async fn on_connect(
     socket.on("dequeue_sout", dequeue_scout_handler);
     socket.on("new_match_auto", new_match_auto_handler);
     socket.on("new_match_manual", new_match_manual_handler);
+    socket.on("submit_team_match", submit_team_match_handler);
 }

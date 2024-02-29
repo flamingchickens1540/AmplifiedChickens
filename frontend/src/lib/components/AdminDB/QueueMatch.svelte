@@ -1,21 +1,21 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
+    import { createEventDispatcher } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
-    const TBA_API_KEY = import.meta.env.VITE_TBA_API_KEY
+    const TBA_API_KEY = import.meta.env.VITE_TBA_API_KEY;
 
-    export let red_teams: string[] = [];
-    export let blue_teams: string[] = [];
+    let red_teams: string[] = [];
+    let blue_teams: string[] = [];
 
-    export let blue_scouts: Scout[] = [];
-    export let red_scouts: Scout[] = [];
+    let blue_scouts: Scout[] = [];
+    let red_scouts: Scout[] = [];
 
-    export let match_key = "";
-    export let queued_scouts: Scout[] = [];
+    let queued_scouts: Scout[] = [];
 
-    export let auto_assign: boolean;
+    let match_key = "";
 
-    export let access_token = "";
+    let auto_assign: boolean = true
 
     async function auto_populate() {
         let res = await fetch(
@@ -32,62 +32,31 @@
         console.log(match);
         red_teams = match.alliances.red.team_keys;
         blue_teams = match.alliances.blue.team_keys;
-	console.log(blue_teams)
-	console.log(red_teams)
-	red_teams = red_teams
-	blue_teams = blue_teams
+        console.log(blue_teams);
+        console.log(red_teams);
+        red_teams = red_teams;
+        blue_teams = blue_teams;
     }
 
+    let dispatch = createEventDispatcher();
+
     async function queue_match() {
-        console.log("Auto Assign: ", auto_assign)
-        console.log("url ",  BACKEND_URL)
+        console.log("Auto Assign: ", auto_assign);
+        console.log("url ", BACKEND_URL);
         if (auto_assign) {
-            let res = await fetch(`${BACKEND_URL}/admin/new/match/auto`, {
-                method: "POST",
-                headers: {
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                    "x-access-token": access_token,
-                },
-                body: JSON.stringify(red_teams.concat(blue_teams)),
+            dispatch("queue_match_auto", {
+                red: red_teams,
+                blue: blue_teams,
+                match_key: match_key,
             });
-
-            console.log(res);
-
-            red_teams = ["", "", ""];
-            blue_teams = ["", "", ""];
-            blue_scouts = [];
-            red_scouts = [];
-
-            red_teams = red_teams
-            blue_teams = blue_teams
-            blue_scouts = blue_scouts
-            red_scouts = red_scouts
         } else {
-            let res = await fetch(`${BACKEND_URL}/admin/new/match/manual`, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                    "x-access-token": access_token,
-                },
-                body: JSON.stringify({
-                    red: red_teams.concat(blue_teams),
-                    scouts: queued_scouts,
-                }),
+            dispatch("queue_match_manual", {
+                red: red_teams,
+                blue: blue_teams,
+                red_scouts: red_scouts,
+                blue_scouts: blue_scouts,
+                match_key: match_key,
             });
-
-            console.log(res);
-
-            red_teams = ["", "", ""];
-            blue_teams = ["", "", ""];
-            blue_scouts = [] 
-            red_scouts = [];
-
-            red_teams = red_teams
-            blue_teams = blue_teams
-            blue_scouts = blue_scouts
-            red_scouts = red_scouts
         }
     }
 </script>

@@ -2,17 +2,19 @@
     import Game from "$lib/components/Lottery.svelte";
     import Pie from "$lib/components/Pie.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
+    import { io } from "socket.io-client";
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "./ScoutPercents.svelte";
+    import { match_data } from "$lib/stores";
+    import { goto } from "$app/navigation";
+    import { createEventDispatcher } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
-    export let blue: string[]
-    export let red: string[]
-    export let match: string
-    export let selected: boolean
-    export let timeuntilmatch: number
-    export let timegiven: number
-    export let access_token: string
+    export let blue: string[];
+    export let red: string[];
+    export let match: string;
+    let timeuntilmatch: number = 0;
+    let timegiven: number = 0;
 
     let clicked = false;
 
@@ -44,42 +46,20 @@
         minutes = Math.max(minutes, 0);
     }
     // messy time code (NO TOUCHIE)
+
+    let dispatch = createEventDispatcher()
+
+    function joinQueue() {
+        clicked = true;
+        dispatch("join");
+    }
+
+    function leaveQueue() {
+        clicked = false;
+        dispatch("leave");
+    }
+
     
-    async function joinQueue() {
-    	clicked = true
-	console.log(BACKEND_URL)
-        let res = await fetch(`${BACKEND_URL}/scout/queue`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-access-token": access_token
-            },
-        })
-
-	console.log(res)
-
-        if (res.ok) {
-            console.log("Queued user successfully")
-        }
-    }
-
-    async function leaveQueue() {
-    	clicked = false
-        let res = await fetch(`${BACKEND_URL}/scout/dequeue`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-access-token": access_token
-            },
-        })
-
-	console.log(res)
-
-        if (res.ok) {
-            console.log("Dequeued user successfully")
-        }
-
-    }
 </script>
 
 <div class="grid content-end pt-10">
@@ -100,29 +80,41 @@
 </div>
 
 {#if blue.length != 0 || red.length != 0}
-<div
-    class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
-    style="background-color: #5C5C5C; margin: 15px; padding:15px"
->
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[0] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[1] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[2] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[0] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[1] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[2] ?? ""}</h2>
-    </center>
-</div>
+    <div
+        class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
+        style="background-color: #5C5C5C; margin: 15px; padding:15px"
+    >
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[0] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[1] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[2] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[0] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[1] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[2] ?? ""}
+            </h2>
+        </center>
+    </div>
 {/if}
 
 <ScoutPercents />

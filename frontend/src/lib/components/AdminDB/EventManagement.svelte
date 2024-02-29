@@ -7,7 +7,7 @@
 
     let event_name = "";
 
-    export let access_token: string;
+    export let access_token: string
 
     async function set_event() {
         let opts = {

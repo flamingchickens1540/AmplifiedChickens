@@ -7,7 +7,7 @@ export type Scout = {
 
 export type MatchStatus = "complete" | "pending" | "not_started"
 
-export type TeamKey = `frc${number}`
+export type TeamKey = `${number}`
 
 export type MatchKey = `${EventKey}_${'qm' | 'qf' | 'sf' | 'f'}${number}`
 
@@ -42,7 +42,7 @@ export type TeamMatchData = {
 export const default_match_data: TeamMatchData = {
     id: "",
     match_key: "2024orsal_qm67",
-    team_key: "frc0",
+    team_key: "0",
     location: "Middle", //prematch done
     is_fielded: false,//prematch done
     is_leave_start: false,//auto done
@@ -113,7 +113,8 @@ export type DrivetrainEnum = "swerve" | "tank" | "other"
 // Util Structs
 
 export type TeamMatch = {
-    number: string
+    team_key: string
+    match_key: string
     scout_name: string
     status: MatchStatus 
 }
