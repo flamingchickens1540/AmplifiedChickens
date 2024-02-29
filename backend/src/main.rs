@@ -11,6 +11,7 @@ use axum_server::tls_rustls::RustlsConfig;
 use dotenv::dotenv;
 
 use reqwest::Client as ReqwestClient;
+use socketioxide::SocketIo;
 
 use std::{collections::HashMap, sync::Arc};
 use std::{convert::Infallible, net::SocketAddr};
@@ -21,13 +22,14 @@ use tracing_subscriber::FmtSubscriber;
 
 use self::model::TeamMatch;
 
+mod admin;
 mod auth;
 mod error;
 mod model;
-mod queue;
 mod submit;
 mod upload;
 mod webpush;
+mod ws;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
@@ -49,18 +51,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (tx, _rx) = tokio::sync::watch::channel(Ok(Event::default())); // tx is the upstream, while rx is the downstream
 
-    let queue = Arc::new(Mutex::new(model::RoboQueue {
-        match_keys: vec![],
-        assigned: HashMap::new(),
-        robots: vec![],
-        scouts: vec![],
-    }));
-
     let state = model::AppState {
         db, // Database
         ctx,
-        queue,
         sse_upstream: Arc::new(Mutex::new(tx)),
+        queue_manager: Arc::new(Mutex::new(ws::QueueManager::new())),
     };
     let router = init_router(state);
 
@@ -79,7 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
 
     tokio::spawn(redirect_http_to_https(ports));
 
@@ -107,6 +102,10 @@ async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn init_router(state: model::AppState) -> Router {
+    let (layer, io) = SocketIo::new_layer();
+
+    io.ns("/", ws::on_connect);
+
     let max_image_size: usize = std::env::var("MAX_IMAGE_SIZE")
         .expect("MAX_IMAGE_SIZE not set")
         .parse()
@@ -124,24 +123,17 @@ fn init_router(state: model::AppState) -> Router {
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
-        //.route("/admin/getUser/single", get(queue::get_user))
-        .route("/admin/new/match/manual", post(queue::new_match_manual))
-        .route("/admin/new/match/auto", post(queue::new_match_auto))
-        .route("/admin/new/event", post(queue::new_event))
+        .route("/admin/new/event", post(admin::new_event))
         .route(
             "/admin/users/setPermissions",
-            post(queue::set_user_permissions),
+            post(admin::set_user_permissions),
         )
         .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
-        .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
-        .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
-        .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
-        .route("/scout/inQueue", post(queue::in_queue)) // tested;
-        .route("/scout/queue", post(queue::queue_user)) // tested
-        .route("/scout/dequeue", post(queue::dequeue_user)) // tested
-        .route("/scout/request_team", get(queue::scout_request_team))
+        .route("/admin/users/get/all", get(admin::get_scouts_and_scouted))
+        .route("/scout/get/unpitted", get(admin::get_unpitscouted_teams))
         .route("/vapid", get(webpush::vapid))
         .route("/register", post(webpush::register))
+        .layer(layer)
         .with_state(state)
         .layer(CorsLayer::permissive())
 }
