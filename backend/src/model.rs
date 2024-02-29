@@ -10,7 +10,7 @@ use std::sync::Arc;
 use tokio::sync::watch::Sender;
 use tokio::sync::Mutex;
 
-use crate::webpush;
+use crate::{webpush, ws};
 use reqwest::Client as ReqwestClient;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
@@ -33,8 +33,8 @@ impl Db {
 pub struct AppState {
     pub db: Db,
     pub ctx: ReqwestClient,
-    pub queue: Arc<Mutex<RoboQueue>>,
     pub sse_upstream: Arc<Mutex<Sender<Result<Event, Infallible>>>>,
+    pub queue_manager: Arc<Mutex<ws::QueueManager>>,
 }
 
 #[derive(Debug, Clone)]
@@ -44,77 +44,6 @@ pub struct RoboQueue {
     pub assigned: HashMap<String, String>, // access_token: team_key
     pub robots: Vec<String>,
     pub scouts: Vec<String>,
-}
-
-// We're assuming that all three red and all three blue is the order of the robots
-impl RoboQueue {
-    /// Takes in a list of robots,
-    /// Assigns each robot to one of the queued scouts, puts all the remaining robots in the robots queue
-    pub async fn new_match_auto_assign(
-        &mut self,
-        mut robots: Vec<String>,
-        db: &Db,
-    ) -> Result<(), (QueueError, String)> {
-        info!("Scouts {:?}", self.scouts);
-        info!("Robots: {:?}", robots);
-        for (i, _) in robots.iter().enumerate() {
-            if self.scouts.is_empty() {
-                self.robots.append(&mut robots);
-                break;
-            }
-            webpush::send_web_push(db, self.scouts[i].clone())
-                .await
-                .unwrap();
-            info!("Scout {} automatically assigned", self.scouts[i]);
-            self.scouts.pop();
-        }
-        Ok(())
-    }
-    // Manual assign
-    pub async fn new_match_manual_assign(
-        &mut self,
-        robots: Vec<String>,
-        scouts: Vec<String>,
-        db: &Db,
-    ) -> Result<(), (QueueError, String)> {
-        assert_eq!(robots.len(), scouts.len());
-        for (i, _) in robots.iter().enumerate() {
-            info!("Robot pushed to scout");
-            self.assigned.insert(scouts[i].clone(), robots[i].clone());
-            webpush::send_web_push(db, scouts[i].clone()).await.unwrap();
-            info!(
-                "Scout {} manually assigned to team {}",
-                scouts[i], robots[i]
-            );
-            self.scouts.pop();
-        }
-        Ok(())
-    }
-
-    pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
-        if !self.robots.is_empty() {
-            info!("Robot pushed to scout");
-            webpush::send_web_push(db, scout.clone()).await.unwrap();
-        } else {
-            self.scouts.push(scout);
-        }
-    }
-
-    pub fn scout_get_robot_auto(&mut self) -> Option<String> {
-        self.robots.pop()
-    }
-
-    pub fn scout_get_robot(&mut self, scout: String) -> Option<String> {
-        match self.assigned.get(&scout) {
-            Some(scout) => Some(scout.clone()),
-            None => self.scout_get_robot_auto(),
-        }
-    }
-}
-
-pub enum QueueError {
-    EndpointNotSet,
-    QueryFailed,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]

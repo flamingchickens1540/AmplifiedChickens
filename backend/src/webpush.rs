@@ -1,4 +1,4 @@
-use crate::queue::get_user_helper;
+use crate::admin::get_user_helper;
 use crate::{
     error,
     model::{AppState, Db},
@@ -32,18 +32,18 @@ pub async fn send_web_push(db: &Db, token: String) -> Result<(), (StatusCode, St
     let endpoint: Uri = ENDPOINT.parse().unwrap();
     let P256DH = Base64UrlUnpadded::decode_vec(&P256DH).unwrap();
     let AUTH = Base64UrlUnpadded::decode_vec(&AUTH).unwrap();
-    
+
     let key_pair = ES256KeyPair::from_bytes(&vapid).unwrap();
     let ua_public = PublicKey::from_sec1_bytes(&P256DH).unwrap();
     let ua_auth = Auth::clone_from_slice(&AUTH);
 
     let message = json!({
-        "title": "Scouting Notification",
-        "body": "Time to scout!"
-      });
+      "title": "Scouting Notification",
+      "body": "Time to scout!"
+    });
 
     let builder = WebPushBuilder::new(endpoint, ua_public, ua_auth)
-        .with_vapid(&key_pair, "colburna@team1540.catlin.edu") 
+        .with_vapid(&key_pair, "colburna@team1540.catlin.edu")
         .build(message.to_string())
         .unwrap()
         .map(axum::body::Body::from);
@@ -54,7 +54,7 @@ pub async fn send_web_push(db: &Db, token: String) -> Result<(), (StatusCode, St
     let client = Client::builder(TokioExecutor::new()).build(https);
     info!("Client sent push notification: {:?}", client);
     let test = client.request(builder).await.unwrap();
-    info!("test: {:?}", test); 
+    info!("test: {:?}", test);
 
     Ok(())
 }
