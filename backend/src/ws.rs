@@ -1,6 +1,7 @@
-use std::{convert::Infallible, sync::Arc};
-
-use crate::{model, submit};
+use crate::{
+    model::{self, AppState},
+    submit,
+};
 use axum::response::sse::Event;
 use bimap::BiMap;
 use serde::{Deserialize, Serialize};
@@ -9,25 +10,19 @@ use socketioxide::{
     socket::Sid,
     SocketIo,
 };
-use tokio::sync::{watch::Sender, Mutex};
 use tracing::{error, info};
 
 pub struct QueueManager {
-    robot_queue: Vec<String>,     // team_key
-    assigned: BiMap<String, Sid>, // team_key, scout SocketId,
+    robot_queue: Vec<String>, // team_key
     name_to_sid: BiMap<String, Sid>,
+    matches: Vec<String>, // match keys matches.len() - 1 is the furthest
 }
 
 #[derive(Serialize)]
 pub struct AdminRet {
     team_key: String,
     scout_name: String,
-}
-
-#[derive(Deserialize)]
-pub struct ScoutInfo {
-    name: String,
-    id: String,
+    match_key: String,
 }
 
 #[derive(Deserialize)]
@@ -54,8 +49,8 @@ impl QueueManager {
     pub fn new() -> Self {
         QueueManager {
             robot_queue: vec![],
-            assigned: BiMap::new(),
             name_to_sid: BiMap::new(),
+            matches: vec![],
         }
     }
 
@@ -64,10 +59,7 @@ impl QueueManager {
     }
 
     pub async fn free_scout(io: SocketIo, client_id: Sid) {
-        let mut assigned_scouts = match io.to("assigned_scouts").sockets() {
-            Ok(scouts) => scouts,
-            Err(_) => panic!("No assigned scouts avaliable"),
-        };
+        let mut assigned_scouts = io.to("assigned_scouts").sockets().unwrap_or(vec![]);
         assigned_scouts.iter_mut().for_each(|socket| {
             // TODO: Right now this removes the scout in every sense if they have multiple instances
             if socket.id == client_id {
@@ -77,7 +69,6 @@ impl QueueManager {
     }
 
     /// For manual matches, scouts should be the scout list, for auto matches, the scout should be pending_scouts
-    // TODO: Add robot and scout to assigned if needed
     pub async fn create_match(
         &mut self,
         admin_socket: &SocketRef,
@@ -114,7 +105,7 @@ impl QueueManager {
 
 pub async fn queue_scout_handler(
     socket: SocketRef,
-    client_scout: Data<ScoutInfo>,
+    scout_name: Data<String>,
     state: State<model::AppState>,
 ) {
     let mut manager = state.queue_manager.lock().await;
@@ -136,19 +127,18 @@ pub async fn queue_scout_handler(
         error!("Pending scout requested match");
     }
 
-    info!("Scout name: {}", client_scout.0.name);
+    info!("Scout name: {}", scout_name.0);
 
     socket
         .join("pending_scouts")
         .expect("To be able to join a room");
 
-    info!("Added {} to the pending_scouts room", client_scout.0.name);
+    info!("Added {} to the pending_scouts room", scout_name.0);
     match manager.get_next_robot() {
         Some(robot) => {
-            info!("Robot avaliable");
             info!(
-                "Removed {} from the pending_scouts room",
-                client_scout.0.name
+                "Robot avaliable\nRemoved {} from the pending_scouts room",
+                scout_name.0
             );
 
             socket
@@ -165,9 +155,21 @@ pub async fn queue_scout_handler(
                 }
             };
 
+            let num_of_queued_matches = f64::ceil(
+                socket
+                    .within("pending_scouts")
+                    .sockets()
+                    .unwrap_or(vec![])
+                    .len() as f64
+                    / 6.0,
+            ) as usize;
+
+            let curr_match = manager.matches[manager.matches.len() - num_of_queued_matches].clone();
+
             let admin_ret = AdminRet {
                 team_key: robot,
-                scout_name: client_scout.0.name,
+                scout_name: scout_name.0,
+                match_key: curr_match,
             };
 
             match socket
@@ -189,7 +191,7 @@ pub async fn queue_scout_handler(
 
 pub async fn dequeue_scout_handler(
     socket: SocketRef,
-    client_scout: Data<ScoutInfo>,
+    scout_name: Data<String>,
     state: State<model::AppState>,
 ) {
     let rooms: Vec<String> = socket
@@ -202,7 +204,7 @@ pub async fn dequeue_scout_handler(
     if !rooms.contains(&"pending_scouts".to_string()) {
         error!(
             "Attempted to dequeue scout: {} that was not pending\nScout was: {:?}",
-            client_scout.0.name, rooms
+            scout_name.0, rooms
         );
         return;
     }
@@ -212,7 +214,7 @@ pub async fn dequeue_scout_handler(
         Err(err) => error!("Failed to remove scout from pending_scouts room: {}", err),
     }
 
-    let data = submit::SseReturn::DeQueuedScout(client_scout.0.name);
+    let data = submit::SseReturn::DeQueuedScout(scout_name.0);
 
     let upstream = state.sse_upstream.lock().await;
     match upstream.send(Ok(Event::default().data(
@@ -229,6 +231,8 @@ pub async fn new_match_auto_handler(
     state: State<model::AppState>,
 ) {
     let mut manager = state.queue_manager.lock().await;
+
+    manager.matches.push(match_info.0.match_key);
 
     let mut queued_scouts = socket
         .to("pending_scouts")
@@ -250,18 +254,36 @@ pub async fn new_match_manual_handler(
 ) {
     let mut manager = state.queue_manager.lock().await;
 
+    manager.matches.push(match_info.0.match_key);
+
+    let mut scouts = match_info
+        .0
+        .scouts
+        .into_iter()
+        .map(|scout| {
+            manager
+                .name_to_sid
+                .get_by_left(&scout)
+                .expect("Fatal: Scout SID is unknown")
+                .clone()
+        })
+        .collect::<Vec<Sid>>();
+
     manager
-        .create_match(
-            &socket,
-            match_info.0.teams,
-            &mut match_info.0.scouts,
-            state.0,
-        )
+        .create_match(&socket, match_info.0.teams, &mut scouts, state.0)
         .await;
 }
 
-pub async fn on_connect(socket: SocketRef) {
+pub async fn on_connect(
+    socket: SocketRef,
+    Data(username): Data<String>,
+    State(state): State<AppState>,
+) {
+    let mut manager = state.queue_manager.lock().await;
+    manager.name_to_sid.insert(username, socket.id);
+
     socket.on("queue_scout", queue_scout_handler);
     socket.on("dequeue_sout", dequeue_scout_handler);
     socket.on("new_match_auto", new_match_auto_handler);
+    socket.on("new_match_manual", new_match_manual_handler);
 }
