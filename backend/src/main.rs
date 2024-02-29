@@ -104,7 +104,7 @@ async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
 fn init_router(state: model::AppState) -> Router {
     let (layer, io) = SocketIo::new_layer();
 
-    io.ns("/", ws::on_connect);
+    io.ns("/socket.io", ws::on_connect);
 
     let max_image_size: usize = std::env::var("MAX_IMAGE_SIZE")
         .expect("MAX_IMAGE_SIZE not set")

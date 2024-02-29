@@ -19,7 +19,7 @@
     let queued_scouts: string[] = []; //data.queued_scouts
     let scouted_robots: TeamMatch[] = [];
 
-    const socket = io();
+    const socket = io("https://scout.team1540.org/api");
 
     socket.on("connect", () => {
         console.log("Admin Connected to server");
