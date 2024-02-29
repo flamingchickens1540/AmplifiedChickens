@@ -6,11 +6,10 @@ use http::HeaderMap;
 
 use serde::{Deserialize, Serialize};
 
-use tracing::{error, info};
+use tracing::{error};
 
 use crate::{
     model::{self, AppState, Db, EventState, User},
-    submit,
 };
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
