@@ -31,6 +31,11 @@ pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (Stat
     Ok(Json(user))
 }
 
+pub async fn get_current_match(State(state): State<AppState>) -> impl IntoResponse {
+    let manager = state.queue_manager.lock().await;
+    manager.matches[manager.matches.len() - 1].clone()
+}
+
 pub async fn get_all_users(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<User>>, (StatusCode, String)> {

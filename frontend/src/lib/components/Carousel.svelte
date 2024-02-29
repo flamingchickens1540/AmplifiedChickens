@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { onMount } from "svelte";
+    // Hopefully my changes work, if they don't, uncomment the commented out each loop and submit match with a new socket connection from this component
+    import { createEventDispatcher, onMount } from "svelte";
     import { match_data } from "$lib/stores";
     let currentIndex = 0;
     let startX = 0;
@@ -53,6 +54,8 @@
             document.removeEventListener("touchmove", preventDefault);
         };
     });
+
+    let dispatch = createEventDispatcher()
 </script>
 
 <div
@@ -61,9 +64,14 @@
     on:touchend={handleTouchEnd}
 >
     <div class="carousel" style="transform: translateX(-{currentIndex * 100}%)">
-        {#each items as Item, i (i)}
+
+        <div class="carousel-item"><Prematch /> </div>
+        <div class="carousel-item"><Auto /></div>
+        <div class="carousel-item"><Tele /></div>
+        <div class="carousel-item"><Postmatch on:submit_match={(event) => dispatch("submit_match", event.detail)}/></div>
+        <!-- {#each items as Item, i (i)}
             <div class="carousel-item"><Item /></div>
-        {/each}
+        {/each} -->
     </div>
 </div>
 

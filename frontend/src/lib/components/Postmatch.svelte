@@ -6,6 +6,7 @@
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
     import SubmitButton from "./SubmitButton.svelte";
+    import { createEventDispatcher } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let scout_id = "";
@@ -31,21 +32,13 @@
         $match_data.is_died = deadboolean;
     }
 
+    let dispatch = createEventDispatcher()
+
     async function submit_match() {
         let req: any = { id: scout_id };
         req.push($match_data);
 
-        let res = await fetch(`${BACKEND_URL}/submit/match`, {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(req),
-        });
-        console.log(res);
-
-        $match_data
+        dispatch("submit_match", req)
     }
 </script>
 

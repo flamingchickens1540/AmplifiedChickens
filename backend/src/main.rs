@@ -121,14 +121,12 @@ fn init_router(state: model::AppState) -> Router {
         .route("/submit/upload", post(upload::upload))
         .layer(DefaultBodyLimit::max(max_image_size))
         .route("/auth/slack", get(auth::slack_callback))
-        .route("/submit/pit", post(submit::submit_pit_data))
-        .route("/submit/match", post(submit::submit_team_match))
-        .route("/admin/new/event", post(admin::new_event))
         .route(
             "/admin/users/setPermissions",
             post(admin::set_user_permissions),
         )
         .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
+        .route("/match/get/current", get(admin::get_current_match))
         .route("/admin/users/get/all", get(admin::get_scouts_and_scouted))
         .route("/scout/get/unpitted", get(admin::get_unpitscouted_teams))
         .route("/vapid", get(webpush::vapid))
