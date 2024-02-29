@@ -9,7 +9,7 @@ export const load = (async ({ cookies }) => {
 
     console.log("scout name match: ", name)
 
-    let res = await fetch(`${BACKEND_URL}/match/get_current`)
+    let res = await fetch(`${BACKEND_URL}/match/get/current`)
 
     let current_match = await res.json();
 

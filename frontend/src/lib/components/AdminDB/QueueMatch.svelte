@@ -5,8 +5,8 @@
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
     const TBA_API_KEY = import.meta.env.VITE_TBA_API_KEY;
 
-    let red_teams: string[] = [];
-    let blue_teams: string[] = [];
+    let red_teams: string[] = ["", "", ""];
+    let blue_teams: string[] = ["", "", ""];
 
     let blue_scouts: Scout[] = [];
     let red_scouts: Scout[] = [];

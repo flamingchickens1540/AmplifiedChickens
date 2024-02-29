@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type PageData } from "./$types";
+    import type { PageData } from "$types";
     import Carousel from "$lib/components/Carousel.svelte";
     import MatchScoutHomepage from "$lib/components/MatchScoutHomepage.svelte";
     import { match_data } from "$lib/stores";
@@ -17,7 +17,7 @@
 
     let scouting: boolean = false
 
-    const socket = io();
+    const socket = io("https://scout.team1540.org/api");
 
     socket.on("connect", () => {
         console.log("Connected to server");
