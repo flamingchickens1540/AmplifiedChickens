@@ -3,7 +3,7 @@ use std::convert::Infallible;
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{IntoResponse, Redirect, Response},
+    response::{IntoResponse, Response},
     Form, Json,
 };
 
@@ -86,16 +86,23 @@ pub async fn scout_request_team(
     }
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct NewMatchAuto {
+     teams: Vec<String>,
+     match_key: String
+}
+
 #[axum::debug_handler]
 pub async fn new_match_auto(
     State(state): State<AppState>,
     headers: HeaderMap,
-    Json(robots): Json<Vec<String>>,
+    Json(new_match): Json<NewMatchAuto>
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
-    info!("Robots in new match auto: {:?}", robots);
-    queue.new_match_auto_assign(robots).await;
+    info!("Robots in new match auto: {:?}", new_match.teams);
+    queue.match_keys.push(new_match.match_key);
+    queue.new_match_auto_assign(new_match.teams).await;
     Ok(())
 }
 
@@ -131,6 +138,7 @@ pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (Status
 pub struct ManualMatch {
     robots: Vec<String>,
     scouts: Vec<String>,
+    match_key: String
 }
 
 #[axum::debug_handler]
@@ -142,6 +150,7 @@ pub async fn new_match_manual(
     check_admin_auth(&state.db, headers).await?;
 
     let mut queue = state.queue.lock().await;
+queue.match_keys.push(manual_match.match_key);
     match queue
         .new_match_manual_assign(manual_match.robots, manual_match.scouts)
         .await

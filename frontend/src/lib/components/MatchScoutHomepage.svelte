@@ -15,6 +15,8 @@
     let timeuntilmatch: number = 0
     let timegiven: number = 0
     export let access_token: string
+    export let scout_percents: number[]
+    export let scout_names: string[]
 
     let clicked = false;
 
@@ -48,7 +50,8 @@
     // messy time code (NO TOUCHIE)
     
     async function joinQueue() {
-        goto("match/scout");
+    	$match_data.match_key = match 
+        goto("/app/scout");
     }
 </script>
 
@@ -95,7 +98,7 @@
 </div>
 {/if}
 
-<ScoutPercents />
+<ScoutPercents {scout_percents} {scout_names} />
     <div class="mains grid place-items-center">
             <button
                 style="padding: 2.5rem"

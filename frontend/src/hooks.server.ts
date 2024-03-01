@@ -1,5 +1,5 @@
 import { type Handle, redirect } from "@sveltejs/kit"
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
 
 export const handle: Handle = async ({ event, resolve }) => {
 
@@ -14,7 +14,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     let auth_res = await fetch(`${BACKEND_URL}/auth/check`, {
         method: "POST",
         headers: {
-            Accept: "application/json",
             "Content-Type": "application/json",
         },
         body: JSON.stringify({ access_token: access_token, is_admin: isAdminPath }),

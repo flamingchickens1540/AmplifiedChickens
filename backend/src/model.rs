@@ -1,15 +1,9 @@
 use axum::response::sse::Event;
-
 use std::convert::Infallible;
-use std::mem;
-use std::{borrow::BorrowMut, collections::HashMap};
-
+use std::{collections::HashMap};
 use std::sync::Arc;
-
 use tokio::sync::watch::Sender;
 use tokio::sync::Mutex;
-
-use crate::webpush;
 use reqwest::Client as ReqwestClient;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
@@ -154,29 +148,38 @@ pub struct ScoutEventTeam {
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow, Default)]
 pub struct TeamMatch {
-    pub id: i32,
+    pub id: i64,
     pub match_key: String,
     pub team_key: String,
     pub is_fielded: bool,
     pub is_leave_start: bool,
-    pub auto_speaker_succeed: i16,
-    pub auto_speaker_missed: i16,
-    pub auto_amp_succeed: i16,
-    pub auto_amp_missed: i16,
-    pub auto_piece_succeed: i16,
-    pub auto_piece_missed: i16,
-    pub tele_speaker_succeed: i16,
-    pub tele_speaker_missed: i16,
-    pub tele_amp_succeed: i16,
-    pub tele_amp_missed: i16,
-    pub trap_succeed: bool,
-    pub trap_missed: bool,
-    pub stage: Stage,
+    pub auto_speaker_succeed: i16, //
+    pub auto_speaker_missed: i16, //
+    pub auto_amp_succeed: i16, //
+    pub auto_amp_missed: i16, //
+    pub auto_piece_succeed: i16, //
+    pub auto_piece_missed: i16, //
+    pub tele_speaker_succeed: i16, //
+    pub tele_speaker_missed: i16, //
+    pub tele_amp_succeed: i16, // 
+    pub tele_amp_missed: i16, //
+    pub trap_succeed: i16, // here's the issue 
+    pub trap_missed: i16, //
+    pub stage: String,
     pub skill: i16,
     pub notes: String,
     pub is_broke: bool,
     pub is_died: bool,
     pub scout_id: String,
+    pub location: String 
+}
+
+// For use later when we fix location
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub enum LocationEnum {
+    Far,
+    Close,
+    Middle
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]

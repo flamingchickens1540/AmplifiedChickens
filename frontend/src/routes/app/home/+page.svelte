@@ -15,6 +15,8 @@
     let twitchURL = "https://www.twitch.tv/firstinspires";
 
     let name = data.scout_name;
+    let scout_percents = data.scout_percents
+	let scout_names = data.scout_names
 
     $current_event_key = data.current_event_key?.toString() || "2024orore";
 
@@ -65,7 +67,7 @@
     </div>
 
     <div class="flex flex-col content-center items-stretch">
-        <ScoutPercents />
+        <ScoutPercents {scout_names} {scout_percents}/>
         <div class="flex flex-row w-full content-center justify-around items-end">
             <a href="https://www.thebluealliance.com/event/{$current_event_key}" style="margin-left: 15px; margin-right: 15px;">
                 <button

@@ -3,32 +3,9 @@
     import Pie from "./Pie.svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
-    async function get_scout_percents(): Promise<readonly [string[], number[]]> {
-        let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            }
-        })
-        console.log(res)
+    export let scout_names: string[]
+    export let scout_percents: number[]
 
-        if (!res.ok) {
-            console.error("Failed to fetch scout percents")
-        }
-
-        return res.json()
-    }
-
-    let scout_names: string[] = [];
-    let scout_percents: number[] = [];
-
-    onMount(async () => {
-        let result = await get_scout_percents()
-
-        scout_names = result[0]
-        scout_percents = result[1]
-    })
 </script>
 
 <div

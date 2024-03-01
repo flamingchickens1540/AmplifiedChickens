@@ -4,12 +4,13 @@ use axum::response::{IntoResponse, sse::{Event, KeepAlive, Sse}};
 use axum::{extract::State, http::StatusCode, Json};
 use futures::stream::{Stream};
 use futures::StreamExt;
+use sqlx::Type;
 
 use std::{convert::Infallible};
 
 
 use tokio_stream::wrappers::WatchStream;
-use tracing::{info};
+use tracing::{info, error};
 
 pub async fn admin_sse_connect(
     State(state): State<AppState>,
@@ -32,20 +33,39 @@ pub enum SseReturn {
     TeamMatchScouted { scout_name: String, team_key: String, match_key: String }
 }
 
+#[derive(Serialize, Debug, Clone, Type)]
+#[sqlx(type_name="stageenum", rename_all="lowercase")]
+pub enum StateEnum {
+    OnStage,
+    Park,
+    #[serde(rename="not attempted")]
+    NotAttempted,
+    Failed
+}
+
 pub async fn submit_team_match(
     State(state): State<AppState>,
     Json(form): Json<TeamMatch>,
-) -> impl IntoResponse {
-    let result = sqlx::query("INSERT INTO \"TeamMatches\" (match_key, team_key, is_fielded, is_leave_start, auto_speaker_succeed, auto_speaker_missed, auto_amp_succeed, auto_amp_missed, auto_piece_succeed, auto_piece_missed, tele_speaker_succeed, tele_speaker_missed, tele_amp_succeed, tele_amp_missed, trap_succeed, trap_missed, stage_enum, skill, notes, is_broke, is_died, scout_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);").bind(form.match_key.clone()).bind(form.team_key.clone()).bind(form.is_fielded).bind(form.is_leave_start).bind(form.auto_speaker_succeed).bind(form.auto_speaker_missed).bind(form.auto_amp_succeed).bind(form.auto_amp_missed).bind(form.auto_piece_succeed).bind(form.auto_piece_missed).bind(form.tele_speaker_succeed).bind(form.tele_speaker_missed).bind(form.tele_amp_succeed).bind(form.tele_amp_missed).bind(form.trap_succeed).bind(form.trap_missed).bind(form.stage).bind(form.skill).bind(form.notes).bind(form.is_broke).bind(form.is_died).bind(form.scout_id.clone()).execute(&state.db.pool).await;
+    ) -> impl IntoResponse {
+        info!("Submitted: {:?}", form);
+        let mut stage = StateEnum::OnStage;
+        if form.stage == "Parked".to_string() {
+            stage = StateEnum::Park;
+        } else if form.stage == "Failed" {
+            stage = StateEnum::Failed;
+        } else if form.stage == "NotAttempted" {
+            stage = StateEnum::NotAttempted;
+        }
+    let result = sqlx::query("INSERT INTO \"TeamMatches\" (match_key, team_key, is_fielded, is_leave_start, auto_speaker_succeed, auto_speaker_missed, auto_amp_succeed, auto_amp_missed, auto_piece_succeed, auto_piece_missed, tele_speaker_succeed, tele_speaker_missed, tele_amp_succeed, tele_amp_missed, trap_succeed, trap_missed, stage_enum, skill, notes, is_broke, is_died, scout_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);").bind(form.match_key.clone()).bind(form.team_key.clone()).bind(form.is_fielded).bind(form.is_leave_start).bind(form.auto_speaker_succeed).bind(form.auto_speaker_missed).bind(form.auto_amp_succeed).bind(form.auto_amp_missed).bind(form.auto_piece_succeed).bind(form.auto_piece_missed).bind(form.tele_speaker_succeed).bind(form.tele_speaker_missed).bind(form.tele_amp_succeed).bind(form.tele_amp_missed).bind(form.trap_succeed).bind(form.trap_missed).bind(stage).bind(form.skill).bind(form.notes).bind(form.is_broke).bind(form.is_died).bind(form.scout_id.clone()).execute(&state.db.pool).await;
 
     match result {
         Ok(_) => {},
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+        Err(e) => {error!("Error submitted data to db: {}", e); return StatusCode::INTERNAL_SERVER_ERROR},
     }
 
     let user: User = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE id = $1").bind(form.scout_id.clone()).fetch_one(&state.db.pool).await {
         Ok(user) => user,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR
+        Err(_) => { error!("Error getting user from db"); return StatusCode::INTERNAL_SERVER_ERROR }
     };
 
     let upstream = state.sse_upstream.lock().await;

@@ -1,7 +1,8 @@
 <script lang="ts">
     import AssignStudent from "./AssignStudent.svelte";
     import type { Scout } from "$lib/types";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
+    import { match_data } from "$lib/stores"
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
     const TBA_API_KEY = import.meta.env.VITE_TBA_API_KEY
 
     export let red_teams: string[] = [];
@@ -10,7 +11,6 @@
     export let blue_scouts: Scout[] = [];
     export let red_scouts: Scout[] = [];
 
-    export let match_key = "";
     export let queued_scouts: Scout[] = [];
 
     export let auto_assign: boolean;
@@ -18,8 +18,9 @@
     export let access_token = "";
 
     async function auto_populate() {
+    console.log(TBA_API_KEY)
         let res = await fetch(
-            `https://www.thebluealliance.com/api/v3/match/${match_key}`,
+            `https://www.thebluealliance.com/api/v3/match/${$match_data.match_key}`,
             {
                 // FIXME: DO NOT COMMIT API KEY
                 headers: {
@@ -30,8 +31,8 @@
         let match = await res.json();
 
         console.log(match);
-        red_teams = match.alliances.red.team_keys;
-        blue_teams = match.alliances.blue.team_keys;
+        red_teams = match.alliances.red.team_keys.map((key) => key.split('c')[1]);
+        blue_teams = match.alliances.blue.team_keys.map((key) => key.split('c')[1]);
 	console.log(blue_teams)
 	console.log(red_teams)
 	red_teams = red_teams
@@ -49,7 +50,7 @@
                     "Content-Type": "application/json",
                     "x-access-token": access_token,
                 },
-                body: JSON.stringify(red_teams.concat(blue_teams)),
+                body: JSON.stringify({teams: red_teams.concat(blue_teams), match_key: $match_data.match_key}),
             });
 
             console.log(res);
@@ -72,8 +73,9 @@
                     "x-access-token": access_token,
                 },
                 body: JSON.stringify({
-                    red: red_teams.concat(blue_teams),
+                    teams: red_teams.concat(blue_teams),
                     scouts: queued_scouts,
+		    match_key: $match_data.match_key 
                 }),
             });
 
@@ -97,7 +99,7 @@
         class="flex justify-between items-center rounded"
         style="background-color: #5C5C5C; padding:0.2rem; margin:17px"
     >
-        <input class="" bind:value={match_key} alt="Match Key" />
+        <input class="" bind:value={$match_data.match_key} alt="Match Key" />
         <button on:click={auto_populate} class="rounded">Load Match</button>
     </div>
     <div class="grid grid-cols-2 grid-rows-1">

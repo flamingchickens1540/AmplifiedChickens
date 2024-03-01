@@ -10,4 +10,4 @@
     let blue: string[] = []
 
 </script>
-<MatchScoutHomepage {blue} {red} access_token={data.accessToken ?? ""} match={data.match_key}/>
+<MatchScoutHomepage {blue} {red} access_token={data.accessToken ?? ""} match={data.match_key} scout_percents={data.scout_percents} scout_names={data.scout_names} />

@@ -7,8 +7,9 @@
     export let data: PageData;
 
     onMount(() => {
-        // FIXME: test data type
-        $match_data.team_key = data.data as unknown as `frc${number}`
+        $match_data.team_key = data.team_key as unknown as `${number}`
+	$match_data.scout_id = data.scout_id
+	$match_data.match_key = data.match_key
     })
 </script>
 

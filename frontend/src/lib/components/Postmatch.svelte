@@ -5,10 +5,10 @@
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
+    import { default_match_data } from "$lib/types"
+    import { goto } from "$app/navigation"
     import SubmitButton from "./SubmitButton.svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-    export let scout_id = "";
 
     let brokenstatus = "";
     let deadstatus = "";
@@ -16,12 +16,12 @@
     let brokeboolean = false;
 
     $: {
-        if ((deadstatus = "Died on Field")) {
+        if (deadstatus == "Died on Field") {
             deadboolean = true;
         } else {
             deadboolean = false;
         }
-        if ((brokenstatus = "Broken")) {
+        if (brokenstatus == "Broken") {
             brokeboolean = true;
         } else {
             brokeboolean = false;
@@ -32,20 +32,25 @@
     }
 
     async function submit_match() {
-        let req: any = { id: scout_id };
-        req.push($match_data);
+    console.log("SUBMIT MATCH")
+	console.log($match_data)
+	let req: any = {id: 0, ...$match_data}
 
         let res = await fetch(`${BACKEND_URL}/submit/match`, {
             method: "POST",
             headers: {
-                Accept: "application/json",
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(req),
         });
-        console.log(res);
+        console.log("Submitted match:", res);
 
-        $match_data
+let temp = $match_data.match_key
+        $match_data = default_match_data
+$match_data.match_key = temp
+
+goto("/app/match")
+
     }
 </script>
 

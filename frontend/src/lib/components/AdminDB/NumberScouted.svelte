@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Scout } from "$lib/types"
     import { onMount } from "svelte";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let access_token: string
 

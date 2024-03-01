@@ -3,7 +3,7 @@
     export let text1 = "";
     export let text2 = "";
     export let text3 = "";
-    export let value = text1;
+    export let value;
     function closebutton() {
         location = "far";
         location = location;

@@ -2,7 +2,7 @@
     export let buttonon = true;
     export let text1 = "Text1";
     export let text2 = "Text2";
-    export let value = text1;
+    export let value
     import checkmark from "$lib/svgs/checkmark.svg";
     function toggleon() {
         value = text1;

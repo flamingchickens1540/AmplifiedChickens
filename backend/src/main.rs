@@ -27,7 +27,6 @@ mod model;
 mod queue;
 mod submit;
 mod upload;
-mod webpush;
 
 #[allow(dead_code)]
 #[derive(Clone, Copy)]
@@ -79,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .unwrap();
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 3007));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
 
     tokio::spawn(redirect_http_to_https(ports));
 
@@ -137,8 +136,6 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
         .route("/scout/get/current_match", get(queue::get_current_match))
         .route("/scout/request_team", get(queue::scout_request_team))
-        .route("/vapid", get(webpush::vapid))
-        .route("/register", post(webpush::register))
         .with_state(state)
         .layer(CorsLayer::permissive())
 }
