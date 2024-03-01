@@ -1,6 +1,11 @@
 use std::convert::Infallible;
 
-use axum::{extract::State, http::StatusCode, response::IntoResponse, Form, Json};
+use axum::{
+    extract::State,
+    http::StatusCode,
+    response::{IntoResponse, Redirect, Response},
+    Form, Json,
+};
 
 use http::HeaderMap;
 
@@ -8,10 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use tracing::{error, info};
 
-use crate::{
-    model::{self, AppState, Db, EventState, User},
-    submit,
-};
+use crate::model::{self, AppState, Db, EventState, User};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -51,7 +53,7 @@ pub async fn get_all_users(
 pub async fn scout_request_team(
     State(state): State<AppState>,
     headers: HeaderMap,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> Result<Response, (StatusCode, String)> {
     info!("Scout requested teammatch");
     let access_token = match headers.get("x-access-token") {
         Some(token) => token
@@ -75,14 +77,11 @@ pub async fn scout_request_team(
                 "Robot {}, served to user {} aka {}",
                 team, user.name, access_token
             );
-            Ok(Json(team))
+            Ok(Json(team).into_response())
         }
         None => {
             info!("No robots in queue :D");
-            Err((
-                StatusCode::NO_CONTENT,
-                "No more robots in queue, happy break!".to_string(),
-            ))
+            Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()))
         }
     }
 }
@@ -96,21 +95,8 @@ pub async fn new_match_auto(
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
     info!("Robots in new match auto: {:?}", robots);
-    match queue.new_match_auto_assign(robots, &state.db).await {
-        Ok(()) => Ok(()),
-        Err(err) => match err.0 {
-            model::QueueError::EndpointNotSet => {
-                Err((
-                    StatusCode::IM_A_TEAPOT,
-                    "Scout has not accepted push notifications".to_string(),
-                )) // TODO: Figure out what code to use to indicate that a scout hasn't accepted push notifications
-            }
-            model::QueueError::QueryFailed => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Assignment query failed".to_string(),
-            )),
-        },
-    }
+    queue.new_match_auto_assign(robots).await;
+    Ok(())
 }
 
 pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (StatusCode, String)> {
@@ -157,23 +143,22 @@ pub async fn new_match_manual(
 
     let mut queue = state.queue.lock().await;
     match queue
-        .new_match_manual_assign(manual_match.robots, manual_match.scouts, &state.db)
+        .new_match_manual_assign(manual_match.robots, manual_match.scouts)
         .await
     {
         Ok(()) => Ok(()),
-        Err(err) => match err.0 {
-            model::QueueError::EndpointNotSet => {
-                Err((
-                    StatusCode::IM_A_TEAPOT,
-                    "Scout has not accepted push notifications".to_string(),
-                )) // TODO: Figure out what code to use to indicate that a scout hasn't accepted push notifications
-            }
-            model::QueueError::QueryFailed => Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Query failed".to_string(),
-            )),
-        },
+        Err(err) => Err((StatusCode::BAD_REQUEST, err)),
     }
+}
+
+pub async fn get_current_match(State(state): State<AppState>) -> Json<String> {
+    let manager = state.queue.lock().await;
+
+    if manager.match_keys.len() == 0 {
+        return Json("2024orore_qm1".to_string());
+    }
+
+    Json(manager.match_keys[manager.match_keys.len() - 1].clone())
 }
 
 #[derive(Serialize, Deserialize)]
@@ -253,29 +238,6 @@ pub async fn get_finished_matches(
         }
     }
 }
-#[axum::debug_handler]
-pub async fn get_queued_scouts(
-    State(state): State<AppState>,
-) -> Result<Json<Vec<String>>, impl IntoResponse> {
-    let queue = state.queue.lock().await;
-    let mut names: Vec<String> = vec![];
-    info!("Queued Scouts: {:?}", queue.scouts);
-    for scout in queue.scouts.iter() {
-        names.push(
-            match sqlx::query_as::<_, model::User>(
-                "SELECT * FROM \"Users\" WHERE access_token = $1",
-            )
-            .bind(scout)
-            .fetch_one(&state.db.pool)
-            .await
-            {
-                Ok(user) => user.name,
-                Err(_) => return Err(StatusCode::UNAUTHORIZED),
-            },
-        );
-    }
-    Ok(Json(names))
-}
 
 #[axum::debug_handler]
 pub async fn get_scouts_and_scouted(
@@ -333,100 +295,6 @@ pub async fn get_scouts_and_scouted(
         ret.1.push(count / total);
     }
     Ok(Json(ret))
-}
-
-pub async fn in_queue(State(state): State<AppState>, Json(id): Json<String>) -> Json<bool> {
-    let queue = state.queue.lock().await;
-    Json(queue.scouts.contains(&id))
-}
-
-#[axum::debug_handler]
-pub async fn queue_user(
-    State(state): State<AppState>,
-    headers: HeaderMap,
-) -> Result<(), (StatusCode, String)> {
-    let access_token = match headers.get("x-access-token") {
-        Some(t) => t.to_str().unwrap().to_string(),
-        None => {
-            error!("Attempted to queue user without access_token header");
-            return Err((
-                StatusCode::UNAUTHORIZED,
-                "Did not receive x-access_token in header".to_string(),
-            ));
-        }
-    };
-    let mut queue = state.queue.lock().await;
-    if queue.scouts.contains(&access_token) {
-        error!("Scout already in queue attempted to enter queue");
-        return Err((
-            StatusCode::BAD_REQUEST,
-            "Scout already in queue".to_string(),
-        ));
-    }
-
-    queue
-        .add_scout_auto_assign(access_token.clone(), &state.db)
-        .await;
-
-    let user = get_user_helper(&state.db, access_token.clone())
-        .await
-        .unwrap();
-
-    let upstream = state.sse_upstream.lock().await;
-
-    let ret = submit::SseReturn::QueuedScout(user.name.clone());
-
-    upstream.send(Ok(axum::response::sse::Event::default().data(
-        serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"),
-    )));
-
-    info!("Scout {} queued", access_token);
-    Ok(())
-}
-
-#[axum::debug_handler]
-pub async fn dequeue_user(
-    State(state): State<AppState>,
-    headers: HeaderMap,
-) -> Result<String, (StatusCode, String)> {
-    let access_token = match headers.get("x-access-token") {
-        Some(t) => t.to_str().unwrap().to_string(),
-        None => {
-            error!("Attempted to queue user without access_token header");
-            return Err((
-                StatusCode::UNAUTHORIZED,
-                "Did not receive x-access_token in header".to_string(),
-            ));
-        }
-    };
-
-    let mut queue = state.queue.lock().await;
-    info!("Queue during dequeue: {:?}", queue);
-    if !queue.scouts.contains(&access_token) {
-        return Err((StatusCode::BAD_REQUEST, "Scout not in queue".to_string()));
-    }
-
-    let index = queue
-        .scouts
-        .iter()
-        .position(|code| *code == access_token.clone())
-        .unwrap();
-    queue.scouts.remove(index);
-
-    let user = get_user_helper(&state.db, access_token.clone())
-        .await
-        .unwrap();
-
-    let upstream = state.sse_upstream.lock().await;
-
-    let ret = submit::SseReturn::DeQueuedScout(user.name.clone());
-
-    upstream.send(Ok(axum::response::sse::Event::default().data(
-        serde_json::to_string(&ret).expect("SseReturn queue user was not valid json"),
-    )));
-
-    info!("Scout {} dequeued", access_token);
-    Ok("User removed from queue".to_string())
 }
 
 #[axum::debug_handler]

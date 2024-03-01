@@ -1,9 +1,8 @@
 use axum::response::sse::Event;
 
-use futures::StreamExt;
-
-use std::collections::HashMap;
 use std::convert::Infallible;
+use std::mem;
+use std::{borrow::BorrowMut, collections::HashMap};
 
 use std::sync::Arc;
 
@@ -14,7 +13,13 @@ use crate::webpush;
 use reqwest::Client as ReqwestClient;
 use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use tracing::{error, info};
+use tracing::info;
+
+#[derive(Debug, Clone)]
+pub enum CurrentMatchType {
+    Manual,
+    Auto,
+}
 
 #[derive(Debug, Clone)]
 pub struct Db {
@@ -43,71 +48,45 @@ pub struct RoboQueue {
     // This is only for manual assignment
     pub assigned: HashMap<String, String>, // access_token: team_key
     pub robots: Vec<String>,
-    pub scouts: Vec<String>,
+    pub curr_match_type: CurrentMatchType,
 }
 
 // We're assuming that all three red and all three blue is the order of the robots
 impl RoboQueue {
     /// Takes in a list of robots,
     /// Assigns each robot to one of the queued scouts, puts all the remaining robots in the robots queue
-    pub async fn new_match_auto_assign(
-        &mut self,
-        mut robots: Vec<String>,
-        db: &Db,
-    ) -> Result<(), (QueueError, String)> {
-        info!("Scouts {:?}", self.scouts);
+    pub async fn new_match_auto_assign(&mut self, mut robots: Vec<String>) {
         info!("Robots: {:?}", robots);
-        for (i, _) in robots.iter().enumerate() {
-            if self.scouts.is_empty() {
-                self.robots.append(&mut robots);
-                break;
-            }
-            webpush::send_web_push(db, self.scouts[i].clone())
-                .await
-                .unwrap();
-            info!("Scout {} automatically assigned", self.scouts[i]);
-            self.scouts.pop();
-        }
-        Ok(())
+        self.robots.append(&mut robots);
+        self.curr_match_type = CurrentMatchType::Manual;
     }
+
     // Manual assign
     pub async fn new_match_manual_assign(
         &mut self,
         robots: Vec<String>,
         scouts: Vec<String>,
-        db: &Db,
-    ) -> Result<(), (QueueError, String)> {
+    ) -> Result<(), String> {
         assert_eq!(robots.len(), scouts.len());
         for (i, _) in robots.iter().enumerate() {
             info!("Robot pushed to scout");
+            if self.assigned.contains_key(&scouts[i].clone()) {
+                return Err("Scout already manually assigned".to_string());
+            }
             self.assigned.insert(scouts[i].clone(), robots[i].clone());
-            webpush::send_web_push(db, scouts[i].clone()).await.unwrap();
             info!(
                 "Scout {} manually assigned to team {}",
                 scouts[i], robots[i]
             );
-            self.scouts.pop();
         }
+        self.curr_match_type = CurrentMatchType::Manual;
         Ok(())
-    }
-
-    pub async fn add_scout_auto_assign(&mut self, scout: String, db: &Db) {
-        if !self.robots.is_empty() {
-            info!("Robot pushed to scout");
-            webpush::send_web_push(db, scout.clone()).await.unwrap();
-        } else {
-            self.scouts.push(scout);
-        }
-    }
-
-    pub fn scout_get_robot_auto(&mut self) -> Option<String> {
-        self.robots.pop()
     }
 
     pub fn scout_get_robot(&mut self, scout: String) -> Option<String> {
         match self.assigned.get(&scout) {
             Some(scout) => Some(scout.clone()),
-            None => self.scout_get_robot_auto(),
+            None => self.robots.pop(),
         }
     }
 }

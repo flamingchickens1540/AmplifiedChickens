@@ -4,14 +4,16 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "./ScoutPercents.svelte";
+    import { createEventDispatcher } from "svelte";
+    import { match_data } from "$lib/stores";
+    import { goto } from "$app/navigation";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     export let blue: string[]
     export let red: string[]
     export let match: string
-    export let selected: boolean
-    export let timeuntilmatch: number
-    export let timegiven: number
+    let timeuntilmatch: number = 0
+    let timegiven: number = 0
     export let access_token: string
 
     let clicked = false;
@@ -46,39 +48,7 @@
     // messy time code (NO TOUCHIE)
     
     async function joinQueue() {
-    	clicked = true
-	console.log(BACKEND_URL)
-        let res = await fetch(`${BACKEND_URL}/scout/queue`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-access-token": access_token
-            },
-        })
-
-	console.log(res)
-
-        if (res.ok) {
-            console.log("Queued user successfully")
-        }
-    }
-
-    async function leaveQueue() {
-    	clicked = false
-        let res = await fetch(`${BACKEND_URL}/scout/dequeue`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-access-token": access_token
-            },
-        })
-
-	console.log(res)
-
-        if (res.ok) {
-            console.log("Dequeued user successfully")
-        }
-
+        goto("match/scout");
     }
 </script>
 
@@ -126,43 +96,15 @@
 {/if}
 
 <ScoutPercents />
-{#if clicked == false}<!-- if queue is not full -->
-    <div class="mains">
-        <center>
+    <div class="mains grid place-items-center">
             <button
                 style="padding: 2.5rem"
                 id="Match-Scounts"
                 on:click={joinQueue}
             >
-                Join Queue
+                Get Robot
             </button>
-        </center>
-    </div>
-{:else if clicked == true}
-    <div class="mains">
-        <center>
-            <button
-                style="padding: 2.8rem"
-                id="Match-Scouts"
-                on:click={leaveQueue}
-            >
-                Leave Queue</button
-            >
-        </center>
-    </div>
-{:else}
-    <!-- if queue is full -->
-    <div class="mains">
-        <center>
-            <button
-                style="padding: 2.5rem; padding-left: 4.5rem; padding-right:4.5rem"
-                id="Match-Scountss"
-            >
-                Queue Full
-            </button>
-        </center>
-    </div>
-{/if}
+        </div>
 <div class="bottom-div">
     <Navbar page="match" />
 </div>

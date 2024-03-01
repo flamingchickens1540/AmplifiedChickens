@@ -8,7 +8,7 @@
 
     onMount(() => {
         // FIXME: test data type
-        $match_data.team_key = data[0] as unknown as `frc${number}`
+        $match_data.team_key = data.data as unknown as `frc${number}`
     })
 </script>
 

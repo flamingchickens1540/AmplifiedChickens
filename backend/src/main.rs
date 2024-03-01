@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match_keys: vec![],
         assigned: HashMap::new(),
         robots: vec![],
-        scouts: vec![],
+        curr_match_type: model::CurrentMatchType::Auto,
     }));
 
     let state = model::AppState {
@@ -134,11 +134,8 @@ fn init_router(state: model::AppState) -> Router {
         )
         .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
-        .route("/admin/users/get/queued", get(queue::get_queued_scouts)) // tested
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
-        .route("/scout/inQueue", post(queue::in_queue)) // tested;
-        .route("/scout/queue", post(queue::queue_user)) // tested
-        .route("/scout/dequeue", post(queue::dequeue_user)) // tested
+        .route("/scout/get/current_match", get(queue::get_current_match))
         .route("/scout/request_team", get(queue::scout_request_team))
         .route("/vapid", get(webpush::vapid))
         .route("/register", post(webpush::register))
