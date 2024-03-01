@@ -1,12 +1,23 @@
+export type Scout = {
+    name: string,
+    admin: boolean,
+    noti: boolean
+    status: MatchStatus
+}
+
+export type MatchStatus = "complete" | "pending" | "not_started"
+
 export type TeamKey = `frc${number}`
 
 export type MatchKey = `${EventKey}_${'qm' | 'qf' | 'sf' | 'f'}${number}`
 
 export type EventKey = `${number}${string}`
 
-export type TeamMatch = {
+export type TeamMatchData = {
+    id: string
     match_key: MatchKey
     team_key: TeamKey
+    location: string
     is_fielded: boolean
     is_leave_start: boolean
     auto_speaker_succeed: number
@@ -21,11 +32,37 @@ export type TeamMatch = {
     tele_amp_missed: number
     trap_succeed: number
     trap_missed: number
-    stage_enum: StageEnum
+    stage: string
     skill: number
     is_broke: boolean
     is_died: boolean
     notes: string
+}
+
+export const default_match_data: TeamMatchData = {
+    id: "",
+    match_key: "2024orsal_qm67",
+    team_key: "frc0",
+    location: "Middle", //prematch done
+    is_fielded: false,//prematch done
+    is_leave_start: false,//auto done
+    auto_speaker_succeed: 0, //auto done
+    auto_speaker_missed: 0, //auto done
+    auto_amp_succeed: 0, //auto done
+    auto_amp_missed: 0, //auto done
+    auto_piece_succeed: 0, //auto done
+    auto_piece_missed: 0, //auto done
+    tele_speaker_succeed: 0, //tele done
+    tele_speaker_missed: 0, //tele done
+    tele_amp_succeed: 0, //tele done
+    tele_amp_missed: 0, //tele done
+    trap_succeed: 0, //tele done
+    trap_missed: 0, //tele done
+    stage: "onstage", //did it
+    skill: 0, //did it
+    is_broke: true,
+    is_died: true,
+    notes: "" //did it
 }
 
 export type Team = {
@@ -45,9 +82,11 @@ export type Match = {
     blue_3: TeamKey
 }
 
-export type TeamEvent = {
+export type Pit = {
+    team_key: string
     length: number
     width: number
+    weight: number
     is_short: boolean
     drivetrain: DrivetrainEnum
     polish: number
@@ -56,6 +95,25 @@ export type TeamEvent = {
     notes: string
 }
 
-export type StageEnum = "onstage" | "park" | "not attempted" | "failed"
+export const default_pit_data: Pit = {
+    team_key: "frc2910",//oiajdsofuhasoidhufaosd
+    length: 0,
+    width: 0,
+    weight: 0,
+    is_short: true,//iuhoidhufaosdihufoaishudfoa
+    polish: 3,//iuhoidhufaosdihufoaishudfoa
+    is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
+    drivetrain: "swerve", //iuhoidhufaosdihufoaishudfoa
+    is_chute_intake: false,//iuhoidhufaosdihufoaishudfoa
+    notes: "" //iajsdofjaosdifj
+}
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"
+
+// Util Structs
+
+export type TeamMatch = {
+    number: string
+    scout_name: string
+    status: MatchStatus 
+}

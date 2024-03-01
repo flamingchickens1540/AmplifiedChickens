@@ -1,7 +1,12 @@
 <script lang="ts">
-  import type { PageData } from "./$types";
+    import Carousel from "$lib/components/Carousel.svelte";
+    import MatchScoutHomepage from "$lib/components/MatchScoutHomepage.svelte";
 
-  export let data: PageData;
+    export let data: PageData
+
+    let red = []
+
+    let blue = []
+
 </script>
-
-<h1>Match</h1>
+<MatchScoutHomepage {blue} {red} access_token={data.accessToken}/>
