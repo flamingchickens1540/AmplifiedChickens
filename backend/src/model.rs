@@ -50,7 +50,6 @@ impl RoboQueue {
     /// Takes in a list of robots,
     /// Assigns each robot to one of the queued scouts, puts all the remaining robots in the robots queue
     pub async fn new_match_auto_assign(&mut self, mut robots: Vec<String>) {
-        info!("Robots: {:?}", robots);
         self.robots.append(&mut robots);
         self.curr_match_type = CurrentMatchType::Manual;
     }
@@ -224,10 +223,10 @@ pub struct TeamEvent {
     pub length: i16,
     pub is_short: bool,
     pub is_camera: bool,
-    pub drivetrain: DriveTrain,
+    pub drivetrain: String,
     pub is_ground_intake: bool,
     pub is_chute_intake: bool,
-    pub polish: Polish,
+    pub polish: i16,
     pub scout_id: String,
 }
 
@@ -249,33 +248,8 @@ pub struct EventState {
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
-pub enum Stage {
-    OnState,
-    Park,
-    NotAttempted,
-    Failed,
-}
-
-impl Default for Stage {
-    fn default() -> Self {
-        Stage::NotAttempted
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
-#[sqlx(rename_all = "lowercase")]
 pub enum DriveTrain {
     Swerve,
     Tank,
     Other,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
-#[sqlx(rename_all = "lowercase")]
-pub enum Polish {
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
 }

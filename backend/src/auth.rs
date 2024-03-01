@@ -38,7 +38,7 @@ pub async fn slack_callback(
         .json()
         .await
         .unwrap();
-    info!("Token Response: {:?}", token_res);
+   // info!("Token Response: {:?}", token_res);
 
     if !token_res.get("ok").unwrap().as_bool().unwrap() {
         return Err((
@@ -75,11 +75,11 @@ pub async fn slack_callback(
         .unwrap()
         .to_string();
 
-    info!("Name: {}", name);
-    info!("Exp: {}", exp);
-    info!("Sub: {}", sub);
-    info!("{:?}", data.claims);
-    info!("Access Token: {}", access_token);
+//    info!("Name: {}", name);
+ //   info!("Exp: {}", exp);
+ //   info!("Sub: {}", sub);
+ //   info!("{:?}", data.claims);
+ //   info!("Access Token: {}", access_token);
     let _max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
 
     let profile = model::User::new(
@@ -208,14 +208,6 @@ pub async fn check_auth(
     State(state): State<AppState>,
     Json(req): Json<AuthRequest>,
 ) -> Result<(), (StatusCode, String)> {
-    info!("Check auth");
-    info!("Access Token: {}", req.access_token);
-
-    let users: Vec<model::User> = sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\"")
-        .fetch_all(&state.db.pool)
-        .await.unwrap_or(vec![]);
-
-    info!("All Users: {:?}", users);
 
     let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
         .bind(format!("{}", req.access_token))

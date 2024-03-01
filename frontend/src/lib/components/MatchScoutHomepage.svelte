@@ -59,7 +59,7 @@
     <h1 class="px-3 text-text_white pt-10">The next match starts in:</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
         {minutes}
-        {timeuntilmatch <= 60
+        {timeuntilmatch <= 6
             ? timeuntilmatch == 1
                 ? "second"
                 : "seconds"

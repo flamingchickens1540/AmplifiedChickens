@@ -12,18 +12,16 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import { pit } from "$lib/stores";
     import type { Team } from "$lib/types";
+    import { goto } from "$app/navigation"
     import type { PageData } from "./$types";
     import { onMount } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;
-    export let team_key = "";
+    let team_key = "";
 
     let intake = "";
-    let remaining_teams: string[] = [];
-    onMount(async () => {
-        remaining_teams = await get_remaining_teams();
-    });
+    let remaining_teams: string[] = data.unpittscouted_teams 
 
     $: {
         if (intake == "Both") {
@@ -39,24 +37,26 @@
     }
 
     async function handle_submit() {
-        let req: any = { id: data.scout_id };
-        req.push($pit);
+    	console.log("Pit scout submit called")
+        let req: any = { id: 0, ...$pit, scout_id: data.scout_id, event_key: "2024orore"};
 
-        let res = fetch(`${BACKEND_URL}/submit/pit`, {
+	delete req["weight"]
+
+	console.log(req)
+
+        let res = await fetch(`${BACKEND_URL}/submit/pit`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(req).concat(),
+            body: JSON.stringify(req)
         });
+
+	console.log("PITSCOUTING ", res)
+
+	// goto("/app/home")
     }
 
-    async function get_remaining_teams() {
-        let res = await fetch(`${BACKEND_URL}/scout/get/unpitted`);
-        let json = await res.json();
-        console.log("remaining teams: ", json);
-        return json;
-    }
 </script>
 
 <Modal>
@@ -73,14 +73,15 @@
     </Trigger>
 </Modal>
 <TextInput name="Team Number" bind:value={$pit.team_key} />
-<NumberInput name="Width (ft)" bind:value={$pit.width} />
-<NumberInput name="Length (ft)" bind:value={$pit.length} />
+<NumberInput name="Width (in)" bind:value={$pit.width} />
+<NumberInput name="Length (in)" bind:value={$pit.length} />
 <NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
 <Toggle
     text1="Under Stage"
     text2="Around Stage"
     bind:buttonon={$pit.is_short}
 />
+<Toggle text1="Has Camera" text2="No Camera" bind:buttonon={$pit.is_camera} />
 <Threeoption
     text1="Swerve"
     text2="Tank"
@@ -90,5 +91,5 @@
 <Threeoption text1="Chute" text2="Ground" text3="Both" bind:value={intake} />
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
-<SubmitButton text="Submit!" on:click={handle_submit} />
+<SubmitButton text="Submit!" onClick={handle_submit} />
 <Navbar page="pit" />

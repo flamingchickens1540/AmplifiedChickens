@@ -34,11 +34,11 @@ pub enum SseReturn {
 }
 
 #[derive(Serialize, Debug, Clone, Type)]
-#[sqlx(type_name="stageenum", rename_all="lowercase")]
+#[sqlx(type_name="stageenum", rename_all="lowercase")] 
 pub enum StateEnum {
     OnStage,
     Park,
-    #[serde(rename="not attempted")]
+    #[sqlx(rename="not attempted")]
     NotAttempted,
     Failed
 }
@@ -90,6 +90,6 @@ pub async fn submit_pit_data(
 
     match result {
         Ok(_) => return StatusCode::OK,
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR,
+        Err(e) => {error!("Error submitting pit data: {}", e); return StatusCode::INTERNAL_SERVER_ERROR;},
     }
 }

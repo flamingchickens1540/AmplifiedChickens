@@ -54,7 +54,6 @@ pub async fn scout_request_team(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<Response, (StatusCode, String)> {
-    info!("Scout requested teammatch");
     let access_token = match headers.get("x-access-token") {
         Some(token) => token
             .to_str()
@@ -69,6 +68,9 @@ pub async fn scout_request_team(
         }
     };
     let user = get_user_helper(&state.db, access_token.clone()).await?;
+
+
+    info!("{} requested team", user.name);
 
     let mut robot_queue = state.queue.lock().await;
     match robot_queue.scout_get_robot(access_token.clone()) {
@@ -100,7 +102,7 @@ pub async fn new_match_auto(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
-    info!("Robots in new match auto: {:?}", new_match.teams);
+    info!("New Match (Auto Assign): {:?}", new_match.teams);
     queue.match_keys.push(new_match.match_key);
     queue.new_match_auto_assign(new_match.teams).await;
     Ok(())
@@ -321,7 +323,8 @@ pub async fn get_unpitscouted_teams(
                 next_match: None,
             }
         });
-
+// FIXME: Every TeamEvent has to be loaded with at least width = 0 (or null or smth) before the
+// event for this function to work. edit as needed if jack's busy and that's too much work
     Ok(Json(
         sqlx::query_as::<_, model::Team>(
             "SELECT * FROM \"Teams\" WHERE event_key = $1 AND width = 0",

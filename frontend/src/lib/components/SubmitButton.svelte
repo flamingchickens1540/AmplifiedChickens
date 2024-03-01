@@ -1,6 +1,6 @@
 <script>
     export let text = "Submit!";
-    export let onClick = () => {};
+    export let onClick = () => {} 
 </script>
 
 <center><button on:click={onClick} class="rounded">

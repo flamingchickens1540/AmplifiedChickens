@@ -93,10 +93,11 @@ export type Pit = {
     is_ground_intake: boolean
     is_chute_intake: boolean
     notes: string
+    is_camera: boolean
 }
 
 export const default_pit_data: Pit = {
-    team_key: "frc2910",//oiajdsofuhasoidhufaosd
+    team_key: "",//oiajdsofuhasoidhufaosd
     length: 0,
     width: 0,
     weight: 0,
@@ -105,7 +106,8 @@ export const default_pit_data: Pit = {
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
     drivetrain: "swerve", //iuhoidhufaosdihufoaishudfoa
     is_chute_intake: false,//iuhoidhufaosdihufoaishudfoa
-    notes: "" //iajsdofjaosdifj
+    notes: "", //iajsdofjaosdifj
+    is_camera: true
 }
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"

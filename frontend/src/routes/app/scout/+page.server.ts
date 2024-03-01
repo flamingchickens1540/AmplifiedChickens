@@ -10,7 +10,6 @@ export const load = (async ({ cookies }) => {
 let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
 
     let match_key = await match_res.json()
-    console.log("access token scout: ", accessToken)
 
     let res = await fetch(`${BACKEND_URL}/scout/request_team`, {
         method: "GET",
@@ -19,8 +18,6 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
             "x-access-token": accessToken
         } as HeadersInit,
     })
-
-    console.log(res)
 
     if (res.status == 200) {
         var team_key = await res.json()
