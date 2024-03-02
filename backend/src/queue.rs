@@ -76,8 +76,8 @@ pub async fn scout_request_team(
     match robot_queue.scout_get_robot(access_token.clone()) {
         Some(team) => {
             info!(
-                "Robot {}, served to user {} aka {}",
-                team, user.name, access_token
+                "Robot {}, served to user {}", 
+                team, user.name 
             );
             Ok(Json(team).into_response())
         }
