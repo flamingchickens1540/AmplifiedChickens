@@ -1,83 +1,95 @@
 <script lang="ts">
-    import QueueMatch from "$lib/components/AdminDB/QueueMatch.svelte";
-    import LastMatch from "$lib/components/AdminDB/LastMatch.svelte";
-    import QueuedScouts from "$lib/components/AdminDB/QueuedScouts.svelte";
-    import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte";
-    import EventManagement from "$lib/components/AdminDB/EventManagement.svelte";
-    import UserManagement from "$lib/components/AdminDB/UserManagement.svelte";
-
+    import TextInput from "$lib/components/TextInput.svelte";
+    import NumberInput from "$lib/components/NumberInput.svelte";
+    import Toggle from "$lib/components/Toggle.svelte";
+    import Threeoption from "$lib/components/Threeoption.svelte";
+    import Rating from "$lib/components/Rating.svelte";
+    import Textarea from "$lib/components/TextArea.svelte";
+    import SubmitButton from "$lib/components/SubmitButton.svelte";
+    import TeamsRemainingPopup from "$lib/components/TeamsRemainingPopup.svelte";
+    import Navbar from "$lib/components/Navbar.svelte";
+    import ImageUpload from "$lib/components/ImageUpload.svelte";
+    import { Modal, Content, Trigger } from "sv-popup";
+    import { pit } from "$lib/stores";
+    import type { Team } from "$lib/types";
+    import { goto } from "$app/navigation"
     import type { PageData } from "./$types";
-    import type { Scout, TeamKey, TeamMatch } from "$lib/types";
     import { onMount } from "svelte";
-
-	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-	console.log(BACKEND_URL)
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;
+    let team_key = "";
 
-    console.log("DATA ", data)
+    let intake = "";
+    let remaining_teams: string[] = data.unpittscouted_teams 
 
-    let access_token = data.access_token as string;
-
-    let red_teams: (TeamKey | "")[] = ["", "", ""];
-    let blue_teams: (TeamKey | "")[] = ["", "", ""];
-
-    let all_scouts: Scout[] = [];
-    let queued_scouts: string[] = []; //data.queued_scouts
-
-    let auto_assign: boolean = false;
-
-    let scouted_robots: TeamMatch[] = [];
-
-    function clear_teams() {
-        red_teams = [];
-        blue_teams = [];
+    $: {
+        if (intake == "Both") {
+            $pit.is_ground_intake = true;
+            $pit.is_chute_intake = true;
+        } else if (intake == "Ground") {
+            $pit.is_ground_intake = true;
+            $pit.is_chute_intake = false;
+        } else {
+            $pit.is_ground_intake = false;
+            $pit.is_chute_intake = true;
+        }
     }
 
-    function clear_scouts() {
-        queued_scouts = [];
+    async function handle_submit() {
+    	console.log("Pit scout submit called")
+        let req: any = { id: 0, ...$pit, scout_id: data.scout_id, event_key: "2024orore"};
+
+	delete req["weight"]
+
+	console.log(req)
+
+        let res = await fetch(`${BACKEND_URL}/submit/pit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(req)
+        });
+
+	console.log("PITSCOUTING ", res)
+
+	// goto("/app/home")
     }
+
 </script>
 
-<div
-    style="background-color: #1C1C1C; padding:2rem; overflow: hidden;"
-    class="grid grid-cols-2 gap-5 overflow-hidden"
->
-    <div class="col-span-1 row-span-1 col-start-1 row-start-1">
-        <QueueMatch
-            bind:red_teams
-            bind:blue_teams
-            bind:auto_assign
-            {access_token}
-            
-        />
-    </div>
-
-    <div class="grid grid-cols-2 grid-rows-1 gap-5">
-        <div>
-            <LastMatch bind:scouted_robots />
-        </div>
-        <div>
-            <QueuedScouts bind:queued={queued_scouts} />
-        </div>
-    </div>
-
-
-    <div class="grid grid-cols-5 gap-5">
-        <div class="col-span-2">
-            <NumberScouted {access_token} />
-        </div>
-        <div class="col-span-3">
-            <EventManagement
-                on:clear_scouts={clear_scouts}
-                on:clear_teams={clear_teams}
-                {access_token}
-            />
-        </div>
-    </div>
-
-    <div>
-        <UserManagement bind:scouts={all_scouts} {access_token} />
-    </div>
-</div>
+<Modal>
+    {#if team_key == ""}
+        <Content
+            style="background-color: #2C2C2C; width:92%; margin:auto"
+            class="p-4 rounded"
+        >
+            <TeamsRemainingPopup bind:value={team_key} bind:remaining_teams />
+        </Content>
+    {/if}
+    <Trigger>
+        <SubmitButton text="Teams Remaining" />
+    </Trigger>
+</Modal>
+<TextInput name="Team Number" bind:value={$pit.team_key} />
+<NumberInput name="Width (in)" bind:value={$pit.width} />
+<NumberInput name="Length (in)" bind:value={$pit.length} />
+<NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
+<Toggle
+    text1="Under Stage"
+    text2="Around Stage"
+    bind:buttonon={$pit.is_short}
+/>
+<Toggle text1="Has Camera" text2="No Camera" bind:buttonon={$pit.is_camera} />
+<Threeoption
+    text1="Swerve"
+    text2="Tank"
+    text3="Other"
+    bind:value={$pit.drivetrain}
+/>
+<Threeoption text1="Chute" text2="Ground" text3="Both" bind:value={intake} />
+<Rating name="Robot Polish" bind:value={$pit.polish} />
+<Textarea bind:value={$pit.notes} />
+<SubmitButton text="Submit!" onClick={handle_submit} />
+<Navbar page="pit" />
