@@ -69,16 +69,12 @@ pub async fn scout_request_team(
     };
     let user = get_user_helper(&state.db, access_token.clone()).await?;
 
-
     info!("{} requested team", user.name);
 
     let mut robot_queue = state.queue.lock().await;
     match robot_queue.scout_get_robot(access_token.clone()) {
         Some(team) => {
-            info!(
-                "Robot {}, served to user {}", 
-                team, user.name 
-            );
+            info!("Robot {}, served to user {}", team, user.name);
             Ok(Json(team).into_response())
         }
         None => {
@@ -90,15 +86,15 @@ pub async fn scout_request_team(
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewMatchAuto {
-     teams: Vec<String>,
-     match_key: String
+    teams: Vec<String>,
+    match_key: String,
 }
 
 #[axum::debug_handler]
 pub async fn new_match_auto(
     State(state): State<AppState>,
     headers: HeaderMap,
-    Json(new_match): Json<NewMatchAuto>
+    Json(new_match): Json<NewMatchAuto>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
@@ -140,7 +136,7 @@ pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (Status
 pub struct ManualMatch {
     robots: Vec<String>,
     scouts: Vec<String>,
-    match_key: String
+    match_key: String,
 }
 
 #[axum::debug_handler]
@@ -152,7 +148,7 @@ pub async fn new_match_manual(
     check_admin_auth(&state.db, headers).await?;
 
     let mut queue = state.queue.lock().await;
-queue.match_keys.push(manual_match.match_key);
+    queue.match_keys.push(manual_match.match_key);
     match queue
         .new_match_manual_assign(manual_match.robots, manual_match.scouts)
         .await
@@ -253,8 +249,8 @@ pub async fn get_finished_matches(
 #[axum::debug_handler]
 pub async fn get_scouts_and_scouted(
     State(state): State<AppState>,
-) -> Result<Json<(Vec<String>, Vec<i64>)>, (StatusCode, String)> {
-    let mut ret: (Vec<String>, Vec<i64>) = (vec![], vec![]);
+) -> Result<Json<Vec<(String, usize)>>, (StatusCode, String)> {
+    let mut ret: Vec<(String, usize)> = vec![];
     let scouts: Vec<User> = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\"")
         .fetch_all(&state.db.pool)
         .await
@@ -269,42 +265,52 @@ pub async fn get_scouts_and_scouted(
         }
     };
 
-    let total: i64 = match sqlx::query!("SELECT COUNT(*) FROM \"TeamMatches\"")
-        .fetch_one(&state.db.pool)
-        .await
-    {
-        Ok(res) => res.count.unwrap_or(0),
-        Err(_) => {
-            return Err((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "Failed to select total user count from Db".to_string(),
-            ));
-        }
-    };
+    let total: f64 =
+        match sqlx::query("SELECT * FROM \"TeamMatches\" WHERE match_key NOT LIKE \'t%\'")
+            .fetch_all(&state.db.pool)
+            .await
+        {
+            Ok(res) => (res.len() as f64) / 6.0,
+            Err(_) => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to select total team_match count from Db".to_string(),
+                ));
+            }
+        };
 
     for scout in scouts.iter() {
         let id = scout.id.clone();
         let name = scout.name.clone();
-        // TODO: Figure out how do COUNT commands without macros, because macros check for a db connection and are annoying for dev
-        let count: i64 = match sqlx::query!(
-            "SELECT COUNT(*) FROM \"TeamMatches\" WHERE scout_id = $1",
-            id
+        info!("Scout id: {}", id);
+        info!("Scout name: {}", name);
+        let name = scout.name.clone();
+        let count: f64 = match sqlx::query_as::<_, model::TeamMatch>(
+            "SELECT * FROM \"TeamMatches\" WHERE scout_id = $1 AND match_key NOT LIKE \'t%\'",
         )
-        .fetch_one(&state.db.pool)
+        .bind(id)
+        .fetch_all(&state.db.pool)
         .await
         {
-            Ok(res) => res.count.unwrap_or(0),
-            Err(_) => {
-                error!("User in queue not in Db");
+            Ok(res) => {
+                //info!("team_matches: {:?}", res);
+                res.len() as f64
+            }
+            Err(e) => {
+                error!("Error getting teammatches: {}", e);
                 return Err((
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "Failed to select user from Db".to_string(),
                 ));
             }
         };
-        ret.0.push(name);
-        ret.1.push(count / total);
+        info!("count: {}", count);
+        info!("total: {}", total);
+        let percent = std::cmp::min((count / total * 100.0) as usize, 100);
+        info!("percent: {}", percent);
+        ret.push((name, percent));
     }
+    info!("Scouts and scouted: {:?}", ret);
     Ok(Json(ret))
 }
 
@@ -323,8 +329,8 @@ pub async fn get_unpitscouted_teams(
                 next_match: None,
             }
         });
-// FIXME: Every TeamEvent has to be loaded with at least width = 0 (or null or smth) before the
-// event for this function to work. edit as needed if jack's busy and that's too much work
+    // FIXME: Every TeamEvent has to be loaded with at least width = 0 (or null or smth) before the
+    // event for this function to work. edit as needed if jack's busy and that's too much work
     Ok(Json(
         sqlx::query_as::<_, model::Team>(
             "SELECT * FROM \"Teams\" WHERE event_key = $1 AND width = 0",

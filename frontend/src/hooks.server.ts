@@ -1,4 +1,5 @@
 import { type Handle, redirect } from "@sveltejs/kit"
+process.env.NODE_TLS_REJECT_UNAUTHORIZED='0';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
 
 export const handle: Handle = async ({ event, resolve }) => {

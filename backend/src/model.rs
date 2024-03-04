@@ -1,12 +1,13 @@
 use axum::response::sse::Event;
+use reqwest::Client as ReqwestClient;
+use serde::{Deserialize, Serialize};
+use sqlx::Type;
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use std::collections::HashMap;
 use std::convert::Infallible;
-use std::{collections::HashMap};
 use std::sync::Arc;
 use tokio::sync::watch::Sender;
 use tokio::sync::Mutex;
-use reqwest::Client as ReqwestClient;
-use serde::{Deserialize, Serialize};
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use tracing::info;
 
 #[derive(Debug, Clone)]
@@ -153,32 +154,34 @@ pub struct TeamMatch {
     pub is_fielded: bool,
     pub is_leave_start: bool,
     pub auto_speaker_succeed: i16, //
-    pub auto_speaker_missed: i16, //
-    pub auto_amp_succeed: i16, //
-    pub auto_amp_missed: i16, //
-    pub auto_piece_succeed: i16, //
-    pub auto_piece_missed: i16, //
+    pub auto_speaker_missed: i16,  //
+    pub auto_amp_succeed: i16,     //
+    pub auto_amp_missed: i16,      //
+    pub auto_piece_succeed: i16,   //
+    pub auto_piece_missed: i16,    //
     pub tele_speaker_succeed: i16, //
-    pub tele_speaker_missed: i16, //
-    pub tele_amp_succeed: i16, // 
-    pub tele_amp_missed: i16, //
-    pub trap_succeed: i16, // here's the issue 
-    pub trap_missed: i16, //
-    pub stage: String,
+    pub tele_speaker_missed: i16,  //
+    pub tele_amp_succeed: i16,     //
+    pub tele_amp_missed: i16,      //
+    pub trap_succeed: i16,         // here's the issue
+    pub trap_missed: i16,          //
+    pub stage_enum: Stage,
     pub skill: i16,
     pub notes: String,
     pub is_broke: bool,
     pub is_died: bool,
     pub scout_id: String,
-    pub location: String 
 }
 
-// For use later when we fix location
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub enum LocationEnum {
-    Far,
-    Close,
-    Middle
+#[derive(Serialize, Debug, Clone, Type, PartialEq, Deserialize, Default)]
+#[sqlx(type_name = "stageenum", rename_all = "lowercase")]
+pub enum Stage {
+    #[default]
+    OnStage,
+    Park,
+    #[sqlx(rename = "not attempted")]
+    NotAttempted,
+    Failed,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow)]

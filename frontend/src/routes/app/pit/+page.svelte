@@ -38,7 +38,7 @@
 
     async function handle_submit() {
     	console.log("Pit scout submit called")
-        let req: any = { id: 0, ...$pit, scout_id: data.scout_id, event_key: "2024orore"};
+        let req: any = { id: 0, ...$pit, scout_id: data.scout_id, event_key: "2024orsal"};
 
 	delete req["weight"]
 
@@ -76,6 +76,7 @@
 <NumberInput name="Width (in)" bind:value={$pit.width} />
 <NumberInput name="Length (in)" bind:value={$pit.length} />
 <NumberInput name="Weight (lbs)" bind:value={$pit.weight} />
+<!-- We don't care about binding value and buttonon to both of these, since we want a boolean from one and a string for the other -->
 <Toggle
     text1="Under Stage"
     text2="Around Stage"
