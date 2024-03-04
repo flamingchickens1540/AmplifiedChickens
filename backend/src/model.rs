@@ -1,10 +1,9 @@
 use axum::extract::FromRef;
-use axum_login::AuthUser;
 use cookie::Key;
 use serde::Deserialize;
 use sqlx::{
     postgres::{types::Oid, PgPoolOptions},
-    Pool, Postgres, Row,
+    Pool, Postgres,
 };
 
 use reqwest::Client as ReqwestClient;

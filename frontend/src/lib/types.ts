@@ -7,6 +7,7 @@ export type EventKey = `${number}${string}`
 export type TeamMatch = {
     match_key: MatchKey
     team_key: TeamKey
+    location: string
     is_fielded: boolean
     is_leave_start: boolean
     auto_speaker_succeed: number
@@ -21,7 +22,7 @@ export type TeamMatch = {
     tele_amp_missed: number
     trap_succeed: number
     trap_missed: number
-    stage_enum: StageEnum
+    stage: string
     skill: number
     is_broke: boolean
     is_died: boolean
@@ -45,9 +46,11 @@ export type Match = {
     blue_3: TeamKey
 }
 
-export type TeamEvent = {
+export type Pit = {
+    team_key: string
     length: number
     width: number
+    weight: number
     is_short: boolean
     drivetrain: DrivetrainEnum
     polish: number
@@ -56,6 +59,16 @@ export type TeamEvent = {
     notes: string
 }
 
-export type StageEnum = "onstage" | "park" | "not attempted" | "failed"
-
 export type DrivetrainEnum = "swerve" | "tank" | "other"
+
+export type ScoutedRobot = {
+    number: string
+    status: string
+}
+export type Scout = {
+name: string
+admin: boolean
+hasnotifs: boolean
+numscouted: number
+// coopcoins: number
+}
