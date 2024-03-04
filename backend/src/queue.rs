@@ -265,19 +265,20 @@ pub async fn get_scouts_and_scouted(
         }
     };
 
-    let total: f64 =
-        match sqlx::query("SELECT * FROM \"TeamMatches\" WHERE match_key NOT LIKE \'t%\'")
-            .fetch_all(&state.db.pool)
-            .await
-        {
-            Ok(res) => (res.len() as f64) / 6.0,
-            Err(_) => {
-                return Err((
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "Failed to select total team_match count from Db".to_string(),
-                ));
-            }
-        };
+    let total: f64 = match sqlx::query(
+        "SELECT DISTINCT match_key FROM \"TeamMatches\" WHERE match_key NOT LIKE \'t%\'",
+    )
+    .fetch_all(&state.db.pool)
+    .await
+    {
+        Ok(res) => res.len() as f64,
+        Err(_) => {
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to select total team_match count from Db".to_string(),
+            ));
+        }
+    };
 
     for scout in scouts.iter() {
         let id = scout.id.clone();
