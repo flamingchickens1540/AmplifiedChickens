@@ -1,5 +1,4 @@
 <script lang="ts">
-    import Carousel from "$lib/components/Carousel.svelte";
     import MatchScoutHomepage from "$lib/components/MatchScoutHomepage.svelte";
     import type { PageData } from "./$types";
 
@@ -10,4 +9,4 @@
     let blue: string[] = []
 
 </script>
-<MatchScoutHomepage {blue} {red} access_token={data.accessToken ?? ""} match={data.match_key} scout_percents={data.scout_percents} scout_names={data.scout_names} />
+<MatchScoutHomepage {blue} {red} access_token={data.accessToken ?? ""} match={data.match_key} scout_data={data.scout_data} />

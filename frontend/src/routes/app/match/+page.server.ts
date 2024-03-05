@@ -4,22 +4,28 @@ export const load = (async ({ cookies }) => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
     let accessToken = cookies.get("access_token")
 
-    let res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
+    let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
+    let match_key = await match_res.json()
 
-    let match_key = await res.json()
-let scouts_res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            }
-        })
-
-        if (!scouts_res.ok) {
-            console.error("Failed to fetch scout percents")
+    let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
+        method: "GET",
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
         }
+    })
 
-	let scouts_data = await scouts_res.json()
+    if (!res.ok) {
+        console.error("Failed to fetch scout percents")
+    }
 
-    return { accessToken, match_key, scout_names: scouts_data[0], scout_percents: scouts_data[1] };
+    let scout_data = sort(await res.json())
+
+    return { accessToken, match_key, scout_data };
 }) satisfies PageServerLoad;
+
+function sort(data: (string | number)[][]): (string | number)[][] {
+    return data.sort((a, b) => {
+        return (b[1] as number) - (a[1] as number)
+    })
+}

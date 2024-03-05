@@ -3,7 +3,6 @@
     import SubmitButton from "$lib/components/SubmitButton.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
-    import Pie from "$lib/components/Pie.svelte";
     import { goto } from "$app/navigation";
     import { onMount } from "svelte";
     import { current_event_key } from "$lib/stores";
