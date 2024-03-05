@@ -283,8 +283,6 @@ pub async fn get_scouts_and_scouted(
     for scout in scouts.iter() {
         let id = scout.id.clone();
         let name = scout.name.clone();
-        info!("Scout id: {}", id);
-        info!("Scout name: {}", name);
         let name = scout.name.clone();
         let count: f64 = match sqlx::query_as::<_, model::TeamMatch>(
             "SELECT * FROM \"TeamMatches\" WHERE scout_id = $1 AND match_key NOT LIKE \'t%\'",
@@ -305,13 +303,9 @@ pub async fn get_scouts_and_scouted(
                 ));
             }
         };
-        info!("count: {}", count);
-        info!("total: {}", total);
         let percent = std::cmp::min((count / total * 100.0) as usize, 100);
-        info!("percent: {}", percent);
         ret.push((name, percent));
     }
-    info!("Scouts and scouted: {:?}", ret);
     Ok(Json(ret))
 }
 

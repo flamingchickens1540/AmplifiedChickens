@@ -1,21 +1,21 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import Pie from "./Pie.svelte";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
+    export let scout_data: (string | number)[][]
 
-    export let scout_data: {name: string, percent: number}[]
+    let percents = scout_data.map((scout) => scout[1] as number)
+    let names = scout_data.map((scout) => (scout[0] as string).split(" ")[0])
 
 </script>
 
 <div
-    style=""
-    class="bg-btn_grey h-[185px] mx-3 grid-cols-4 grid gap-2 content-center items-center rounded-md"
+    style="grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));"
+    class="bg-btn_grey mx-3 p-3 grid gap-2 content-center rounded-md items-start"
 >
-    {#each scout_data as scout, i}
+    {#each scout_data as _, i}
         {#if i < 8}
-            <div class="p-1 flex flex-col items-center">
-                <Pie size={46} percent={scout.percent} />
-                <p class="text-text_white">{scout.name}</p>
+            <div class="flex flex-col items-center">
+                <Pie size={40} percent={percents[i]} />
+                <p class="text-text_white text-center break-all max-w-[80px]">{names[i]}</p>
             </div>
         {/if}
     {/each}

@@ -20,19 +20,19 @@ export const load = (async ({ cookies }) => {
 
 	let scouts_data = await res.json()
 
-    let scout_data = sort(scouts_data)
+    let scout_data_sorted = sort(scouts_data)
 
     return {
         scout_name,
         scout_id,
         current_event_key,
         access_token,
-        scout_data
+        scout_data_sorted
     };
 }) satisfies PageServerLoad;
 
-function sort(data: {name: string, percent: number}[]) {
+function sort(data: (string | number)[][]): (string | number)[][] {
     return data.sort((a, b) => {
-        return a.percent - b.percent
+        return (b[1] as number) - (a[1] as number)
     })
 }

@@ -19,8 +19,8 @@ pub async fn slack_callback(
     let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
     let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
     let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
-    let frontend_url = format!("{}/app/home", dotenv::var("VITE_FRONTEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
-    let backend_url = format!("{}/auth/slack", dotenv::var("VITE_BACKEND_URL").expect("REDIRECT_URL"));
+    let frontend_url = format!("{}/app/home", dotenv::var("FRONTEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
+    let backend_url = format!("{}/auth/slack", dotenv::var("BACKEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
 
     let token_res: serde_json::Value = state
         .ctx
@@ -267,27 +267,4 @@ async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusC
         ));
     };
     Ok(())
-}
-
-async fn get_user(access_token: String, db: &model::Db) -> Result<model::User, Redirect> {
-    //let cookie = jar.get("sid");
-    //info!("Access token: {:?}", cookie);
-    //let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
-    //    error!("Unauthorized user attempted to query a protected endpoint");
-    //   return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
-    //};
-
-    let res = match sqlx::query_as::<_, model::User>("SELECT * FROM \"Users\" WHERE auth = $1")
-        .bind(access_token)
-        .fetch_one(&(db.pool))
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            error!("{}", e);
-            return Err(Redirect::to("http://scout.team1540.org/"));
-        }
-    };
-
-    Ok(model::User { ..res })
 }

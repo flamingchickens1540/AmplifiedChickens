@@ -15,7 +15,7 @@
     let twitchURL = "https://www.twitch.tv/firstinspires";
 
     let name = data.scout_name;
-	let scout_data = data.scout_data
+	let scout_data = data.scout_data_sorted
 
     $current_event_key = data.current_event_key?.toString() || "2024orore";
 
@@ -32,7 +32,7 @@
 
     let subscription = "";
 
-    onMount(async () => {
+    onMount(() => {
         // TODO: make subscription reactively update
         subscription = localStorage.getItem("subscription") || "No subscription";
         
