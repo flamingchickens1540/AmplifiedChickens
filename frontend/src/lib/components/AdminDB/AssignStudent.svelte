@@ -30,7 +30,7 @@
             style="background-color: { color }; padding:0.2rem; margin:10px;"
         >
             <!-- <input bind:value={team}/> -->
-            <Combobox bind:value={team} {color} options={[]} placeholder="Team Number"/>
+            <Combobox bind:value={team} {color} options={[]} placeholder="Number"/>
             {#if !auto_assign}
                 <div>
                     <Combobox

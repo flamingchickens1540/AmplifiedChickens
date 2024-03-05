@@ -12,7 +12,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
     let isAdminPath = event.url.pathname.startsWith('/app/admin');
 
-    let auth_res = await fetch(`${BACKEND_URL}/auth/check`, {
+    let auth_res = await event.fetch(`${BACKEND_URL}/auth/check`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

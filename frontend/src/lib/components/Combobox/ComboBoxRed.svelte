@@ -10,7 +10,7 @@
 
 <Context>
 	<div class="stack">
-		<input bind:value placeholder="Team Number"/>
+		<input style="background-color: {color}; width:10rem; height:3rem; font-size:20px" bind:value placeholder="{placeholder}"/>
 	</div>
 </Context>
 
@@ -19,5 +19,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+	}
+	input{
+		font-family: "Poppins-medium";
+        color: #ffffff;
 	}
 </style>

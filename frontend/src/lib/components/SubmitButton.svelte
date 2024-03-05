@@ -1,5 +1,6 @@
 <script>
     export let text = "Submit!";
+    
     export let onClick = () => {} 
 </script>
 
@@ -18,5 +19,6 @@
         font-family: "Poppins-medium";
         font-style: bold;
         border-radius: 5px;
+    width: calc(100vw - 34px);
     }
 </style>

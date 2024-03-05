@@ -99,7 +99,7 @@
         class="flex justify-between items-center rounded"
         style="background-color: #5C5C5C; padding:0.2rem; margin:17px"
     >
-        <input class="" bind:value={$match_data.match_key} alt="Match Key" />
+        <input style="color: white;" class="" bind:value={$match_data.match_key} alt="Match Key" placeholder="Enter match here"/>
         <button on:click={auto_populate} class="rounded">Load Match</button>
     </div>
     <div class="grid grid-cols-2 grid-rows-1">
