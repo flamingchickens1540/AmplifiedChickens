@@ -12,43 +12,12 @@
     export let blue: string[]
     export let red: string[]
     export let match: string
-    let timeuntilmatch: number = 0
-    let timegiven: number = 0
     export let access_token: string
     export let scout_percents: number[]
     export let scout_names: string[]
 
     let clicked = false;
 
-    // messy time code (NO TOUCHIE)
-    let minutes = 0;
-    let time = 0;
-    let date = new Date(timegiven * 1000);
-    let hours = date.getHours();
-    let min = date.getMinutes();
-    let formattedTime = hours + ":" + addLeadingZero(min);
-
-    function addLeadingZero(number: number) {
-        return number < 10 ? "0" + number : number;
-    }
-    function getTimestamp() {
-        return Math.floor(new Date().getTime() / 1000);
-    }
-
-    setInterval(() => (time = getTimestamp()), 1000);
-    $: {
-        timeuntilmatch = timegiven - time;
-        if (timeuntilmatch > 60) {
-            minutes = timeuntilmatch / 60;
-            minutes = Math.round(minutes);
-            minutes = minutes;
-        } else {
-            minutes = timeuntilmatch;
-        }
-        minutes = Math.max(minutes, 0);
-    }
-    // messy time code (NO TOUCHIE)
-    
     async function joinQueue() {
     	$match_data.match_key = match 
         goto("/app/scout");
@@ -56,20 +25,10 @@
 </script>
 
 <div class="grid content-end pt-10">
-    <h1 class="px-3 text-text_white pt-10">The next match starts in:</h1>
+    <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
-        {minutes}
-        {timeuntilmatch <= 6
-            ? timeuntilmatch == 1
-                ? "second"
-                : "seconds"
-            : minutes == 1
-              ? "minute"
-              : "minutes"}.
+        {match}
     </h1>
-    <p class="px-3 text-outline_gray">
-        Qualification match {match} starts at {formattedTime}
-    </p>
 </div>
 
 {#if blue.length != 0 || red.length != 0}
