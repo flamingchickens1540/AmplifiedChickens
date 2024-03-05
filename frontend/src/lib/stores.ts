@@ -5,7 +5,7 @@ import type { Pit } from "$lib/types.ts"
 
 export const current_event_key: Writable<string> = writable('');
 export const team_color: Writable<"blue" | "red" | ""> = writable('');
-
+export const count = writable(0);
 export const pit: Writable<Pit> = writable(default_pit_data)
 
 export const match_data: Writable<TeamMatchData> = writable(default_match_data)

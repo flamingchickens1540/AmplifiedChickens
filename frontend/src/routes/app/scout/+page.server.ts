@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { count } from '$lib/stores';
 import type { PageServerLoad } from './$types';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
 
@@ -23,6 +24,7 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
         var team_key = await res.json()
         console.log("team_key", team_key)
     } else if (res.status == 204) {
+        count.set(1)
         redirect(303, "/app/match")
     } else {
         console.log("Error, you are not authorized to be here, please contact an admin.")

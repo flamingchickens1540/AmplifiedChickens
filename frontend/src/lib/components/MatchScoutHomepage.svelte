@@ -3,10 +3,11 @@
     import Pie from "$lib/components/Pie.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
-    import ScoutPercents from "./ScoutPercents.svelte";
+    import ScoutPercents from "$lib/components/ScoutPercents.svelte";
     import { createEventDispatcher } from "svelte";
     import { match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
+    import { count } from '$lib/stores';
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     export let blue: string[]
@@ -17,7 +18,11 @@
     export let scout_names: string[]
 
     let clicked = false;
-
+    if ($count == 1){
+        alert("Queue full! Don't click Get Robot anymore!")
+        $count = 1
+        $count = $count
+    }
     async function joinQueue() {
     	$match_data.match_key = match 
         goto("/app/scout");
