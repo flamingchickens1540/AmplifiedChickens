@@ -3,51 +3,25 @@
     import Pie from "$lib/components/Pie.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
-    import ScoutPercents from "./ScoutPercents.svelte";
+    import ScoutPercents from "$lib/components/ScoutPercents.svelte";
     import { createEventDispatcher } from "svelte";
     import { match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
+    import { count } from '$lib/stores';
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
 
     export let blue: string[]
     export let red: string[]
     export let match: string
-    let timeuntilmatch: number = 0
-    let timegiven: number = 0
     export let access_token: string
     export let scout_data: (string | number)[][] = []
 
     let clicked = false;
-
-    // messy time code (NO TOUCHIE)
-    let minutes = 0;
-    let time = 0;
-    let date = new Date(timegiven * 1000);
-    let hours = date.getHours();
-    let min = date.getMinutes();
-    let formattedTime = hours + ":" + addLeadingZero(min);
-
-    function addLeadingZero(number: number) {
-        return number < 10 ? "0" + number : number;
+    if ($count == 1){
+        alert("Queue full! Don't click Get Robot anymore!")
+        $count = 1
+        $count = $count
     }
-    function getTimestamp() {
-        return Math.floor(new Date().getTime() / 1000);
-    }
-
-    setInterval(() => (time = getTimestamp()), 1000);
-    $: {
-        timeuntilmatch = timegiven - time;
-        if (timeuntilmatch > 60) {
-            minutes = timeuntilmatch / 60;
-            minutes = Math.round(minutes);
-            minutes = minutes;
-        } else {
-            minutes = timeuntilmatch;
-        }
-        minutes = Math.max(minutes, 0);
-    }
-    // messy time code (NO TOUCHIE)
-    
     async function joinQueue() {
     	$match_data.match_key = match 
         goto("/app/scout");
@@ -55,20 +29,10 @@
 </script>
 
 <div class="grid content-end pt-10">
-    <h1 class="px-3 text-text_white pt-10">The next match starts in:</h1>
+    <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
-        {minutes}
-        {timeuntilmatch <= 6
-            ? timeuntilmatch == 1
-                ? "second"
-                : "seconds"
-            : minutes == 1
-              ? "minute"
-              : "minutes"}.
+        {match}
     </h1>
-    <p class="px-3 text-outline_gray">
-        Qualification match {match} starts at {formattedTime}
-    </p>
 </div>
 
 {#if blue.length != 0 || red.length != 0}

@@ -10,25 +10,12 @@
     import { subscribeToPush } from "$lib/swutil.js";
 
     export let data: PageData;
-    let nextMatchTime = 1706579944;
     let twitchURL = "https://www.twitch.tv/firstinspires";
 
     let name = data.scout_name;
 	let scout_data = data.scout_data_sorted
 
     $current_event_key = data.current_event_key?.toString() || "2024orore";
-
-    function determine_greeting(): string {
-        const currentTime = new Date().getHours();
-        if (currentTime < 12) {
-            return "Morning";
-        } else {
-            return "Afternoon";
-        }
-    }
-
-    let greeting = determine_greeting();
-
     let subscription = "";
 
     onMount(() => {
@@ -42,7 +29,7 @@
 
 <main class="bg-bg_gray h-screen flex flex-col justify-between">
     <div class="grid content-end">
-        <h1 class="px-3 text-text_white pt-10">Good {greeting}</h1>
+        <h1 class="px-3 text-text_white pt-10">Good Afternoon</h1>
         <h1 class="px-3 text-cresc_green">{name}.</h1>
         <Modal>
             <Content
