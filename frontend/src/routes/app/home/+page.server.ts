@@ -19,6 +19,7 @@ let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
         }
 
 	let scouts_data = await res.json()
+	console.log(scout_name)
 
     return {
         scout_name,
