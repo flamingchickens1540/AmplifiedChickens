@@ -8,17 +8,14 @@
 
     import type { PageData } from "./$types";
     import type { Scout, TeamKey, TeamMatch } from "$lib/types";
-    import { onMount } from "svelte";
-
-	const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-	console.log(BACKEND_URL)
 
     export let data: PageData;
 
     console.log("DATA ", data)
 
-    let access_token = data.access_token as string;
+    const access_token = data.access_token as string;
+
+    const scout_data = data.scout_data as (string | number)[][];
 
     let red_teams: (TeamKey | "")[] = ["", "", ""];
     let blue_teams: (TeamKey | "")[] = ["", "", ""];
@@ -65,7 +62,7 @@
 
     <div class="grid grid-cols-5 gap-5">
         <div class="col-span-2">
-            <NumberScouted {access_token} />
+            <NumberScouted {scout_data} />
         </div>
         <div class="col-span-3">
             <EventManagement

@@ -37,12 +37,20 @@ pub struct AppState {
     pub sse_upstream: Arc<Mutex<Sender<Result<Event, Infallible>>>>,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AllianceColor {
+    Red,
+    Blue,
+}
+
 #[derive(Debug, Clone)]
 pub struct RoboQueue {
     pub match_keys: Vec<String>,
     // This is only for manual assignment
-    pub assigned: HashMap<String, String>, // access_token: team_key
-    pub robots: Vec<String>,
+    pub assigned: HashMap<String, (String, AllianceColor)>, // access_token: team_key
+    pub red_robots: Vec<String>,
+    pub blue_robots: Vec<String>,
     pub curr_match_type: CurrentMatchType,
 }
 
@@ -50,44 +58,70 @@ pub struct RoboQueue {
 impl RoboQueue {
     /// Takes in a list of robots,
     /// Assigns each robot to one of the queued scouts, puts all the remaining robots in the robots queue
-    pub async fn new_match_auto_assign(&mut self, mut robots: Vec<String>) {
-        self.robots.append(&mut robots);
-        self.curr_match_type = CurrentMatchType::Manual;
+    pub async fn new_match_auto_assign(
+        &mut self,
+        mut red_robots: Vec<String>,
+        mut blue_robots: Vec<String>,
+    ) {
+        self.red_robots.append(&mut red_robots);
+        self.blue_robots.append(&mut blue_robots);
+        self.curr_match_type = CurrentMatchType::Auto;
     }
 
     // Manual assign
     pub async fn new_match_manual_assign(
         &mut self,
-        robots: Vec<String>,
-        scouts: Vec<String>,
+        red_robots: Vec<String>,
+        blue_robots: Vec<String>,
+        red_scouts: Vec<String>,
+        blue_scouts: Vec<String>,
     ) -> Result<(), String> {
-        assert_eq!(robots.len(), scouts.len());
-        for (i, _) in robots.iter().enumerate() {
+        for (i, _) in red_robots.iter().enumerate() {
             info!("Robot pushed to scout");
-            if self.assigned.contains_key(&scouts[i].clone()) {
+            if self.assigned.contains_key(&red_scouts[i].clone()) {
                 return Err("Scout already manually assigned".to_string());
             }
-            self.assigned.insert(scouts[i].clone(), robots[i].clone());
+            self.assigned.insert(
+                red_scouts[i].clone(),
+                (red_robots[i].clone(), AllianceColor::Red),
+            );
             info!(
                 "Scout {} manually assigned to team {}",
-                scouts[i], robots[i]
+                red_scouts[i], red_robots[i]
             );
         }
+
+        for (i, _) in blue_robots.iter().enumerate() {
+            info!("Robot pushed to scout");
+            if self.assigned.contains_key(&blue_scouts[i].clone()) {
+                return Err("Scout already manually assigned".to_string());
+            }
+            self.assigned.insert(
+                blue_scouts[i].clone(),
+                (blue_robots[i].clone(), AllianceColor::Blue),
+            );
+            info!(
+                "Scout {} manually assigned to team {}",
+                blue_scouts[i], blue_robots[i]
+            );
+        }
+
         self.curr_match_type = CurrentMatchType::Manual;
         Ok(())
     }
 
-    pub fn scout_get_robot(&mut self, scout: String) -> Option<String> {
+    pub fn scout_get_robot(&mut self, scout: String) -> Option<(String, AllianceColor)> {
         match self.assigned.get(&scout) {
-            Some(scout) => Some(scout.clone()),
-            None => self.robots.pop(),
+            Some(team) => Some(team.clone()),
+            None => match self.red_robots.pop() {
+                Some(robot) => Some((robot, AllianceColor::Red)),
+                None => match self.blue_robots.pop() {
+                    Some(robot) => Some((robot, AllianceColor::Blue)),
+                    None => None,
+                },
+            },
         }
     }
-}
-
-pub enum QueueError {
-    EndpointNotSet,
-    QueryFailed,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::FromRow)]

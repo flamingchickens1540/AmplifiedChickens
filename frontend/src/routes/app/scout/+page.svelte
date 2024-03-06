@@ -1,6 +1,6 @@
 <script lang="ts">
     import Carousel from "$lib/components/Carousel.svelte";
-    import { match_data } from "$lib/stores";
+    import { match_data, team_color } from "$lib/stores";
     import { onMount } from "svelte";
     import type { PageData } from "./$types";
 	import { default_match_data } from "$lib/types"
@@ -10,8 +10,9 @@
     onMount(() => {
     	$match_data = default_match_data 
         $match_data.team_key = data.team_key as unknown as `${number}`
-	$match_data.scout_id = data.scout_id
-	$match_data.match_key = data.match_key
+        $match_data.scout_id = data.scout_id as string
+        $match_data.match_key = data.match_key
+        $team_color = data.team_color
     })
 </script>
 

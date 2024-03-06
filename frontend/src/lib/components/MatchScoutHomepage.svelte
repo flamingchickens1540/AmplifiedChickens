@@ -4,28 +4,46 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
-    import { createEventDispatcher } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
     import { match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
-    import { count } from '$lib/stores';
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_FRONTEND;
+    import { count } from "$lib/stores";
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    export let blue: string[]
-    export let red: string[]
-    export let match: string
-    export let access_token: string
-    export let scout_data: (string | number)[][] = []
+    export let blue: string[];
+    export let red: string[];
+    export let match: string;
+    export let access_token: string;
+    export let scout_data: (string | number)[][] = [];
+
+    let in_queue = false;
 
     let clicked = false;
-    if ($count == 1){
-        alert("Queue full! Don't click Get Robot anymore!")
-        $count = 1
-        $count = $count
+    function joinQueue() {
+        in_queue = true;
     }
-    async function joinQueue() {
-    	$match_data.match_key = match 
+
+    function leaveQueue() {
+        in_queue = false;
+    }
+
+    async function timeToScout() {
+        in_queue = false;
+        $match_data.match_key = match;
         goto("/app/scout");
     }
+
+    onMount(() => {
+        const server_source = new EventSource(
+            `${BACKEND_URL}/scout/sse/get/stream`,
+        );
+
+        server_source.addEventListener("team_match", (event) => {
+            console.log(event);
+            var message = JSON.parse(event.data);
+            console.log(message);
+        });
+    });
 </script>
 
 <div class="grid content-end pt-10">
@@ -36,41 +54,49 @@
 </div>
 
 {#if blue.length != 0 || red.length != 0}
-<div
-    class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
-    style="background-color: #5C5C5C; margin: 15px; padding:15px"
->
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[0] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[1] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #ED1C24;">{red[2] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[0] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[1] ?? ""}</h2>
-    </center>
-    <center>
-        <h2 class="rounded" style="background-color: #0083E6;">{blue[2] ?? ""}</h2>
-    </center>
-</div>
+    <div
+        class="grid grid-cols-3 grid-rows-2 gap-3 rounded mains"
+        style="background-color: #5C5C5C; margin: 15px; padding:15px"
+    >
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[0] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[1] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #ED1C24;">
+                {red[2] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[0] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[1] ?? ""}
+            </h2>
+        </center>
+        <center>
+            <h2 class="rounded" style="background-color: #0083E6;">
+                {blue[2] ?? ""}
+            </h2>
+        </center>
+    </div>
 {/if}
 
 <ScoutPercents {scout_data} />
-    <div class="mains grid place-items-center">
-            <button
-                style="padding: 2.5rem"
-                id="Match-Scounts"
-                on:click={joinQueue}
-            >
-                Get Robot
-            </button>
-        </div>
+<div class="mains grid place-items-center">
+    <button style="padding: 2.5rem" id="Match-Scounts" on:click={joinQueue}>
+        Get Robot
+    </button>
+</div>
 <div class="bottom-div">
     <Navbar page="match" />
 </div>

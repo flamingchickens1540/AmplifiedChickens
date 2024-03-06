@@ -5,9 +5,7 @@ use axum::response::{
 };
 use axum::{extract::State, http::StatusCode, Json};
 use futures::stream::Stream;
-use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::Type;
 
 use std::convert::Infallible;
 

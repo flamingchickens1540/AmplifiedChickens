@@ -3,17 +3,23 @@ use std::convert::Infallible;
 use axum::{
     extract::State,
     http::StatusCode,
-    response::{IntoResponse, Response},
+    response::{
+        sse::{Event, KeepAlive},
+        IntoResponse, Response, Sse,
+    },
     Form, Json,
 };
 
+use futures::future::ok;
+use futures_core::{Future, Stream};
 use http::HeaderMap;
 
 use serde::{Deserialize, Serialize};
 
+use tokio_stream::wrappers::WatchStream;
 use tracing::{error, info};
 
-use crate::model::{self, AppState, Db, EventState, User};
+use crate::model::{self, AllianceColor, AppState, Db, EventState, User};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -49,6 +55,12 @@ pub async fn get_all_users(
     }
 }
 
+#[derive(Serialize)]
+pub struct ScoutResponse {
+    team_key: String,
+    color: AllianceColor,
+}
+
 #[axum::debug_handler]
 pub async fn scout_request_team(
     State(state): State<AppState>,
@@ -69,16 +81,18 @@ pub async fn scout_request_team(
     };
     let user = get_user_helper(&state.db, access_token.clone()).await?;
 
-    info!("{} requested team", user.name);
-
     let mut robot_queue = state.queue.lock().await;
     match robot_queue.scout_get_robot(access_token.clone()) {
         Some(team) => {
-            info!("Robot {}, served to user {}", team, user.name);
-            Ok(Json(team).into_response())
+            info!("Robot {}, served to user {}", team.0, user.name);
+            let res = ScoutResponse {
+                team_key: team.0,
+                color: team.1,
+            };
+            Ok(Json(res).into_response())
         }
         None => {
-            info!("No robots in queue :D");
+            info!("No robots in queue for scout {}", user.name.clone());
             Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()))
         }
     }
@@ -86,7 +100,8 @@ pub async fn scout_request_team(
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewMatchAuto {
-    teams: Vec<String>,
+    red_teams: Vec<String>,
+    blue_teams: Vec<String>,
     match_key: String,
 }
 
@@ -98,10 +113,26 @@ pub async fn new_match_auto(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
     let mut queue = state.queue.lock().await;
-    info!("New Match (Auto Assign): {:?}", new_match.teams);
+    info!(
+        "New Match (Auto Assign): {:?} {:?}",
+        new_match.red_teams, new_match.blue_teams
+    );
     queue.match_keys.push(new_match.match_key);
-    queue.new_match_auto_assign(new_match.teams).await;
-    Ok(())
+    queue
+        .new_match_auto_assign(new_match.red_teams, new_match.blue_teams)
+        .await;
+
+    let upstream = state.sse_upstream.lock().await;
+    match upstream.send(Ok(Event::default().data("event_ready".to_string()))) {
+        Ok(_) => Ok(()),
+        Err(err) => {
+            error!("Error sending new match downstream: {}", err);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to send new match downstream".to_string(),
+            ))
+        }
+    }
 }
 
 pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (StatusCode, String)> {
@@ -134,8 +165,10 @@ pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (Status
 
 #[derive(Serialize, Deserialize)]
 pub struct ManualMatch {
-    robots: Vec<String>,
-    scouts: Vec<String>,
+    red_robots: Vec<String>,
+    blue_robots: Vec<String>,
+    red_scouts: Vec<String>, // scout names
+    blue_scouts: Vec<String>,
     match_key: String,
 }
 
@@ -147,10 +180,54 @@ pub async fn new_match_manual(
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
     check_admin_auth(&state.db, headers).await?;
 
+    let mut red_scouts: Vec<String> = vec![];
+    let mut blue_scouts: Vec<String> = vec![];
+
+    for scout_name in manual_match.red_scouts {
+        let user = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE name = $1")
+            .bind(scout_name)
+            .fetch_one(&state.db.pool)
+            .await
+        {
+            Ok(user) => user.id,
+            Err(err) => {
+                error!("Assigned user not in DB: {}", err);
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    "Assigned user does not exist".to_string(),
+                ));
+            }
+        };
+        red_scouts.push(user);
+    }
+
+    for scout_name in manual_match.blue_scouts {
+        let user = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE name = $1")
+            .bind(scout_name)
+            .fetch_one(&state.db.pool)
+            .await
+        {
+            Ok(user) => user.id,
+            Err(err) => {
+                error!("Assigned user not in DB: {}", err);
+                return Err((
+                    StatusCode::BAD_REQUEST,
+                    "Assigned user does not exist".to_string(),
+                ));
+            }
+        };
+        blue_scouts.push(user);
+    }
+
     let mut queue = state.queue.lock().await;
     queue.match_keys.push(manual_match.match_key);
     match queue
-        .new_match_manual_assign(manual_match.robots, manual_match.scouts)
+        .new_match_manual_assign(
+            manual_match.red_robots,
+            manual_match.blue_robots,
+            red_scouts,
+            blue_scouts,
+        )
         .await
     {
         Ok(()) => Ok(()),
@@ -187,6 +264,7 @@ pub async fn new_event(
     if !user.is_admin {
         return Err((StatusCode::UNAUTHORIZED, "User is not admin".to_string()));
     }
+
     match sqlx::query("INSERT INTO \"Events\" (event_key, steam_url) VALUES ($1, $2)")
         .bind(event.event_key)
         .bind(event.twitch_link)
@@ -307,6 +385,18 @@ pub async fn get_scouts_and_scouted(
         ret.push((name, percent));
     }
     Ok(Json(ret))
+}
+
+pub async fn scout_sse_connect(
+    State(state): State<AppState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    info!("Scout connected to SSE stream");
+
+    let upstream = state.sse_upstream.lock().await;
+
+    let downstream = WatchStream::new(upstream.subscribe());
+
+    Sse::new(downstream).keep_alive(KeepAlive::default())
 }
 
 #[axum::debug_handler]

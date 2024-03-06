@@ -1,36 +1,5 @@
 <script lang="ts">
-    import type { Scout } from "$lib/types"
-    import { onMount } from "svelte";
-    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
-    export let access_token: string
-
-    let scouts: string[] = []
-    let num_scouted: number[] = []
-
-    onMount(async () => {
-        console.log("mounted")
-
-        let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "x-access-token": access_token,
-            }
-        })
-
-        if (!res.ok) {
-            console.error("Failed to fetch scout percents")
-        }
-
-        let data = await res.json()
-
-        console.log("Number scouted: ", data)
-
-        scouts = data[0]
-        num_scouted = data[1]
-
-    })
+    export let scout_data: (string | number)[][] = []
 </script>
 
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">
@@ -39,11 +8,12 @@
         <h3># Scouted</h3>
     </div>
     <div class="main">
-        {#each scouts as scout, i}
+        {#each scout_data as scout, i}
             <hr style="color: #C2C2C2" />
             <div class="flex justify-between">
-                <h2>{scout}</h2>
-                <h2>{num_scouted[i]}</h2>
+                <h2>{scout[0]}</h2>
+                <!-- TODO: Maybe show the number scouted instead of a percent, a different endpoint would be needed for this -->
+                <h2>{scout[1]}</h2> 
             </div>
         {/each}
     </div>

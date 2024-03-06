@@ -21,8 +21,11 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
     })
 
     if (res.status == 200) {
-        var team_key = await res.json()
-        console.log("team_key", team_key)
+        var team_data = await res.json()
+        console.log(team_data)
+
+        var team_key = team_data.team_key
+        var team_color = team_data.color
     } else if (res.status == 204) {
         count.set(1)
         redirect(303, "/app/match")
@@ -31,5 +34,5 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
 	redirect(303, "/")
     }
 
-    return { team_key, scout_id, match_key };
+    return { team_key, team_color, scout_id, match_key };
 }) satisfies PageServerLoad;
