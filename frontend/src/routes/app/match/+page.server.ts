@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
-    let accessToken = cookies.get("access_token")
+    let access_token = cookies.get("access_token")
 
     let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
     let match_key = await match_res.json()
@@ -21,7 +21,7 @@ export const load = (async ({ cookies }) => {
 
     let scout_data = sort(await res.json())
 
-    return { accessToken, match_key, scout_data };
+    return { access_token, match_key, scout_data };
 }) satisfies PageServerLoad;
 
 function sort(data: (string | number)[][]): (string | number)[][] {

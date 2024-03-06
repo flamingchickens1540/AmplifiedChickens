@@ -51,7 +51,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let queue = Arc::new(Mutex::new(model::RoboQueue {
         match_keys: vec![],
         assigned: HashMap::new(),
-        robots: vec![],
+        red_robots: vec![],
+        blue_robots: vec![],
         curr_match_type: model::CurrentMatchType::Auto,
     }));
 
@@ -133,6 +134,7 @@ fn init_router(state: model::AppState) -> Router {
         )
         .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
         .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
+        .route("/scout/sse/get/stream", get(queue::scout_sse_connect))
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
         .route("/scout/get/current_match", get(queue::get_current_match))
         .route("/scout/request_team", get(queue::scout_request_team))

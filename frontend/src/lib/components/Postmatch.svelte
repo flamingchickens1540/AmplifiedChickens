@@ -24,7 +24,7 @@
         if (brokenstatus == "Broken") {
             brokeboolean = true;
         } else {
-            brokeboolean = false;
+            brokeboolean = false;x
         }
 
         $match_data.is_broke = brokeboolean;
