@@ -19,15 +19,17 @@
 
     let in_queue = false;
 
-    function joinQueue() {
-        fetch(`${BACKEND_URL}/scout/request_team`, {
+    async function joinQueue() {
+        in_queue = true;
+
+        let res = await fetch(`${BACKEND_URL}/scout/request_team`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
             },
         })
 
-        in_queue = true;
+        console.log(res)
     }
 
     function leaveQueue() {
@@ -101,7 +103,7 @@
 
 <ScoutPercents {scout_data} />
 <div class="mains grid place-items-center">
-    {#if in_queue}
+    {#if in_queue == false}
         <button style="padding: 2.5rem" id="Match-Scouts" on:click={joinQueue}>
             Join Queue
         </button>
