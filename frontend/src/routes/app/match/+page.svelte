@@ -19,7 +19,15 @@
     )[][];
     let access_token = data.access_token as string;
 
-    let in_queue = false;
+    let in_queue = false
+    let server_source: EventSource
+
+    let event_listener = (event: any) => {
+            console.log(event);
+            var message = JSON.parse(event.data);
+            console.log(message);
+            // TODO: call timeToScout if the event is for for a new_match
+        }
 
     async function joinQueue() {
         in_queue = true;
@@ -33,30 +41,27 @@
         })
 
         console.log(res)
+
+        server_source.addEventListener("team_match", event_listener);
     }
 
     function leaveQueue() {
-        in_queue = false;
+        server_source.removeEventListener("team_match", event_listener)
+
+        in_queue = false
     }
 
     async function timeToScout() {
-        in_queue = false;
-        $match_data.match_key = match;
-        goto("/app/scout");
+        in_queue = false
+        $match_data.match_key = match
+        goto("/app/scout")
     }
 
     onMount(() => {
-        const server_source = new EventSource(
+        server_source = new EventSource(
             `${BACKEND_URL}/scout/sse/get/stream`,
-        );
-
-        server_source.addEventListener("team_match", (event) => {
-            console.log(event);
-            var message = JSON.parse(event.data);
-            console.log(message);
-            // TODO: call timeToScout if the event is for for a new_match
-        });
-    });
+        )
+    })
 </script>
 
 <div class="grid content-end pt-10">
