@@ -19,7 +19,7 @@
     let access_token = data.access_token as string;
 
     let in_queue = false
-    let server_source: EventSource
+    let server_source:any 
 
     let event_listener = (event: any) => {
             console.log(event);
@@ -35,7 +35,7 @@
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "x-access-code": access_token
+                "x-access-token": access_token
             },
         })
 
