@@ -123,8 +123,8 @@ pub async fn new_match_auto(
         .await;
 
     let upstream = state.sse_upstream.lock().await;
-    match upstream.send(Ok(Event::default().data("event_ready".to_string()))) {
-        Ok(_) => Ok(()),
+    match upstream.send(Ok(Event::default().data("match_ready".to_string()))){
+        Ok(_) => {info!("Sent match_ready to scout"); Ok(())},
         Err(err) => {
             error!("Error sending new match downstream: {}", err);
             Err((

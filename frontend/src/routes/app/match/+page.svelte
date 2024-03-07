@@ -19,14 +19,7 @@
     let access_token = data.access_token as string;
 
     let in_queue = false
-    let server_source:any 
-
-    let event_listener = (event: any) => {
-            console.log(event);
-            var message = JSON.parse(event.data);
-            console.log(message);
-            // TODO: call timeToScout if the event is for for a new_match
-        }
+    let server_source: any 
 
     async function joinQueue() {
         in_queue = true;
@@ -41,18 +34,22 @@
 
         console.log(res)
 
-        server_source.addEventListener("team_match", event_listener);
+        server_source.onmessage = (event) => {
+		if (event.data == "match_ready") {
+			timeToScout()
+		}
+        }
+	console.log(server_source)
     }
 
     function leaveQueue() {
-        server_source.removeEventListener("team_match", event_listener)
+        server_source.onmessage = null
 
         in_queue = false
     }
 
     async function timeToScout() {
         in_queue = false
-        $match_data.match_key = match
         goto("/app/scout")
     }
 
