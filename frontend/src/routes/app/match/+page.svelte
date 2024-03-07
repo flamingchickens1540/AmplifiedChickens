@@ -5,7 +5,6 @@
     import { match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
-    import { access } from "fs";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;

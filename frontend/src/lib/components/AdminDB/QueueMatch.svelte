@@ -11,7 +11,7 @@
     export let blue_scouts: Scout[] = [];
     export let red_scouts: Scout[] = [];
 
-    export let queued_scouts: Scout[] = [];
+    let queued_scouts: Scout[] = [];
 
     export let auto_assign: boolean;
 
@@ -55,7 +55,8 @@
                     "x-access-token": access_token,
                 },
                 body: JSON.stringify({
-                    teams: red_teams.concat(blue_teams),
+                    red_teams: red_teams,
+                    blue_teams: blue_teams,
                     match_key: $match_data.match_key,
                 }),
             });
@@ -80,8 +81,10 @@
                     "x-access-token": access_token,
                 },
                 body: JSON.stringify({
-                    teams: red_teams.concat(blue_teams),
-                    scouts: queued_scouts,
+                    red_robots: red_teams,
+                    blue_robots: blue_teams,
+                    red_scouts: red_scouts,
+                    blue_scouts : blue_scouts,
                     match_key: $match_data.match_key,
                 }),
             });
