@@ -32,6 +32,10 @@
             },
         })
 
+	if (res.status == 200) {
+		timeToScout()
+	}
+
         console.log(res)
 
         server_source.onmessage = (event) => {
@@ -49,8 +53,9 @@
     }
 
     async function timeToScout() {
-        in_queue = false
-        goto("/app/scout")
+        leaveQueue()
+
+	goto("/app/scout")
     }
 
     onMount(() => {
