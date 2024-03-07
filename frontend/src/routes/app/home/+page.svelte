@@ -69,7 +69,7 @@
                 </button>
             </a>
         </div>
-        <a href="{twitchURL}" style="margin-left: 15px; margin-right: 15px;">
+        <a href="https://www.youtube.com/watch?v=uHgt8giw1LY" style="margin-left: 15px; margin-right: 15px;">
             <button
                 style="margin-left:0px; width: 100%"
             >
