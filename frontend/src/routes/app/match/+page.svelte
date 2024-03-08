@@ -18,8 +18,9 @@
     )[][];
     let access_token = data.access_token as string;
 
-    let in_queue = false
-    let server_source: any 
+    let in_queue = false;
+    let server_source: any;
+    let requested_color: "red" | "blue" | "none" = "none"
 
     async function joinQueue() {
         in_queue = true;
@@ -28,41 +29,50 @@
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "x-access-token": access_token
+                "x-access-token": access_token,
+                "requested_color": requested_color
             },
-        })
+        });
 
-	if (res.status == 200) {
-		timeToScout()
-	}
+        if (res.status == 200) {
+            timeToScout();
+        }
 
-        console.log(res)
+        console.log(res);
 
         server_source.onmessage = (event) => {
-		if (event.data == "match_ready") {
-			timeToScout()
-		}
-        }
-	console.log(server_source)
+            if (event.data == "match_ready") {
+                timeToScout();
+            }
+        };
+        console.log(server_source);
     }
 
     function leaveQueue() {
-        server_source.onmessage = null
+        server_source.onmessage = null;
 
-        in_queue = false
+        in_queue = false;
     }
 
     async function timeToScout() {
-        leaveQueue()
+        leaveQueue();
 
-	goto("/app/scout")
+        goto("/app/scout");
+    }
+
+    function switchColor() {
+        if (requested_color == "blue") {
+            requested_color = "red"
+        } else if (requested_color == "red") {
+            requested_color = "none"
+        } else if (requested_color == "none") {
+            requested_color = "blue"
+        }
     }
 
     onMount(() => {
-        server_source = new EventSource(
-            `${BACKEND_URL}/scout/sse/get/stream`,
-        )
-    })
+        server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
+    });
 </script>
 
 <div class="grid content-end pt-10">
@@ -125,7 +135,12 @@
             In Queue</button
         >
     {/if}
+
+    <button on:click={switchColor} id="Team-Color" class="text-navbar_black bg-{requested_color} py-5 font-semibold" style="padding: 2.5rem; font-size: 50px">
+        Team Color: {requested_color}
+    </button>
 </div>
+
 <div class="bottom-div">
     <Navbar page="match" />
 </div>

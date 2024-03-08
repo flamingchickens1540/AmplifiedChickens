@@ -37,11 +37,12 @@ pub struct AppState {
     pub sse_upstream: Arc<Mutex<Sender<Result<Event, Infallible>>>>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AllianceColor {
     Red,
     Blue,
+    None
 }
 
 #[derive(Debug, Clone)]
@@ -77,7 +78,6 @@ impl RoboQueue {
         blue_scouts: Vec<String>,
     ) -> Result<(), String> {
         for (i, _) in red_robots.iter().enumerate() {
-            info!("Robot pushed to scout");
             if self.assigned.contains_key(&red_scouts[i].clone()) {
                 return Err("Scout already manually assigned".to_string());
             }
@@ -92,7 +92,6 @@ impl RoboQueue {
         }
 
         for (i, _) in blue_robots.iter().enumerate() {
-            info!("Robot pushed to scout");
             if self.assigned.contains_key(&blue_scouts[i].clone()) {
                 return Err("Scout already manually assigned".to_string());
             }
@@ -112,15 +111,23 @@ impl RoboQueue {
 
     pub fn scout_get_robot(&mut self, scout: String) -> Option<(String, AllianceColor)> {
         match self.assigned.get(&scout) {
-            Some(team) => Some(team.clone()),
-            None => match self.red_robots.pop() {
+            Some(team) => Some(team.clone()), // This might be removed if manual assignment is ditched
+            None => match self.scout_get_red() {
                 Some(robot) => Some((robot, AllianceColor::Red)),
-                None => match self.blue_robots.pop() {
+                None => match self.scout_get_blue() {
                     Some(robot) => Some((robot, AllianceColor::Blue)),
                     None => None,
                 },
             },
         }
+    }
+
+    pub fn scout_get_red(&mut self) -> Option<String> {
+        self.red_robots.pop()
+    }
+
+    pub fn scout_get_blue(&mut self) -> Option<String> {
+        self.blue_robots.pop()
     }
 }
 
@@ -260,9 +267,10 @@ pub struct TeamEvent {
     pub length: i16,
     pub is_short: bool,
     pub is_camera: bool,
-    pub drivetrain: String,
+    pub drivetrain: DriveTrainEnum,
     pub is_ground_intake: bool,
     pub is_chute_intake: bool,
+    pub notes: String,
     pub polish: i16,
     pub scout_id: String,
 }
@@ -285,7 +293,8 @@ pub struct EventState {
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
-pub enum DriveTrain {
+#[serde(rename_all = "lowercase")]
+pub enum DriveTrainEnum {
     Swerve,
     Tank,
     Other,

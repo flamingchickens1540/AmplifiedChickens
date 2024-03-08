@@ -22,7 +22,6 @@ use tracing_subscriber::FmtSubscriber;
 use self::model::TeamMatch;
 
 mod auth;
-mod error;
 mod model;
 mod queue;
 mod submit;
@@ -100,6 +99,8 @@ async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting Prod Server");
     info!("Listening on {}", addr);
+    
+    info!("TEST");
 
     axum::serve(listener, app).await.unwrap();
 

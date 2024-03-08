@@ -82,20 +82,55 @@ pub async fn scout_request_team(
     let user = get_user_helper(&state.db, access_token.clone()).await?;
 
     let mut robot_queue = state.queue.lock().await;
-    match robot_queue.scout_get_robot(access_token.clone()) {
-        Some(team) => {
-            info!("Robot {}, served to user {}", team.0, user.name);
-            let res = ScoutResponse {
-                team_key: team.0,
-                color: team.1,
-            };
-            Ok(Json(res).into_response())
-        }
+
+    let team_key = "".to_string();
+
+    let team_color: AllianceColor;
+
+    match headers.get("requested_color") {
+        Some(color) => {
+            match color.to_str().expect("requested_color was an invalid string") {
+                "blue" => {
+                    team_key = match robot_queue.scout_get_blue() {
+                        Some(team) => team,
+                        None => return Err((StatusCode::NO_CONTENT, "No robots in blue queue :D".to_string()))
+                    };
+                    
+                    team_color = AllianceColor::Blue;
+                },
+                "red" => {
+                    team_key = match robot_queue.scout_get_red() {
+                        Some(team) => team,
+                        None => return Err((StatusCode::NO_CONTENT, "No robots in red queue :D".to_string()))
+                    };
+                    team_color = AllianceColor::Red;
+                },
+                "none" => {
+                    match robot_queue.scout_get_robot(access_token.clone()) {
+                        Some(team) => {
+                            team_key = team.0;
+                            team_color = team.1
+                        },
+                        None => {
+                            info!("No robots in queue for scout {}", user.name.clone());
+                            return Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()))
+                        }
+                    }
+                },
+                _ => return Err((StatusCode::BAD_REQUEST, "Invalid requested_color, only red, blue, and none are accepted values".to_string()))
+            }
+        },
         None => {
-            info!("No robots in queue for scout {}", user.name.clone());
-            Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()))
+            error!("Robot requested without requested_color");
+            return Err((StatusCode::BAD_REQUEST, "No request_color provided (try none if you don't care)".to_string()));
         }
     }
+        info!("Robot {}, served to user {}", team_key, user.name);
+        let res = ScoutResponse {
+            team_key: team_key,
+            color: team_color,
+        };
+        Ok(Json(res).into_response())
 }
 
 #[derive(Deserialize, Debug, Clone)]
