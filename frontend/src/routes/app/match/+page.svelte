@@ -3,6 +3,8 @@
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
     import { onMount } from "svelte";
     import { match_data } from "$lib/stores";
+    import { Modal, Content, Trigger } from "sv-popup";
+    import HeheButton from "$lib/components/HeheButton.svelte";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -76,10 +78,23 @@
 </script>
 
 <div class="grid content-end pt-10">
-    <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
+    <Modal>
+        <Content
+            style="background-color: #2C2C2C; width:92%; margin:auto; overflow-wrap: normal;
+  overflow-wrap: break-word;
+  overflow-wrap: anywhere;"
+            class="p-4 rounded"
+        >
+        <HeheButton/>
+        </Content>
+        <Trigger>
+            <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
         {match}
     </h1>
+        </Trigger>
+    </Modal>
+    
 </div>
 
 {#if blue.length != 0 || red.length != 0}
