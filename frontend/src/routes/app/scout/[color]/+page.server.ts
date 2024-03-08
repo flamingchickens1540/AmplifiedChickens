@@ -3,7 +3,9 @@ import { count } from '$lib/stores';
 import type { PageServerLoad } from './$types';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
 
-export const load = (async ({ cookies }) => {
+export const load = (async ({ cookies, params }) => {
+
+    let color = params.color
 
     let accessToken = cookies.get("access_token")
     let scout_id = cookies.get("scout_id")
@@ -16,13 +18,13 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "x-access-token": accessToken
+            "x-access-token": accessToken,
+            "requested_color": color
         } as HeadersInit,
     })
 
     if (res.status == 200) {
         var team_data = await res.json()
-        console.log(team_data)
 
         var team_key = team_data.team_key
         var team_color = team_data.color

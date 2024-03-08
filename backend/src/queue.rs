@@ -83,7 +83,7 @@ pub async fn scout_request_team(
 
     let mut robot_queue = state.queue.lock().await;
 
-    let team_key = "".to_string();
+    let mut team_key = "".to_string();
 
     let team_color: AllianceColor;
 
@@ -91,6 +91,7 @@ pub async fn scout_request_team(
         Some(color) => {
             match color.to_str().expect("requested_color was an invalid string") {
                 "blue" => {
+                    info!("Blue robot requested");
                     team_key = match robot_queue.scout_get_blue() {
                         Some(team) => team,
                         None => return Err((StatusCode::NO_CONTENT, "No robots in blue queue :D".to_string()))
@@ -99,6 +100,7 @@ pub async fn scout_request_team(
                     team_color = AllianceColor::Blue;
                 },
                 "red" => {
+                    info!("Red robot requested");
                     team_key = match robot_queue.scout_get_red() {
                         Some(team) => team,
                         None => return Err((StatusCode::NO_CONTENT, "No robots in red queue :D".to_string()))
@@ -106,6 +108,7 @@ pub async fn scout_request_team(
                     team_color = AllianceColor::Red;
                 },
                 "none" => {
+                    info!("Agnostic robot requested");
                     match robot_queue.scout_get_robot(access_token.clone()) {
                         Some(team) => {
                             team_key = team.0;

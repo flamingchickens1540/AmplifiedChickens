@@ -2,7 +2,6 @@
     import Navbar from "$lib/components/Navbar.svelte";
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
     import { onMount } from "svelte";
-    import { match_data } from "$lib/stores";
     import { Modal, Content, Trigger } from "sv-popup";
     import HeheButton from "$lib/components/HeheButton.svelte";
     import { goto } from "$app/navigation";
@@ -42,7 +41,7 @@
 
         console.log(res);
 
-        server_source.onmessage = (event) => {
+        server_source.onmessage = (event: any) => {
             if (event.data == "match_ready") {
                 timeToScout();
             }
@@ -59,7 +58,7 @@
     async function timeToScout() {
         leaveQueue();
 
-        goto("/app/scout");
+        goto(`/app/scout/${requested_color}`);
     }
 
     function switchColor() {
