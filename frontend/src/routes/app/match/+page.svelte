@@ -74,6 +74,21 @@
     onMount(() => {
         server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
     });
+
+    function incrementString(inputString: string) {  
+        let pattern = "/(\d+)$/"
+        if (inputString.match(pattern)) {
+            var newNumber: number = parseInt(match[1]) + 1;
+            console.log(newNumber)    
+            var newString = inputString.replace(pattern, newNumber.toString());
+            return newString;
+        } else {
+            return inputString;
+        }
+    }
+
+    let next_match = incrementString(match)
+
 </script>
 
 <div class="grid content-end pt-10">
@@ -89,7 +104,7 @@
         <Trigger>
             <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">
-        {match}
+        {next_match}
     </h1>
         </Trigger>
     </Modal>
@@ -150,7 +165,7 @@
         >
     {/if}
 
-    <button on:click={switchColor} id="Team-Color" class="text-navbar_black bg-{requested_color} py-5 font-semibold" style="padding: 2.5rem; font-size: 50px">
+    <button on:click={switchColor} id="Team-Color" class="text-navbar_black bg-{requested_color}-400 py-5 font-semibold" style="padding: 2.5rem; font-size: 50px">
         Team Color: {requested_color}
     </button>
 </div>

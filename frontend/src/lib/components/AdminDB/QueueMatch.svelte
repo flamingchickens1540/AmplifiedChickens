@@ -44,9 +44,6 @@
     }
 
     async function queue_match() {
-        console.log("Auto Assign: ", auto_assign);
-        console.log("url ", BACKEND_URL);
-        if (auto_assign) {
             let res = await window.fetch(`${BACKEND_URL}/admin/new/match/auto`, {
                 method: "POST",
                 headers: {
@@ -72,35 +69,6 @@
             blue_teams = blue_teams;
             blue_scouts = blue_scouts;
             red_scouts = red_scouts;
-        } else {
-            let res = await fetch(`${BACKEND_URL}/admin/new/match/manual`, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                    "x-access-token": access_token,
-                },
-                body: JSON.stringify({
-                    red_robots: red_teams,
-                    blue_robots: blue_teams,
-                    red_scouts: red_scouts,
-                    blue_scouts : blue_scouts,
-                    match_key: $match_data.match_key,
-                }),
-            });
-
-            console.log(res);
-
-            red_teams = ["", "", ""];
-            blue_teams = ["", "", ""];
-            blue_scouts = [];
-            red_scouts = [];
-
-            red_teams = red_teams;
-            blue_teams = blue_teams;
-            blue_scouts = blue_scouts;
-            red_scouts = red_scouts;
-        }
     }
 </script>
 

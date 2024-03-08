@@ -5,7 +5,7 @@
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">
     <div class="flex justify-between">
         <h3>Name</h3>
-        <h3># Scouted</h3>
+        <h3>% Scouted</h3>
     </div>
     <div class="main">
         {#each scout_data as scout, i}

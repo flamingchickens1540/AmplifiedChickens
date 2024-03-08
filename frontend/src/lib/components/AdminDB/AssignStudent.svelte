@@ -26,12 +26,12 @@
 >
     {#each teams as team, i}
         <div
-            class="grid grid-cols-2 grid-rows-1 place-items-center rounded"
+            class="grid grid-cols-1 grid-rows-1 place-items-center rounded"
             style="background-color: { color }; padding:0.2rem; margin:10px;"
         >
             <!-- <input bind:value={team}/> -->
             <Combobox bind:value={team} {color} options={[]} placeholder="Number"/>
-            {#if !auto_assign}
+            <!-- {#if !auto_assign}
                 <div>
                     <Combobox
                         bind:value={scout_names[i]}
@@ -40,7 +40,7 @@
                         placeholder="Scout Name"
                     />
                 </div>
-            {/if}
+            {/if} -->
         </div>
     {/each}
 </div>
