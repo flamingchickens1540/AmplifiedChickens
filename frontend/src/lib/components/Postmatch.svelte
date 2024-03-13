@@ -8,14 +8,13 @@
     import { default_match_data } from "$lib/types";
     import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
+    import { onMount } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     async function submit_match() {
         console.log("SUBMIT MATCH");
         console.log($match_data);
         let req: any = { id: 0, ...$match_data };
-	req.is_broken = !req.is_broke
-	req.is_died = !req.is_died
 
         let res = await fetch(`${BACKEND_URL}/submit/match`, {
             method: "POST",
@@ -30,6 +29,10 @@
         $match_data.match_key = temp;
 
         goto("/app/match");
+
+        onMount(() => {
+            localStorage.setItem("match_data", JSON.stringify($match_data));
+        });
     }
 </script>
 

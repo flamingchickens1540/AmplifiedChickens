@@ -1,3 +1,5 @@
+import type { TeamMatchData } from '$lib/types';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load = (async ({ cookies }) => {
@@ -6,9 +8,9 @@ export const load = (async ({ cookies }) => {
 
     let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
     let match_key = await match_res.json()
-
+    
     let res = await fetch(`${BACKEND_URL}/admin/users/get/all`, {
-        method: "GET",
+        method: "GET", 
         headers: {
             Accept: "application/json",
             "Content-Type": "application/json",

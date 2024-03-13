@@ -71,7 +71,7 @@
     .carousel-container {
         width: 100%;
         overflow-x: hidden;
-        overflow-y: auto;
+        overflow-y: scroll;
         position: relative;
     }
 

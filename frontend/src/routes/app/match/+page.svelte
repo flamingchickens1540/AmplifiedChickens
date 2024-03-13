@@ -6,6 +6,7 @@
     import HeheButton from "$lib/components/HeheButton.svelte";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
+    import type { TeamMatchData } from "$lib/types";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;
@@ -71,6 +72,10 @@
     }
 
     onMount(() => {
+        let cached_match: TeamMatchData = JSON.parse(localStorage.getItem("match_data") as string);
+        if (cached_match != undefined) {
+            goto("/scout/reload")
+        }
         server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
     });
 
@@ -92,14 +97,6 @@
 
 <div class="grid content-end pt-10">
     <Modal>
-        <Content
-            style="background-color: #2C2C2C; width:92%; margin:auto; overflow-wrap: normal;
-  overflow-wrap: break-word;
-  overflow-wrap: anywhere;"
-            class="p-4 rounded"
-        >
-        <HeheButton/>
-        </Content>
         <Trigger>
             <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
     <h1 style="width:auto" class="px-3 text-cresc_green">

@@ -99,7 +99,7 @@ async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting Prod Server");
     info!("Listening on {}", addr);
-    
+
     info!("TEST");
 
     axum::serve(listener, app).await.unwrap();
@@ -125,8 +125,6 @@ fn init_router(state: model::AppState) -> Router {
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
         .route("/submit/match", post(submit::submit_team_match))
-        //.route("/admin/getUser/single", get(queue::get_user))
-        .route("/admin/new/match/manual", post(queue::new_match_manual))
         .route("/admin/new/match/auto", post(queue::new_match_auto))
         .route("/admin/new/event", post(queue::new_event))
         .route(
@@ -138,6 +136,7 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/sse/get/stream", get(queue::scout_sse_connect))
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
         .route("/scout/get/current_match", get(queue::get_current_match))
+        .route("/scout/get/queued_teams", get(queue::get_current_teams))
         .route("/scout/request_team", get(queue::scout_request_team))
         .route("/scout/check/queue", get(queue::check_queue))
         .with_state(state)
