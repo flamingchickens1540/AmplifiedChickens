@@ -14,31 +14,31 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Parked";
+                value = "parked";
             }}>Parked</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Failed";
+                value = "failed";
             }}>Failed</button
         >
         <button
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "NotAttempted";
+                value = "notattempted";
             }}>Not Attempted</button
         >
     </div>
-{:else if value == "Parked"}
+{:else if value == "parked"}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Onstage";
-            }}>Onstage</button
+                value = "onstage";
+            }}>On Stage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -49,13 +49,13 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Failed";
+                value = "failed";
             }}>Failed</button
         >
         <button
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "NotAttempted";
+                value = "notattempted";
             }}>Not Attempted</button
         >
     </div>
@@ -65,14 +65,14 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Onstage";
-            }}>Onstage</button
+                value = "onstage";
+            }}>On Stage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Parked";
+                value = "parked";
             }}>Parked</button
         >
         <button
@@ -83,7 +83,7 @@
         <button
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "NotAttempted";
+                value = "notattempted";
             }}>Not Attempted</button
         >
     </div>

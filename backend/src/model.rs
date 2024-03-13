@@ -61,52 +61,12 @@ impl RoboQueue {
     /// Assigns each robot to one of the queued scouts, puts all the remaining robots in the robots queue
     pub async fn new_match_auto_assign(
         &mut self,
-        mut red_robots: Vec<String>,
-        mut blue_robots: Vec<String>,
-    ) {
-        self.red_robots.append(&mut red_robots);
-        self.blue_robots.append(&mut blue_robots);
-        self.curr_match_type = CurrentMatchType::Auto;
-    }
-
-    // Manual assign
-    pub async fn new_match_manual_assign(
-        &mut self,
         red_robots: Vec<String>,
         blue_robots: Vec<String>,
-        red_scouts: Vec<String>,
-        blue_scouts: Vec<String>,
-    ) -> Result<(), String> {
-        for (i, _) in red_robots.iter().enumerate() {
-            if self.assigned.contains_key(&red_scouts[i].clone()) {
-                return Err("Scout already manually assigned".to_string());
-            }
-            self.assigned.insert(
-                red_scouts[i].clone(),
-                (red_robots[i].clone(), AllianceColor::Red),
-            );
-            info!(
-                "Scout {} manually assigned to team {}",
-                red_scouts[i], red_robots[i]
-            );
-        }
-
-        for (i, _) in blue_robots.iter().enumerate() {
-            if self.assigned.contains_key(&blue_scouts[i].clone()) {
-                return Err("Scout already manually assigned".to_string());
-            }
-            self.assigned.insert(
-                blue_scouts[i].clone(),
-                (blue_robots[i].clone(), AllianceColor::Blue),
-            );
-            info!(
-                "Scout {} manually assigned to team {}",
-                blue_scouts[i], blue_robots[i]
-            );
-        }
-
-        self.curr_match_type = CurrentMatchType::Manual;
-        Ok(())
+    ) {
+        self.red_robots = red_robots;
+        self.blue_robots = blue_robots;
+        self.curr_match_type = CurrentMatchType::Auto;
     }
 
     pub fn scout_get_robot(&mut self, scout: String) -> Option<(String, AllianceColor)> {
@@ -216,6 +176,7 @@ pub struct TeamMatch {
 
 #[derive(Serialize, Debug, Clone, Type, PartialEq, Deserialize, Default)]
 #[sqlx(type_name = "stageenum", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum Stage {
     #[default]
     OnStage,

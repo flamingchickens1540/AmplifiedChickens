@@ -1,16 +1,21 @@
 import { redirect } from '@sveltejs/kit';
 import { count } from '$lib/stores';
 import type { PageServerLoad } from './$types';
+import type { TeamMatchData } from '$lib/types';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL_FOR_SVELTEKIT;
 
 export const load = (async ({ cookies, params }) => {
 
     let color = params.color
 
+    if (color == "reload") {
+        return { team_key: "", team_color: "", scout_id: "", match_key: "" }
+    }
+
     let accessToken = cookies.get("access_token")
     let scout_id = cookies.get("scout_id")
 
-let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
+    let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
 
     let match_key = await match_res.json()
 
@@ -24,17 +29,16 @@ let match_res = await fetch(`${BACKEND_URL}/scout/get/current_match`)
     })
 
     if (res.status == 200) {
-        var team_data = await res.json()
+        let team_data = await res.json()
+        let team_key = team_data.team_key
+        let team_color = team_data.color
 
-        var team_key = team_data.team_key
-        var team_color = team_data.color
+        return { team_key, team_color, scout_id, match_key };
     } else if (res.status == 204) {
         count.set(1)
         redirect(303, "/app/match")
     } else {
         console.log("Error, you are not authorized to be here, please contact an admin.")
-	redirect(303, "/")
+        redirect(303, "/")
     }
-
-    return { team_key, team_color, scout_id, match_key };
 }) satisfies PageServerLoad;

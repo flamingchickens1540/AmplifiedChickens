@@ -5,9 +5,10 @@
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
-    import { default_match_data } from "$lib/types"
-    import { goto } from "$app/navigation"
+    import { default_match_data } from "$lib/types";
+    import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
+    import { onMount } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     let brokenstatus = "";
@@ -32,9 +33,9 @@
     }
 
     async function submit_match() {
-    console.log("SUBMIT MATCH")
-	console.log($match_data)
-	let req: any = {id: 0, ...$match_data}
+        console.log("SUBMIT MATCH");
+        console.log($match_data);
+        let req: any = { id: 0, ...$match_data };
 
         let res = await fetch(`${BACKEND_URL}/submit/match`, {
             method: "POST",
@@ -45,12 +46,15 @@
         });
         console.log("Submitted match:", res);
 
-let temp = $match_data.match_key
-        $match_data = default_match_data
-$match_data.match_key = temp
+        let temp = $match_data.match_key;
+        $match_data = default_match_data;
+        $match_data.match_key = temp;
 
-goto("/app/match")
+        goto("/app/match");
 
+        onMount(() => {
+            localStorage.setItem("match_data", JSON.stringify($match_data));
+        });
     }
 </script>
 

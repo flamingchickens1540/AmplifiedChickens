@@ -210,69 +210,6 @@ pub struct ManualMatch {
     match_key: String,
 }
 
-#[axum::debug_handler]
-pub async fn new_match_manual(
-    State(state): State<AppState>,
-    headers: HeaderMap,
-    Json(manual_match): Json<ManualMatch>,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
-    check_admin_auth(&state.db, headers).await?;
-
-    let mut red_scouts: Vec<String> = vec![];
-    let mut blue_scouts: Vec<String> = vec![];
-
-    for scout_name in manual_match.red_scouts {
-        let user = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE name = $1")
-            .bind(scout_name)
-            .fetch_one(&state.db.pool)
-            .await
-        {
-            Ok(user) => user.id,
-            Err(err) => {
-                error!("Assigned user not in DB: {}", err);
-                return Err((
-                    StatusCode::BAD_REQUEST,
-                    "Assigned user does not exist".to_string(),
-                ));
-            }
-        };
-        red_scouts.push(user);
-    }
-
-    for scout_name in manual_match.blue_scouts {
-        let user = match sqlx::query_as::<_, User>("SELECT * FROM \"Users\" WHERE name = $1")
-            .bind(scout_name)
-            .fetch_one(&state.db.pool)
-            .await
-        {
-            Ok(user) => user.id,
-            Err(err) => {
-                error!("Assigned user not in DB: {}", err);
-                return Err((
-                    StatusCode::BAD_REQUEST,
-                    "Assigned user does not exist".to_string(),
-                ));
-            }
-        };
-        blue_scouts.push(user);
-    }
-
-    let mut queue = state.queue.lock().await;
-    queue.match_keys.push(manual_match.match_key);
-    match queue
-        .new_match_manual_assign(
-            manual_match.red_robots,
-            manual_match.blue_robots,
-            red_scouts,
-            blue_scouts,
-        )
-        .await
-    {
-        Ok(()) => Ok(()),
-        Err(err) => Err((StatusCode::BAD_REQUEST, err)),
-    }
-}
-
 pub async fn get_current_match(State(state): State<AppState>) -> Json<String> {
     let manager = state.queue.lock().await;
 
@@ -281,6 +218,12 @@ pub async fn get_current_match(State(state): State<AppState>) -> Json<String> {
     }
 
     Json(manager.match_keys[manager.match_keys.len() - 1].clone())
+}
+
+pub async fn get_current_teams(State(state): State<AppState>) -> Json<(Vec<String>, Vec<String>)> {
+    let manager = state.queue.lock().await;
+
+    Json((manager.red_robots.clone(), manager.blue_robots.clone()))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -399,7 +342,6 @@ pub async fn get_scouts_and_scouted(
     for scout in scouts.iter() {
         let id = scout.id.clone();
         let name = scout.name.clone();
-        let name = scout.name.clone();
         let count: f64 = match sqlx::query_as::<_, model::TeamMatch>(
             "SELECT * FROM \"TeamMatches\" WHERE scout_id = $1 AND match_key NOT LIKE \'t%\'",
         )
@@ -440,27 +382,30 @@ pub async fn scout_sse_connect(
 #[axum::debug_handler]
 pub async fn get_unpitscouted_teams(
     State(state): State<AppState>,
-) -> Result<Json<Vec<model::Team>>, Infallible> {
-    let current_event = sqlx::query_as::<_, model::EventState>("SELECT* FROM \"EventState\"")
+) -> Result<Json<Vec<model::TeamEvent>>, Infallible> {
+    let current_event = sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
         .fetch_one(&state.db.pool)
         .await
         .unwrap_or_else(|_| -> EventState {
             error!("Failed to get eventstate, falling back on default");
             model::EventState {
-                event_key: "2024orore".to_string(),
+                event_key: "2024orwil".to_string(),
                 last_match: None,
                 next_match: None,
             }
         });
     // FIXME: Every TeamEvent has to be loaded with at least width = 0 (or null or smth) before the
     // event for this function to work. edit as needed if jack's busy and that's too much work
+
+    let res = sqlx::query_as::<_, model::TeamEvent>(
+        "SELECT * FROM \"TeamEvents\" WHERE event_key = $1 AND width = 0",
+    )
+    .bind("2024orore")
+    .fetch_all(&state.db.pool)
+    .await;
+
+    info!("res: {:?}", res);
     Ok(Json(
-        sqlx::query_as::<_, model::Team>(
-            "SELECT * FROM \"Teams\" WHERE event_key = $1 AND width = 0",
-        )
-        .bind(current_event.event_key)
-        .fetch_all(&state.db.pool)
-        .await
-        .unwrap_or(vec![]),
+        res.unwrap_or(vec![])
     ))
 }

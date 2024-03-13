@@ -3,6 +3,7 @@
     import Position from "$lib/components/Toggle.svelte"
     import Threeoption from "$lib/components/Threeoption.svelte"
     import { match_data } from '$lib/stores';
+    import { onMount } from "svelte";
 
     let location = ""
     let fieldedstring = ""
@@ -19,6 +20,10 @@
         $match_data.is_fielded = fielded
         $match_data.location = location
     }
+
+    onMount(() => {
+        localStorage.setItem("match_data", JSON.stringify($match_data))
+    })
     
 
 </script>

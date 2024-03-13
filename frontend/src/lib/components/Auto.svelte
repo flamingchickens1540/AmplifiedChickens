@@ -3,9 +3,9 @@
     import Toggle from "$lib/components/Toggle.svelte";
     import Confirm from "$lib/components/Confirm.svelte";
     import { match_data } from "$lib/stores";
+    import { onMount } from "svelte";
     let leavestatus = "Stayed Home";
     let leaveboolean = false;
-    
 
     let amp = false;
     let ampsuc = 0;
@@ -23,13 +23,17 @@
         $match_data.auto_amp_missed = ampfail;
         $match_data.auto_piece_succeed = piecesuc;
         $match_data.auto_piece_missed = piecefail;
-	if (leavestatus == "Left Home") {
-        	leaveboolean = true;
-    	} else {
-        	leaveboolean = false;
-    	}
+        if (leavestatus == "Left Home") {
+            leaveboolean = true;
+        } else {
+            leaveboolean = false;
+        }
         $match_data.is_leave_start = leaveboolean;
     }
+
+    onMount(() => {
+        localStorage.setItem("match_data", JSON.stringify($match_data));
+    });
 </script>
 
 {#if speaker == true}

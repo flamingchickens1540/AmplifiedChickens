@@ -8,11 +8,17 @@
     export let data: PageData;
 
     onMount(() => {
-    	$match_data = default_match_data 
-        $match_data.team_key = data.team_key as unknown as `${number}`
-        $match_data.scout_id = data.scout_id as string
-        $match_data.match_key = data.match_key
-        $team_color = data.team_color
+        if (data.team_key == "") {
+            $match_data = JSON.parse(localStorage.getItem("match_data") as string)
+            $team_color = localStorage.getItem("team_color") as "" | "blue" | "red"
+        } else {
+            $match_data = default_match_data
+            $match_data.team_key = data.team_key as unknown as `${number}`
+            $match_data.scout_id = data.scout_id as string
+            $match_data.match_key = data.match_key
+            $team_color = data.team_color
+            localStorage.setItem("team_color", data.team_color)
+        }
     })
 </script>
 
