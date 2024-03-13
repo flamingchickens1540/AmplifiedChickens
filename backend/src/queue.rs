@@ -173,6 +173,13 @@ pub async fn new_match_auto(
     }
 }
 
+#[axum::debug_handler]
+pub async fn check_queue(State(state): State<AppState>) -> impl IntoResponse {
+    let queue = state.queue.lock().await;
+
+    Json(!queue.red_robots.is_empty() || !queue.blue_robots.is_empty())
+}
+
 pub async fn check_admin_auth(db: &Db, headers: HeaderMap) -> Result<(), (StatusCode, String)> {
     let code: String = match headers.get("x-access-token") {
         Some(code) => code
@@ -428,7 +435,6 @@ pub async fn get_scouts_and_scouted(
 pub async fn scout_sse_connect(
     State(state): State<AppState>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    info!("Scout connected to SSE stream");
 
     let upstream = state.sse_upstream.lock().await;
 
@@ -447,7 +453,7 @@ pub async fn get_unpitscouted_teams(
         .unwrap_or_else(|_| -> EventState {
             error!("Failed to get eventstate, falling back on default");
             model::EventState {
-                event_key: "2024orore".to_string(),
+                event_key: "2024orsal".to_string(),
                 last_match: None,
                 next_match: None,
             }

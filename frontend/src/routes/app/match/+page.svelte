@@ -26,27 +26,26 @@
     async function joinQueue() {
         in_queue = true;
 
-        let res = await fetch(`${BACKEND_URL}/scout/request_team`, {
+        let res = await fetch(`${BACKEND_URL}/scout/check/queue`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
-                "x-access-token": access_token,
-                "requested_color": requested_color
             },
         });
 
-        if (res.status == 200) {
-            timeToScout();
-        }
+	let json = await res.json()
+	console.log(json)
 
-        console.log(res);
+        if (json == true) {
+            timeToScout();
+	    return;
+        }
 
         server_source.onmessage = (event: any) => {
             if (event.data == "match_ready") {
                 timeToScout();
             }
         };
-        console.log(server_source);
     }
 
     function leaveQueue() {

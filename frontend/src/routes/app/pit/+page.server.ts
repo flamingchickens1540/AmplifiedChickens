@@ -12,6 +12,6 @@ export const load = (async ({ cookies }) => {
 
     return {
         scout_id,
-	unpittscouted_teams
+	    unpittscouted_teams
     };
 }) satisfies PageServerLoad;

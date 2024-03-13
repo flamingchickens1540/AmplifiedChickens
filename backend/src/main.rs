@@ -139,6 +139,7 @@ fn init_router(state: model::AppState) -> Router {
         .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
         .route("/scout/get/current_match", get(queue::get_current_match))
         .route("/scout/request_team", get(queue::scout_request_team))
+        .route("/scout/check/queue", get(queue::check_queue))
         .with_state(state)
         .layer(CorsLayer::permissive())
 }
