@@ -8,12 +8,16 @@
 
     import type { PageData } from "./$types";
     import type { Scout, TeamKey, TeamMatch } from "$lib/types";
+    import { onMount } from "svelte";
 
     export let data: PageData;
 
     console.log("DATA ", data)
 
+    const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
+
     const access_token = data.access_token as string;
+
 
     const scout_data = data.scout_data as (string | number)[][];
 
@@ -27,6 +31,8 @@
 
     let scouted_robots: TeamMatch[] = [];
 
+    let server_source
+
     function clear_teams() {
         red_teams = [];
         blue_teams = [];
@@ -35,6 +41,25 @@
     function clear_scouts() {
         queued_scouts = [];
     }
+
+    onMount(() => {
+        server_source = new EventSource(`${BACKEND_URL}/admin/sse/get/stream`)
+
+        server_source.onmessage = (event) => {
+            if (event.data["scout_id"] == null) {
+                return;
+            }
+
+            let team_match: TeamMatch = {
+                team_key: event.data["team_key"],
+                scout_name: event.data["scout_name"],
+                match_key: event.data["match_key"],
+                status: "complete"
+            }
+
+            scouted_robots.push(team_match)
+        }
+    })
 </script>
 
 <div

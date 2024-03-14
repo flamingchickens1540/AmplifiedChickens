@@ -60,7 +60,7 @@
     on:touchstart={handleTouchStart}
     on:touchend={handleTouchEnd}
 >
-    <div class="carousel" style="transform: translateX(-{currentIndex * 100}%)">
+    <div class="carousel" style="transform: translateX(-{currentIndex * 100}%);">
         {#each items as Item, i (i)}
             <div class="carousel-item"><Item /></div>
         {/each}
@@ -70,6 +70,7 @@
 <style>
     .carousel-container {
         width: 100%;
+        overflow-x: hidden;
         overflow-y: scroll;
         position: relative;
     }
@@ -81,6 +82,7 @@
 
     .carousel-item {
         min-width: 100%;
+        /* min-height: 90%; */
         box-sizing: border-box;
     }
 </style>

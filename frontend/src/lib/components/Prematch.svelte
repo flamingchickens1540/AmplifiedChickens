@@ -11,5 +11,4 @@
 
 </script>
 <Header phase = "Pre Match"/>
-<Threeoption text1="Far" text2="Middle" text3="Close" bind:value = {$match_data.location}/>
 <Position text1 = "Fielded" text2 = "Missed Match" bind:buttonon = {$match_data.is_fielded}/> 

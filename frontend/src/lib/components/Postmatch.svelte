@@ -23,7 +23,6 @@
             },
             body: JSON.stringify(req),
         });
-        console.log("Submitted match:", res);
 
         let temp = $match_data.match_key;
         $match_data = default_match_data;
@@ -38,7 +37,7 @@
 </script>
 
 <Header phase="Post Match" />
-<Stage bind:value={$match_data.stage} />
+<Stage bind:value={$match_data.stage_enum} />
 <Rating name="Driver Skill" bind:value={$match_data.skill} />
 <Toggle text1="Broken" text2="Undamaged" bind:buttonon={$match_data.is_broke} />
 <Toggle text1="Died on Field" text2="Functional" bind:buttonon={$match_data.is_died} />

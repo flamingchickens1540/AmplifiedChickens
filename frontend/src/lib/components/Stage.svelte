@@ -1,14 +1,14 @@
 <script lang="ts">
-    export let value = "Onstage";
+    export let value = "OnStage";
     import checkmark from "$lib/svgs/checkmark.svg";
 </script>
 
-{#if value == "Onstage"}
+{#if value == "OnStage"}
     <div class="border border-outline_gray mt-[-9px] visible rounded">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839; border-top-left-radius: 0.2rem; border-top-right-radius: 0.2rem"
-            ><img style="width:18px" src={checkmark} alt="Onstage" /> Onstage</button
+            ><img style="width:18px" src={checkmark} alt="OnStage" /> OnStage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -93,8 +93,8 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Onstage";
-            }}>Onstage</button
+                value = "OnStage";
+            }}>OnStage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
