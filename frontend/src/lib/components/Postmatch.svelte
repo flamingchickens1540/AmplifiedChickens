@@ -24,16 +24,14 @@
             body: JSON.stringify(req),
         });
 
-        let temp = $match_data.match_key;
-        $match_data = default_match_data;
-        $match_data.match_key = temp;
+        localStorage.setItem("match_data", "")
 
         goto("/app/match");
-
-        onMount(() => {
-            localStorage.setItem("match_data", JSON.stringify($match_data));
-        });
     }
+
+    onMount(() => {
+            localStorage.setItem("match_data", JSON.stringify($match_data));
+    });
 </script>
 
 <Header phase="Post Match" />

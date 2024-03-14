@@ -3,7 +3,6 @@
     import ScoutPercents from "$lib/components/ScoutPercents.svelte";
     import { onMount } from "svelte";
     import { Modal, Content, Trigger } from "sv-popup";
-    import HeheButton from "$lib/components/HeheButton.svelte";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
     import type { TeamMatchData } from "$lib/types";
@@ -18,7 +17,6 @@
         | string
         | number
     )[][];
-    let access_token = data.access_token as string;
 
     let in_queue = false;
     let server_source: any;
@@ -71,15 +69,6 @@
         }
     }
 
-    onMount(() => {
-        let cached_match: TeamMatchData = JSON.parse(localStorage.getItem("match_data") as string);
-        if (cached_match != undefined) {
-            goto("/app/scout/reload")
-        } else {
-            server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
-        }
-    });
-
     function incrementString(inputString: string) {  
         let pattern = "/(\d+)$/"
         if (inputString.match(pattern)) {
@@ -93,6 +82,15 @@
     }
 
     let next_match = incrementString(match)
+
+    onMount(() => {
+        let cached_match = localStorage.getItem("match_data") as string
+        if (cached_match != "") {
+            goto("/app/scout/reload")
+        } else {
+            server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
+        }
+    });
 
 </script>
 
