@@ -75,9 +75,10 @@
     onMount(() => {
         let cached_match: TeamMatchData = JSON.parse(localStorage.getItem("match_data") as string);
         if (cached_match != undefined) {
-            goto("/scout/reload")
+            goto("/app/scout/reload")
+        } else {
+            server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
         }
-        server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
     });
 
     function incrementString(inputString: string) {  

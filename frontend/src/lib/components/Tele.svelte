@@ -2,6 +2,7 @@
     import Header from "$lib/components/Header.svelte";
     import Confirm from "$lib/components/Confirm.svelte";
     import { match_data } from "$lib/stores";
+    
     let amp = false;
     let speaker = false;
     let trap = false;

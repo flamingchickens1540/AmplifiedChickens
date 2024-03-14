@@ -11,27 +11,6 @@
     import { onMount } from "svelte";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    let brokenstatus = "";
-    let deadstatus = "";
-    let deadboolean = false;
-    let brokeboolean = false;
-
-    $: {
-        if (deadstatus == "Died on Field") {
-            deadboolean = true;
-        } else {
-            deadboolean = false;
-        }
-        if (brokenstatus == "Broken") {
-            brokeboolean = true;
-        } else {
-            brokeboolean = false;
-        }
-
-        $match_data.is_broke = brokeboolean;
-        $match_data.is_died = deadboolean;
-    }
-
     async function submit_match() {
         console.log("SUBMIT MATCH");
         console.log($match_data);
@@ -61,7 +40,7 @@
 <Header phase="Post Match" />
 <Stage bind:value={$match_data.stage} />
 <Rating name="Driver Skill" bind:value={$match_data.skill} />
-<Toggle text1="Undamaged" text2="Broken" bind:value={brokenstatus} />
-<Toggle text1="Functional" text2="Died on Field" bind:value={deadstatus} />
+<Toggle text1="Broken" text2="Undamaged" bind:buttonon={$match_data.is_broke} />
+<Toggle text1="Died on Field" text2="Functional" bind:buttonon={$match_data.is_died} />
 <TextArea bind:value={$match_data.notes} />
 <SubmitButton text="Submit" onClick={submit_match} />

@@ -1,8 +1,8 @@
 <script lang="ts">
-    export let buttonon = true;
+    export let buttonon = false;
     export let text1 = "Text1";
     export let text2 = "Text2";
-    export let value
+    export let value = text1
     import checkmark from "$lib/svgs/checkmark.svg";
     function toggleon() {
         value = text1;

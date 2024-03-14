@@ -4,32 +4,10 @@
     import Confirm from "$lib/components/Confirm.svelte";
     import { match_data } from "$lib/stores";
     import { onMount } from "svelte";
-    let leavestatus = "Stayed Home";
-    let leaveboolean = false;
 
-    let amp = false;
-    let ampsuc = 0;
-    let ampfail = 0;
-    let speaker = false;
-    let speaksuc = 0;
-    let speakfail = 0;
-    let piece = false;
-    let piecefail = 0;
-    let piecesuc = 0;
-    $: {
-        $match_data.auto_speaker_succeed = speaksuc;
-        $match_data.auto_speaker_missed = speakfail;
-        $match_data.auto_amp_succeed = ampsuc;
-        $match_data.auto_amp_missed = ampfail;
-        $match_data.auto_piece_succeed = piecesuc;
-        $match_data.auto_piece_missed = piecefail;
-        if (leavestatus == "Left Home") {
-            leaveboolean = true;
-        } else {
-            leaveboolean = false;
-        }
-        $match_data.is_leave_start = leaveboolean;
-    }
+    let speaker = false
+    let amp = false
+    let piece = false
 
     onMount(() => {
         localStorage.setItem("match_data", JSON.stringify($match_data));
@@ -40,26 +18,26 @@
     <Confirm
         title="Speaker (Auto)"
         bind:notover={speaker}
-        bind:valuesuc={speaksuc}
-        bind:valuefail={speakfail}
+        bind:valuesuc={$match_data.auto_speaker_succeed}
+        bind:valuefail={$match_data.auto_speaker_missed}
     />
 {:else if amp == true}
     <Confirm
         title="Amp (Auto)"
         bind:notover={amp}
-        bind:valuesuc={ampsuc}
-        bind:valuefail={ampfail}
+        bind:valuesuc={$match_data.auto_amp_succeed}
+        bind:valuefail={$match_data.auto_amp_missed}
     />
 {:else if piece == true}
     <Confirm
         title="Pickup (Auto)"
         bind:notover={piece}
-        bind:valuesuc={piecesuc}
-        bind:valuefail={piecefail}
+        bind:valuesuc={$match_data.auto_piece_succeed}
+        bind:valuefail={$match_data.auto_piece_missed}
     />
 {:else}
     <Header phase="Auto" />
-    <Toggle text1="Stayed Home" text2="Left Home" bind:value={leavestatus} />
+    <Toggle text1="Left Home" text2="Stayed Home" bind:buttonon={$match_data.is_leave_start} />
     <div class="grid grid-cols-2 gap-3 m-4">
         <button
             on:click={() => {

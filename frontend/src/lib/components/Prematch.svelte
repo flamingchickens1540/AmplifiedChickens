@@ -5,28 +5,11 @@
     import { match_data } from '$lib/stores';
     import { onMount } from "svelte";
 
-    let location = ""
-    let fieldedstring = ""
-    let fielded = true 
-    $: if (fieldedstring == "Missed Match") {
-        fielded = false
-        fielded = fielded
-    }
-    $: if (fieldedstring == "Fielded"){
-        fielded = true
-        fielded = fielded
-    }
-    $: {
-        $match_data.is_fielded = fielded
-        $match_data.location = location
-    }
-
     onMount(() => {
         localStorage.setItem("match_data", JSON.stringify($match_data))
     })
-    
 
 </script>
 <Header phase = "Pre Match"/>
-<Threeoption text1="Far" text2="Middle" text3="Close" bind:value = {location}/>
-<Position text1 = "Fielded" text2 = "Missed Match" bind:value = {fieldedstring}/> 
+<Threeoption text1="Far" text2="Middle" text3="Close" bind:value = {$match_data.location}/>
+<Position text1 = "Fielded" text2 = "Missed Match" bind:buttonon = {$match_data.is_fielded}/> 
