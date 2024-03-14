@@ -8,7 +8,7 @@
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839; border-top-left-radius: 0.2rem; border-top-right-radius: 0.2rem"
-            ><img style="width:18px" src={checkmark} alt="onstage" /> On Stage</button
+            ><img style="width:18px" src={checkmark} alt="check" /> On Stage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -43,7 +43,7 @@
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839;"
-            ><img style="width:18px" src={checkmark} alt="Parked" /> Parked</button
+            ><img style="width:18px" src={checkmark} alt="check" /> Parked</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -78,7 +78,7 @@
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839;"
-            ><img style="width:18px" src={checkmark} alt="failed" /> Failed</button
+            ><img style="width:18px" src={checkmark} alt="check" /> Failed</button
         >
         <button
             style="color: #FFFFFF;"
@@ -87,7 +87,7 @@
             }}>Not Attempted</button
         >
     </div>
-{:else}
+{:else if value == "notattempted"}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -100,7 +100,7 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "failed";
+                value = "parked";
             }}>Parked</button
         >
         <button
@@ -112,7 +112,7 @@
         >
         <button
             style="background-color: #00D586; color: #353839; border-bottom-left-radius: 0.2rem; border-bottom-right-radius: 0.2rem"
-            ><img style="width:18px" src={checkmark} alt="Not Attempted" /> Not Attempted</button
+            ><img style="width:18px" src={checkmark} alt="check" /> Not Attempted</button
         >
     </div>
 {/if}
