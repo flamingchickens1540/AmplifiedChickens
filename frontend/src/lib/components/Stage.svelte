@@ -87,7 +87,7 @@
             }}>Not Attempted</button
         >
     </div>
-{:else if value == "notattempted"}
+{:else}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"

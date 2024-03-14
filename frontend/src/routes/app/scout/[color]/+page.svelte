@@ -8,8 +8,9 @@
     export let data: PageData;
 
     onMount(() => {
-        if (data.team_key == "") {
+        if (data.team_key == undefined) {
             $match_data = JSON.parse(localStorage.getItem("match_data") as string)
+            console.log("match_data ", $match_data)
             $team_color = localStorage.getItem("team_color") as "" | "blue" | "red"
         } else {
             $match_data = default_match_data

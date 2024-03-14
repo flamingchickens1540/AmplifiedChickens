@@ -9,7 +9,7 @@ export const load = (async ({ cookies, params }) => {
     let color = params.color
 
     if (color == "reload") {
-        return { team_key: "", team_color: "", scout_id: "", match_key: "" }
+        return {}
     }
 
     let accessToken = cookies.get("access_token")
