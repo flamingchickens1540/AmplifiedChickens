@@ -1,14 +1,14 @@
 <script lang="ts">
-    export let value = "OnStage";
+    export let value = "onstage";
     import checkmark from "$lib/svgs/checkmark.svg";
 </script>
 
-{#if value == "OnStage"}
+{#if value == "onstage"}
     <div class="border border-outline_gray mt-[-9px] visible rounded">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839; border-top-left-radius: 0.2rem; border-top-right-radius: 0.2rem"
-            ><img style="width:18px" src={checkmark} alt="OnStage" /> OnStage</button
+            ><img style="width:18px" src={checkmark} alt="onstage" /> On Stage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -59,7 +59,7 @@
             }}>Not Attempted</button
         >
     </div>
-{:else if value == "Failed"}
+{:else if value == "failed"}
     <div class="border border-outline_gray rounded mt-[-9px] visible">
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
@@ -78,7 +78,7 @@
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="background-color: #00D586; color: #353839;"
-            ><img style="width:18px" src={checkmark} alt="Failed" /> Failed</button
+            ><img style="width:18px" src={checkmark} alt="failed" /> Failed</button
         >
         <button
             style="color: #FFFFFF;"
@@ -93,22 +93,22 @@
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "OnStage";
-            }}>OnStage</button
+                value = "onstage";
+            }}>On Stage</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Failed";
+                value = "failed";
             }}>Parked</button
         >
         <button
             class="border-b border-outline_gray mt-[-9px] visible"
             style="color: #FFFFFF;"
             on:click={() => {
-                value = "Failed";
-            }}>Failed</button
+                value = "failed";
+            }}>Falied</button
         >
         <button
             style="background-color: #00D586; color: #353839; border-bottom-left-radius: 0.2rem; border-bottom-right-radius: 0.2rem"
