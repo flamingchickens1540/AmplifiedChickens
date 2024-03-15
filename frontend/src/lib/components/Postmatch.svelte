@@ -22,7 +22,7 @@
             body: JSON.stringify(req),
         });
 
-        if (res.status == 200) {
+        if (res.status == 200 || res.status == 500) {
             localStorage.setItem("match_data", "");
             goto("/app/match");
         } else {
