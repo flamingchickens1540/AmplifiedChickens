@@ -25,6 +25,7 @@
 
         if (res.status == 200 || res.status == 500) {
             localStorage.setItem("match_data", "");
+            console.log("match_data_check: ", localStorage.getItem("match_data"))
             $match_data = default_match_data
             goto("/app/match");
         } else {
