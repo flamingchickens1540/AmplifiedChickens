@@ -3,15 +3,15 @@
     import { match_data, team_color } from "$lib/stores";
     import { onMount } from "svelte";
     import type { PageData } from "./$types";
-	import { default_match_data } from "$lib/types"
+	import { default_match_data, type TeamMatchData } from "$lib/types"
 
     export let data: PageData;
 
     onMount(() => {
         if (data.team_key == undefined) {
             console.log()
-            let cached = JSON.parse(localStorage.getItem("match_data") as string)
-            console.log(cached)
+            let cached: TeamMatchData = JSON.parse(localStorage.getItem("match_data") as string)
+            console.log("received cache: ", cached)
             $match_data = cached
             $team_color = localStorage.getItem("team_color") as "" | "blue" | "red"
         } else {
@@ -21,6 +21,7 @@
             $match_data.match_key = data.match_key
             $team_color = data.team_color
             localStorage.setItem("team_color", data.team_color)
+            localStorage.setItem("match_data", "")
         }
     })
 </script>
