@@ -8,20 +8,22 @@
     export let last_match = "";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-    // const server_source = new EventSource(
-        // `${BACKEND_URL}/admin/lastMatchStream`,
-    // );
+    onMount(() => {
+        var server_source = new EventSource(
+            `${BACKEND_URL}/admin/sse/get/stream`,
+        );
 
-    // server_source.addEventListener("new_scouted_match", (event) => {
-    //     var message = JSON.parse(event.data);
-    //     console.log(message);
-    //     let i = scouted_robots.indexOf(message.scouted_robot);
-    //     if (i == -1) {
-    //         scouted_robots.push(message.scouted_robot);
-    //     }
-    //     scouted_robots[i].status = message.scouted_robot.status;
-    //     last_match = message.scouted_robot.match_key;
-    // });
+        server_source.onmessage = (event) => {
+            var message = JSON.parse(event.data);
+            console.log(message);
+            let i = scouted_robots.indexOf(message.scouted_robot);
+            if (i == -1) {
+                scouted_robots.push(message.scouted_robot);
+            }
+            scouted_robots[i].status = message.scouted_robot.status;
+            last_match = message.scouted_robot.match_key;
+        };
+    });
 </script>
 
 <div class="rounded" style="background-color: #2C2C2C; padding:1rem">

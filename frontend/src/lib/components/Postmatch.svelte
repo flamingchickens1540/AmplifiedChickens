@@ -12,7 +12,6 @@
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     async function submit_match() {
-        console.log("SUBMIT MATCH");
         console.log($match_data);
         let req: any = { id: 0, ...$match_data };
 
@@ -24,13 +23,16 @@
             body: JSON.stringify(req),
         });
 
-        localStorage.setItem("match_data", "")
-
-        goto("/app/match");
+        if (res.status == 200) {
+            localStorage.setItem("match_data", "");
+            goto("/app/match");
+        } else {
+            alert("Failed to submit match. Status code: " + res.status + ", please contact an admin")
+        }
     }
 
     onMount(() => {
-            localStorage.setItem("match_data", JSON.stringify($match_data));
+        localStorage.setItem("match_data", JSON.stringify($match_data));
     });
 </script>
 
@@ -38,6 +40,10 @@
 <Stage bind:value={$match_data.stage_enum} />
 <Rating name="Driver Skill" bind:value={$match_data.skill} />
 <Toggle text1="Broken" text2="Undamaged" bind:buttonon={$match_data.is_broke} />
-<Toggle text1="Died on Field" text2="Functional" bind:buttonon={$match_data.is_died} />
+<Toggle
+    text1="Died on Field"
+    text2="Functional"
+    bind:buttonon={$match_data.is_died}
+/>
 <TextArea bind:value={$match_data.notes} />
 <SubmitButton text="Submit" onClick={submit_match} />

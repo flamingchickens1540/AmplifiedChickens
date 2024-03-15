@@ -9,8 +9,10 @@
 
     onMount(() => {
         if (data.team_key == undefined) {
-            $match_data = JSON.parse(localStorage.getItem("match_data") as string)
-            console.log("match_data ", $match_data)
+            console.log()
+            let cached = JSON.parse(localStorage.getItem("match_data") as string)
+            console.log(cached)
+            $match_data = cached
             $team_color = localStorage.getItem("team_color") as "" | "blue" | "red"
         } else {
             $match_data = default_match_data

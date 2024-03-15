@@ -1,6 +1,6 @@
 <script lang="ts">
     import QueueMatch from "$lib/components/AdminDB/QueueMatch.svelte";
-    import LastMatch from "$lib/components/AdminDB/LastMatch.svelte";
+    import LastMatch from "$lib/components/AdminDB/TeamMatches.svelte";
     import QueuedScouts from "$lib/components/AdminDB/QueuedScouts.svelte";
     import NumberScouted from "$lib/components/AdminDB/NumberScouted.svelte";
     import EventManagement from "$lib/components/AdminDB/EventManagement.svelte";

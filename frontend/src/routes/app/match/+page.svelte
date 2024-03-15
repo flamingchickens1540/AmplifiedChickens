@@ -20,7 +20,7 @@
 
     let in_queue = false;
     let server_source: any;
-    let requested_color: "red" | "blue" | "none" = "none"
+    let requested_color: "red" | "blue" | "none" = "none";
 
     async function joinQueue() {
         in_queue = true;
@@ -32,12 +32,12 @@
             },
         });
 
-	let json = await res.json()
-	console.log(json)
+        let json = await res.json();
+        console.log(json);
 
         if (json == true) {
             timeToScout();
-	    return;
+            return;
         }
 
         server_source.onmessage = (event: any) => {
@@ -61,19 +61,19 @@
 
     function switchColor() {
         if (requested_color == "blue") {
-            requested_color = "red"
+            requested_color = "red";
         } else if (requested_color == "red") {
-            requested_color = "none"
+            requested_color = "none";
         } else if (requested_color == "none") {
-            requested_color = "blue"
+            requested_color = "blue";
         }
     }
 
-    function incrementString(inputString: string) {  
-        let pattern = "/(\d+)$/"
+    function incrementString(inputString: string) {
+        let pattern = "/(d+)$/";
         if (inputString.match(pattern)) {
             var newNumber: number = parseInt(match[1]) + 1;
-            console.log(newNumber)    
+            console.log(newNumber);
             var newString = inputString.replace(pattern, newNumber.toString());
             return newString;
         } else {
@@ -81,29 +81,30 @@
         }
     }
 
-    let next_match = incrementString(match)
+    let next_match = incrementString(match);
 
     onMount(() => {
-        let cached_match = localStorage.getItem("match_data") as string
+        let cached_match = localStorage.getItem("match_data") as string;
+        console.log("cached_match: ", cached_match)
         if (cached_match != "") {
-            goto("/app/scout/reload")
+            goto("/app/scout/reload");
         } else {
-            server_source = new EventSource(`${BACKEND_URL}/scout/sse/get/stream`);
+            server_source = new EventSource(
+                `${BACKEND_URL}/scout/sse/get/stream`,
+            );
         }
     });
-
 </script>
 
 <div class="grid content-end pt-10">
     <Modal>
         <Trigger>
             <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
-    <h1 style="width:auto" class="px-3 text-cresc_green">
-        {next_match}
-    </h1>
+            <h1 style="width:auto" class="px-3 text-cresc_green">
+                {next_match}
+            </h1>
         </Trigger>
     </Modal>
-    
 </div>
 
 {#if blue.length != 0 || red.length != 0}
@@ -160,7 +161,12 @@
         >
     {/if}
 
-    <button on:click={switchColor} id="Team-Color" class="text-navbar_black bg-{requested_color}-400 py-5 font-semibold" style="padding: 2.5rem; font-size: 50px">
+    <button
+        on:click={switchColor}
+        id="Team-Color"
+        class="text-navbar_black bg-{requested_color}-400 py-5 font-semibold"
+        style="padding: 2.5rem; font-size: 50px"
+    >
         Team Color: {requested_color}
     </button>
 </div>

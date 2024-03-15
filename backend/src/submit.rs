@@ -88,11 +88,13 @@ pub async fn submit_pit_data(
     State(state): State<AppState>,
     Json(form): Json<TeamEvent>,
 ) -> impl IntoResponse {
-
     let result = sqlx::query("INSERT INTO \"TeamEvents\" (team_key, event_key, width, length, is_short, is_camera, drivetrain_enum, is_ground_intake, is_chute_intake, polish, notes, scout_id) VALUES ($1, $2, $3, $4, $5, $6, $7,$8, $9, $10, $11, $12)").bind(form.team_key).bind(form.event_key).bind(form.width).bind(form.length).bind(form.is_short).bind(form.is_camera).bind(form.drivetrain).bind(form.is_ground_intake).bind(form.is_chute_intake).bind(form.polish).bind(form.notes).bind(form.scout_id.clone()).execute(&state.db.pool).await;
 
     match result {
-        Ok(_) => {info!("TeamEvent submitted by {}", form.scout_id); return StatusCode::OK},
+        Ok(_) => {
+            info!("TeamEvent submitted by {}", form.scout_id);
+            return StatusCode::OK;
+        }
         Err(e) => {
             error!("Error submitting pit data: {}", e);
             return StatusCode::INTERNAL_SERVER_ERROR;
