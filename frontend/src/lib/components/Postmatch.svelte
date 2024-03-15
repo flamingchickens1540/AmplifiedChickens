@@ -59,5 +59,5 @@ goto("/app/match")
 <Rating name="Driver Skill" bind:value={$match_data.skill} />
 <Toggle text1="Undamaged" text2="Broken" bind:value={brokenstatus} />
 <Toggle text1="Functional" text2="Died on Field" bind:value={deadstatus} />
-<TextArea bind:value={$match_data.notes} />
+<TextArea name="notes" bind:value={$match_data.notes} />
 <SubmitButton text="Submit" onClick={submit_match} />
