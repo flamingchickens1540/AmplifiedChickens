@@ -8,11 +8,12 @@
     export let data: PageData;
 
     onMount(() => {
-        if (data.team_key == undefined) {
+        let cached = localStorage.getItem("match_data")
+        if (data.team_key == undefined || (cached != "" && cached != undefined)) {
             console.log()
-            let cached: TeamMatchData = JSON.parse(localStorage.getItem("match_data") as string)
-            console.log("received cache: ", cached)
-            $match_data = cached
+            let data: TeamMatchData = JSON.parse(cached as string)
+            console.log("received cache: ", data)
+            $match_data = data
             $team_color = localStorage.getItem("team_color") as "" | "blue" | "red"
         } else {
             $match_data = default_match_data
