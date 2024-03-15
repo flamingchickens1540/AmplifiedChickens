@@ -5,7 +5,6 @@
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
     import { match_data } from "$lib/stores";
-    import { default_match_data } from "$lib/types";
     import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
     import { onMount } from "svelte";

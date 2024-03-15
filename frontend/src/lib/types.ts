@@ -56,7 +56,7 @@ export const default_match_data: TeamMatchData = {
     tele_amp_missed: 0, //tele done
     trap_succeed: 0, //tele done
     trap_missed: 0, //tele done
-    stage_enum: "OnStage", //did it
+    stage_enum: "onstage", //did it
     skill: 0, //did it
     is_broke: false,
     is_died: false,
@@ -108,7 +108,7 @@ export const default_pit_data: Pit = {
 
 export type DrivetrainEnum = "swerve" | "tank" | "other"
 
-export type StageEnum = "OnStage" | "Parked" | "NotAttempted" | "Failed"
+export type StageEnum = "onstage" | "parked" | "notattempted" | "failed"
 
 // Util Structs
 
