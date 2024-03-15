@@ -180,7 +180,8 @@ pub struct TeamMatch {
 pub enum Stage {
     #[default]
     OnStage,
-    Park,
+    #[sqlx(rename = "park")]
+    Parked,
     #[sqlx(rename = "not attempted")]
     NotAttempted,
     Failed,

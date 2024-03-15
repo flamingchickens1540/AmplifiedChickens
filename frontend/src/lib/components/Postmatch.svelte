@@ -8,6 +8,7 @@
     import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
     import { onMount } from "svelte";
+    import { default_match_data } from "$lib/types";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     async function submit_match() {
@@ -24,6 +25,7 @@
 
         if (res.status == 200 || res.status == 500) {
             localStorage.setItem("match_data", "");
+            $match_data = default_match_data
             goto("/app/match");
         } else {
             alert("Failed to submit match. Status code: " + res.status + ", please contact an admin")
