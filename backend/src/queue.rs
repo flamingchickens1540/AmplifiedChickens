@@ -10,8 +10,8 @@ use axum::{
     Form, Json,
 };
 
-use futures::future::ok;
-use futures_core::{Future, Stream};
+
+use futures_core::{Stream};
 use http::HeaderMap;
 
 use serde::{Deserialize, Serialize};
@@ -389,7 +389,7 @@ pub async fn scout_sse_connect(
 pub async fn get_unpitscouted_teams(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<model::TeamEvent>>, Infallible> {
-    let current_event = sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
+    let _current_event = sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
         .fetch_one(&state.db.pool)
         .await
         .unwrap_or_else(|_| -> EventState {

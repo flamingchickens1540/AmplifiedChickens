@@ -32,6 +32,7 @@ export const load = (async ({ cookies, params }) => {
         let team_data = await res.json()
         let team_key = team_data.team_key
         let team_color = team_data.color
+        console.log("received team info: ", team_data)
 
         return { team_key, team_color, scout_id, match_key };
     } else if (res.status == 204) {

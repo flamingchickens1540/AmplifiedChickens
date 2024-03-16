@@ -2,7 +2,7 @@ use crate::model::{self, AppState};
 use axum::{
     extract::{Json, Query, State},
     http::StatusCode,
-    response::{IntoResponse, Redirect},
+    response::{IntoResponse},
 };
 use http::header::{LOCATION, SET_COOKIE};
 
