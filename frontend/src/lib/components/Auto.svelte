@@ -8,10 +8,6 @@
     let speaker = false
     let amp = false
     let piece = false
-
-    onMount(() => {
-        localStorage.setItem("match_data", JSON.stringify($match_data));
-    });
 </script>
 
 {#if speaker == true}

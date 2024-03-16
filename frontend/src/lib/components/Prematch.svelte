@@ -6,7 +6,7 @@
     import { onMount } from "svelte";
 
     onMount(() => {
-        localStorage.setItem("match_data", JSON.stringify($match_data))
+        match_data.subscribe((value) => localStorage.setItem("match_data", JSON.stringify(value)))
     })
 
 </script>

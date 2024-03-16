@@ -84,9 +84,9 @@
     let next_match = incrementString(match);
 
     onMount(() => {
-        let cached_match = localStorage.getItem("match_data") as string;
+        let cached_match = localStorage.getItem("match_data");
         console.log("cached_match: ", cached_match)
-        if (cached_match != "") {
+        if (cached_match != "" && cached_match != null) {
             goto("/app/scout/reload");
         } else {
             server_source = new EventSource(
@@ -217,16 +217,5 @@
     .mains {
         margin-top: 2rem;
         margin-bottom: 2rem;
-    }
-    h3 {
-        margin: 17px;
-        color: #ffffff;
-        background-color: #5c5c5c;
-        font-size: 3rem;
-        padding: 1rem;
-        text-align: center;
-        /* Teams Remaining */
-        font-family: "Poppins-medium";
-        font-style: bold;
     }
 </style>

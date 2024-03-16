@@ -35,10 +35,9 @@ export const load = (async ({ cookies, params }) => {
 
         return { team_key, team_color, scout_id, match_key };
     } else if (res.status == 204) {
-        count.set(1)
         redirect(303, "/app/match")
     } else {
-        console.log("Error, you are not authorized to be here, please contact an admin.")
+        alert("Error, you are not authorized to be here, please contact an admin.")
         redirect(303, "/")
     }
 }) satisfies PageServerLoad;
