@@ -58,7 +58,7 @@ import Navbar from "$lib/components/Navbar.svelte"
       <SubmitButton/>
 </div>
 <div class="bottom-div">
-  <Navbar green4/>
+  <Navbar page="image"/>
 </div>
 <style> 
 .bottom-div {
@@ -80,5 +80,4 @@ import Navbar from "$lib/components/Navbar.svelte"
 		height:200px;
 		width:200px;
 	}
-  
 </style>
