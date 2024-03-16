@@ -21,6 +21,8 @@
     onMount(() => {
         // TODO: make subscription reactively update
         subscription = localStorage.getItem("subscription") || "No subscription";
+        localStorage.setItem("match_key", "")
+        localStorage.setItem("team_color", "")
         
         // TODO: fetch next match time
     })
