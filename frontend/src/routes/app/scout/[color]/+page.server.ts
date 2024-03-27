@@ -14,7 +14,8 @@ export const load = (async ({ cookies, params }) => {
         return { reload }
     } else if (color == "manual") {
         console.log("manual detected")
-        return { manual: true }
+        let scout_id = cookies.get("scout_id")
+        return { manual: true, scout_id }
     }
 
     let accessToken = cookies.get("access_token")
