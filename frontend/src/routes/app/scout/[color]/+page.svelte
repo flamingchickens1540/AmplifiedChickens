@@ -4,28 +4,31 @@
     import { onMount } from "svelte";
     import type { PageData } from "./$types";
     import { default_match_data, type TeamMatchData } from "$lib/types";
+    import { browser } from "$app/environment";
 
     export let data: PageData;
 
-    onMount(() => {
-        let cached = localStorage.getItem("match_data");
-        if (data.team_key == undefined || (cached != "" && cached != null)) {
-            let data: TeamMatchData = JSON.parse(cached as string);
-            console.log("received cache: ", data);
-            $match_data = data;
+    // The purpose of removing onMount is to make this code run before the onMOunts of mounted components run
+    // onMount(() => {
+    if (browser) {
+        console.log(JSON.stringify($match_data))
+        console.log(JSON.stringify(default_match_data))
+        if (data.reload || JSON.stringify($match_data) != JSON.stringify(default_match_data)) {
             $team_color = localStorage.getItem("team_color") as
                 | ""
                 | "blue"
                 | "red";
         } else {
-            $match_data = default_match_data;
+            console.log("New Match Triggered");
             $match_data.team_key = data.team_key as unknown as `${number}`;
             $match_data.scout_id = data.scout_id as string;
             $match_data.match_key = data.match_key;
             $team_color = data.team_color;
             localStorage.setItem("team_color", data.team_color);
         }
-    });
+    }
+    // });
 </script>
-
-<Carousel />
+<div style="touch-action: manipulation;">
+    <Carousel />
+</div>

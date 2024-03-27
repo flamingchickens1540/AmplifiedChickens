@@ -10,6 +10,8 @@ export const load = (async ({ cookies }) => {
 
     let unpittscouted_teams = await res.json()
 
+    console.log(unpittscouted_teams)
+
     return {
         scout_id,
 	    unpittscouted_teams

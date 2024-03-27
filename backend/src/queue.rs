@@ -1,5 +1,4 @@
 use std::convert::Infallible;
-
 use axum::{
     extract::State,
     http::StatusCode,
@@ -9,16 +8,11 @@ use axum::{
     },
     Form, Json,
 };
-
-
-use futures_core::{Stream};
+use futures::Stream;
 use http::HeaderMap;
-
 use serde::{Deserialize, Serialize};
-
 use tokio_stream::wrappers::WatchStream;
 use tracing::{error, info};
-
 use crate::model::{self, AllianceColor, AppState, Db, EventState, User};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
@@ -91,24 +85,27 @@ pub async fn scout_request_team(
         Some(color) => {
             match color.to_str().expect("requested_color was an invalid string") {
                 "blue" => {
-                    info!("Blue robot requested");
                     team_key = match robot_queue.scout_get_blue() {
                         Some(team) => team,
-                        None => return Err((StatusCode::NO_CONTENT, "No robots in blue queue :D".to_string()))
+                        None => {
+                            info!("No robots in queue for scout {}", user.name.clone());
+                            return Err((StatusCode::NO_CONTENT, "No robots in blue queue :D".to_string()))
+                        }
                     };
                     
                     team_color = AllianceColor::Blue;
                 },
                 "red" => {
-                    info!("Red robot requested");
                     team_key = match robot_queue.scout_get_red() {
                         Some(team) => team,
-                        None => return Err((StatusCode::NO_CONTENT, "No robots in red queue :D".to_string()))
+                        None => {
+                            info!("No robots in queue for scout {}", user.name.clone());
+                            return Err((StatusCode::NO_CONTENT, "No robots in red queue :D".to_string()))
+                        }
                     };
                     team_color = AllianceColor::Red;
                 },
                 "none" => {
-                    info!("Agnostic robot requested");
                     match robot_queue.scout_get_robot(access_token.clone()) {
                         Some(team) => {
                             team_key = team.0;
@@ -162,7 +159,9 @@ pub async fn new_match_auto(
 
     let upstream = state.sse_upstream.lock().await;
     match upstream.send(Ok(Event::default().data("match_ready".to_string()))){
-        Ok(_) => {info!("Sent match_ready to scout"); Ok(())},
+        Ok(_) => {
+            info!("Notified queued scouts"); Ok(())
+        },
         Err(err) => {
             error!("Error sending new match downstream: {}", err);
             Err((
@@ -342,10 +341,9 @@ pub async fn get_scouts_and_scouted(
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to select total team_match count from Db".to_string(),
-            ));
-        }
+            )); 
+        } 
     };
-
     for scout in scouts.iter() {
         let id = scout.id.clone();
         let name = scout.name.clone();
@@ -357,7 +355,6 @@ pub async fn get_scouts_and_scouted(
         .await
         {
             Ok(res) => {
-                //info!("team_matches: {:?}", res);
                 res.len() as f64
             }
             Err(e) => {
@@ -375,7 +372,7 @@ pub async fn get_scouts_and_scouted(
 }
 
 pub async fn scout_sse_connect(
-    State(state): State<AppState>,
+    State(state): State<AppState>
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
 
     let upstream = state.sse_upstream.lock().await;
@@ -388,7 +385,7 @@ pub async fn scout_sse_connect(
 #[axum::debug_handler]
 pub async fn get_unpitscouted_teams(
     State(state): State<AppState>,
-) -> Result<Json<Vec<model::TeamEvent>>, Infallible> {
+) -> Result<Json<Vec<model::TeamEvent>>, StatusCode> {
     let _current_event = sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
         .fetch_one(&state.db.pool)
         .await
@@ -410,7 +407,14 @@ pub async fn get_unpitscouted_teams(
     .fetch_all(&state.db.pool)
     .await;
 
-    info!("res: {:?}", res);
+    // info!("res: {:?}", res);
+    //let team_keys = match res {
+     //   Ok(res) => res.map(|val| -> val.team_key),
+     //   Err(err) => {
+      //      error!("Error getting unpitscouting team, {:?}", err);
+       //     return Err(StatusCode::INTERNAL_SERVER_ERROR);
+       // }
+    //};
     Ok(Json(
         res.unwrap_or(vec![])
     ))

@@ -9,7 +9,9 @@ export const load = (async ({ cookies, params }) => {
     let color = params.color
 
     if (color == "reload") {
-        return {}
+        console.log("reload detected")
+        let reload = true
+        return { reload }
     }
 
     let accessToken = cookies.get("access_token")
@@ -33,8 +35,8 @@ export const load = (async ({ cookies, params }) => {
         let team_key = team_data.team_key
         let team_color = team_data.color
         console.log("received team info: ", team_data)
-
-        return { team_key, team_color, scout_id, match_key };
+        let reload = false
+        return { team_key, team_color, scout_id, match_key, reload };
     } else if (res.status == 204) {
         redirect(303, "/app/match")
     } else {

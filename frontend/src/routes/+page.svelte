@@ -1,15 +1,3 @@
-<script lang="ts">
-    import type { PageData } from "./$types";
-    import { goto } from "$app/navigation";
-    import { redirect } from "@sveltejs/kit";
-	 //const REDIRECT_URL = import.meta.env.VITE_SLACK_REDIRECT_URL;
-
-    const REDIRECT_URL = "https://slack.com/openid/connect/authorize?scope=openid%20email%20profile&amp;response_type=code&amp;redirect_uri=https%3A%2F%2Fscout.team1540.org%2Fapi%2Fauth%2Fslack&amp;client_id=10700242916.6475903895858"
-
-    // export let data: PageData;
-
-</script>
-
 <center>
     <img src="/logo.png" alt="Flaming Chicken Logo"/>
     <h2>Welcome</h2>

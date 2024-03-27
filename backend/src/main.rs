@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(redirect_http_to_https(ports));
 
-    info!("Starting Server");
+    info!("Starting Test Server");
     info!("Listening on {}", addr);
 
     axum_server::bind_rustls(addr, config)
@@ -99,8 +99,6 @@ async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Starting Prod Server");
     info!("Listening on {}", addr);
-
-    info!("TEST");
 
     axum::serve(listener, app).await.unwrap();
 
