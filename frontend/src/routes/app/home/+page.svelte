@@ -97,9 +97,9 @@
             on:click={() => goto("/app/match")}>Match Scout</button
         >
     </div>
-    <div>
+    <footer>
         <Navbar page="home" />
-    </div>
+    </footer>
 </main>
 
 <style lang="postcss">

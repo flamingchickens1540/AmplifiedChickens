@@ -3,6 +3,7 @@ import { default_match_data, default_pit_data, type TeamMatchData } from "$lib/t
 import { browser } from "$app/environment"
 import type { Pit } from "$lib/types.ts"
 
+export const manual: Writable<boolean> = writable(false);
 export const current_event_key: Writable<string> = writable('');
 export const team_color: Writable<"blue" | "red" | ""> = writable('');
 export const count = writable(0);

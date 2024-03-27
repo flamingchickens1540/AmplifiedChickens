@@ -6,9 +6,9 @@
     <h1 class="coming-soon">COMING SOON!</h1>
 </div>
 
-<div class="bottom-div">
+<footer class="bottom-div">
     <Navbar page="strategy" />
-</div>
+</footer>
 
 <style>
     .yellow-screen {

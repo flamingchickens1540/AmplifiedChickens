@@ -158,6 +158,7 @@
             In Queue</button
         >
     {/if}
+    <button on:click={() => goto("/app/manual_match")}>Scout Manual Match</button>
 
     <!-- <button
         on:click={switchColor}
@@ -169,9 +170,9 @@
     </button> -->
 </div>
 
-<div class="bottom-div">
+<footer class="bottom-div">
     <Navbar page="match" />
-</div>
+</footer>
 
 <style lang="postcss">
     .bottom-div {

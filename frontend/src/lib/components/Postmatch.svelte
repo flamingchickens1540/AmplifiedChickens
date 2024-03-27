@@ -4,7 +4,7 @@
     import Toggle from "$lib/components/Toggle.svelte";
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
-    import { match_data } from "$lib/stores";
+    import { manual, match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
     import { onMount } from "svelte";
@@ -24,12 +24,19 @@
         });
 
         if (res.status == 200 || res.status == 500) {
-            console.log(
-                "match_data_check: ",
-                localStorage.getItem("match_data"),
-            );
-            $match_data = default_match_data;
-            goto("/app/match");
+            if ($manual) {
+                console.log(
+                    "match_data_check: ",
+                    localStorage.getItem("match_data"),
+                );
+                $match_data = default_match_data;
+                goto("/app/match");
+            } else {
+                let match_key = $match_data.match_key;
+                $match_data = default_match_data;
+                $match_data.match_key = match_key;
+                goto("/app/manual_match")
+            }
         } else {
             alert(
                 "Failed to submit match. Status code: " +

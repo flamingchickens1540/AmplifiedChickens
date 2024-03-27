@@ -12,6 +12,9 @@ export const load = (async ({ cookies, params }) => {
         console.log("reload detected")
         let reload = true
         return { reload }
+    } else if (color == "manual") {
+        console.log("manual detected")
+        return { manual: true }
     }
 
     let accessToken = cookies.get("access_token")

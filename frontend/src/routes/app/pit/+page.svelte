@@ -102,4 +102,6 @@
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
 <SubmitButton text="Submit!" onClick={handle_submit} />
-<Navbar page="pit" />
+<footer>
+    <Navbar page="pit" />
+</footer>
