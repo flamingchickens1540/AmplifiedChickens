@@ -27,7 +27,9 @@
             $match_data.match_key = data.match_key;
             $team_color = data.team_color;
             localStorage.setItem("team_color", data.team_color);
-        } else if (data.manual) {
+        }
+        if (data.manual) {
+            console.log("scout manual")
             $match_data.scout_id = data.scout_id as string;
         }
     }
