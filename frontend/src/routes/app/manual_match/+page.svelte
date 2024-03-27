@@ -1,20 +1,20 @@
 <script>
     import { goto } from "$app/navigation";
-    import Navbar from "$lib/components/Navbar.svelte";
     import { team_color, match_data } from "$lib/stores";
 </script>
 
-<div class="grid place-items-center">
+<div class="grid place-items-center pt-4">
     <input
         bind:value={$match_data.match_key}
         type="text"
         name="Match Key"
         id=""
+        placeholder="MatchKey"
     />
 
-    <input bind:value={$match_data.team_key} type="text" name="Team Key" />
+    <input bind:value={$match_data.team_key} type="text" name="Team Key" placeholder="TeamKey" />
 
-    <input bind:value={$team_color} type="text" name="Team Color" id="" />
+    <input bind:value={$team_color} type="text" name="Team Color" id="" placeholder="TeamColor"/>
 
     <button on:click={() => goto("/app/scout/manual")}>Scout</button>
 </div>

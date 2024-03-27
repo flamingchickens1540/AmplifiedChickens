@@ -158,7 +158,7 @@
             In Queue</button
         >
     {/if}
-    <button on:click={() => goto("/app/manual_match")}>Scout Manual Match</button>
+    <button style="padding: 2.5rem" on:click={() => goto("/app/manual_match")}>Scout Manual Match</button>
 
     <!-- <button
         on:click={switchColor}
