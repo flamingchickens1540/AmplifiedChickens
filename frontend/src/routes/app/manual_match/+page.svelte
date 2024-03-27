@@ -27,6 +27,6 @@
         margin-top: 10px;
         margin-bottom: 10px;
         @apply text-text_white bg-btn_grey py-2 rounded-md;
-        font-size: 52px;
+        font-size: 34px;
     }
 </style>
