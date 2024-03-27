@@ -85,7 +85,7 @@ export type Pit = {
     length: number
     width: number
     is_short: boolean
-    drivetrain: DrivetrainEnum
+    drivetrain_enum: DrivetrainEnum
     polish: number
     is_ground_intake: boolean
     is_chute_intake: boolean
@@ -100,7 +100,7 @@ export const default_pit_data: Pit = {
     is_short: true,//iuhoidhufaosdihufoaishudfoa
     polish: 3,//iuhoidhufaosdihufoaishudfoa
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
-    drivetrain: "swerve", //iuhoidhufaosdihufoaishudfoa
+    drivetrain_enum: "swerve", //iuhoidhufaosdihufoaishudfoa
     is_chute_intake: false,//iuhoidhufaosdihufoaishudfoa
     notes: "", //iajsdofjaosdifj
     is_camera: true

@@ -5,7 +5,8 @@
     import { Modal, Content, Trigger } from "sv-popup";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
-    import type { TeamMatchData } from "$lib/types";
+    import { default_match_data, type TeamMatchData } from "$lib/types";
+    import { match_data } from "$lib/stores";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;
@@ -33,9 +34,8 @@
         });
 
         let json = await res.json();
-        console.log(json);
 
-        if (json == true) {
+        if (json) {
             timeToScout();
             return;
         }
@@ -69,24 +69,25 @@
         }
     }
 
-    function incrementString(inputString: string) {
-        let pattern = "/(d+)$/";
-        if (inputString.match(pattern)) {
-            var newNumber: number = parseInt(match[1]) + 1;
-            console.log(newNumber);
-            var newString = inputString.replace(pattern, newNumber.toString());
-            return newString;
-        } else {
-            return inputString;
-        }
+    function incrementMatch(inputString: string) {
+        let p = /\d/;
+        let split = inputString.split("_");
+        let match = split[1];
+        let event = split[0];
+        let index = match.search(p);
+        return event.concat(
+            "_" +
+                match
+                    .slice(0, index)
+                    .concat((parseInt(match.slice(index)) + 1).toString()),
+        );
     }
 
-    let next_match = incrementString(match);
+    let next_match = incrementMatch(match);
 
     onMount(() => {
-        let cached_match = localStorage.getItem("match_data");
-        console.log("cached_match: ", cached_match)
-        if (cached_match != "" && cached_match != null) {
+        console.log("cached_match: ", $match_data);
+        if (JSON.stringify($match_data) != JSON.stringify(default_match_data)) {
             goto("/app/scout/reload");
         } else {
             server_source = new EventSource(
@@ -96,15 +97,12 @@
     });
 </script>
 
+<!-- svelte-ignore missing-declaration -->
 <div class="grid content-end pt-10">
-    <Modal>
-        <Trigger>
-            <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
-            <h1 style="width:auto" class="px-3 text-cresc_green">
-                {next_match}
-            </h1>
-        </Trigger>
-    </Modal>
+    <h1 class="px-3 text-text_white pt-10">The next match will be</h1>
+    <h1 style="width:auto" class="pl-3 pr-3 pb-3 text-cresc_green">
+        {next_match}
+    </h1>
 </div>
 
 {#if blue.length != 0 || red.length != 0}
@@ -161,14 +159,14 @@
         >
     {/if}
 
-    <button
+    <!-- <button
         on:click={switchColor}
         id="Team-Color"
         class="text-navbar_black bg-{requested_color}-400 py-5 font-semibold"
         style="padding: 2.5rem; font-size: 50px"
     >
         Team Color: {requested_color}
-    </button>
+    </button> -->
 </div>
 
 <div class="bottom-div">

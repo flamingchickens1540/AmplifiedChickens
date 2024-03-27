@@ -8,10 +8,10 @@ self.addEventListener('push', (event) => {
       });
 });
 
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
+// self.addEventListener('notificationclick', (event) => {
+//   event.notification.close();
 
-  event.waitUntil(
-      clients.openWindow(`/app/scout`).then((windowClient) => { windowClient?.focus() })
-  );
-});
+//   event.waitUntil(
+//       clients.openWindow(`/app/scout`).then((windowClient) => { windowClient?.focus() })
+//   );
+// });

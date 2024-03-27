@@ -2,7 +2,7 @@ use crate::model::{self, AppState};
 use axum::{
     extract::{Json, Query, State},
     http::StatusCode,
-    response::{IntoResponse},
+    response::IntoResponse,
 };
 use http::header::{LOCATION, SET_COOKIE};
 
@@ -38,7 +38,6 @@ pub async fn slack_callback(
         .json()
         .await
         .unwrap();
-   // info!("Token Response: {:?}", token_res);
 
     if !token_res.get("ok").unwrap().as_bool().unwrap() {
         return Err((
@@ -59,12 +58,6 @@ pub async fn slack_callback(
     let data: TokenData<serde_json::Value> =
         decode::<serde_json::Value>(id_token, &key, &validation).unwrap();
 
-    //let decoding_key = DecodingKey::from_secret(signing_secret.as_bytes());
-    //let decoded_token = verify_signature
-    //let decoded_token =
-    //    decode::<model::SlackClaims>(&id_token, &decoding_key, &Validation::default())
-    //        .expect("Failed to decode token");
-
     let name = data.claims.get("name").unwrap().as_str().unwrap();
     let exp = data.claims.get("exp").unwrap().as_i64().unwrap();
     let sub = data
@@ -75,11 +68,6 @@ pub async fn slack_callback(
         .unwrap()
         .to_string();
 
-//    info!("Name: {}", name);
- //   info!("Exp: {}", exp);
- //   info!("Sub: {}", sub);
- //   info!("{:?}", data.claims);
- //   info!("Access Token: {}", access_token);
     let _max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
 
     let profile = model::User::new(
@@ -92,8 +80,6 @@ pub async fn slack_callback(
         None,
         access_token.clone().replace("\"", ""),
     );
-
-    info!("Profile: {:?}", profile);
 
     let current_event_key =
         match sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
@@ -109,6 +95,8 @@ pub async fn slack_callback(
                 ));
             }
         };
+
+    info!("{} logged in", profile.name);
 
     let _id = insert_user(profile.clone(), state.db).await?;
 
@@ -245,7 +233,6 @@ pub async fn check_auth(
 async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusCode, String)> {
     //let max_age: i64 = chrono::Local::now().timestamp_millis() * 100 + secs;
     //cookie.set_max_age(max_age);
-    info!("New user\n{:?}", profile);
 
     if let Err(e) =
         sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth, access_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(id) DO NOTHING")

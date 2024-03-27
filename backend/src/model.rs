@@ -229,7 +229,7 @@ pub struct TeamEvent {
     pub length: i16,
     pub is_short: bool,
     pub is_camera: bool,
-    pub drivetrain: DriveTrainEnum,
+    pub drivetrain_enum: DriveTrainEnum,
     pub is_ground_intake: bool,
     pub is_chute_intake: bool,
     pub notes: String,
@@ -254,7 +254,7 @@ pub struct EventState {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::Type)]
-#[sqlx(rename_all = "lowercase")]
+#[sqlx(type_name = "drivetrainenum", rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
 pub enum DriveTrainEnum {
     Swerve,

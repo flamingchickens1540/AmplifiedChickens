@@ -44,6 +44,7 @@
     }
 
     async function queue_match() {
+            console.log("QUEUED")
             let res = await window.fetch(`${BACKEND_URL}/admin/new/match/auto`, {
                 method: "POST",
                 headers: {

@@ -13,6 +13,7 @@
     import { pit } from "$lib/stores";
     import { goto } from "$app/navigation";
     import type { PageData } from "./$types";
+    import { default_pit_data } from "$lib/types";
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     export let data: PageData;
@@ -39,7 +40,7 @@
             id: 0,
             ...$pit,
             scout_id: data.scout_id,
-            event_key: "2024orsal",
+            event_key: "2024orwil",
         };
 
         console.log(req);
@@ -53,6 +54,8 @@
         });
 
         console.log("PITSCOUTING ", res);
+
+        $pit = JSON.parse(JSON.stringify(default_pit_data))
 
         goto("/app/home")
     }
@@ -88,7 +91,7 @@
     text1="Swerve"
     text2="Tank"
     text3="Other"
-    bind:value={$pit.drivetrain}
+    bind:value={$pit.drivetrain_enum}
 />
 <Threeoption
     text1="Chute"
