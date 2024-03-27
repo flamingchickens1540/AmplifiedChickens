@@ -3,7 +3,7 @@
     import { team_color, match_data } from "$lib/stores";
 </script>
 
-<div class="grid place-items-center pt-4">
+<div class="grid place-items-center pt-10">
     <input
         bind:value={$match_data.match_key}
         type="text"
@@ -27,6 +27,6 @@
         margin-top: 10px;
         margin-bottom: 10px;
         @apply text-text_white bg-btn_grey py-2 rounded-md;
-        font-size: 30px;
+        font-size: 28px;
     }
 </style>
