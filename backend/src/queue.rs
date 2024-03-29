@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+use crate::model::{self, AllianceColor, AppState, Db, EventState, User};
 use axum::{
     extract::State,
     http::StatusCode,
@@ -11,9 +11,9 @@ use axum::{
 use futures::Stream;
 use http::HeaderMap;
 use serde::{Deserialize, Serialize};
+use std::convert::Infallible;
 use tokio_stream::wrappers::WatchStream;
 use tracing::{error, info};
-use crate::model::{self, AllianceColor, AppState, Db, EventState, User};
 
 pub async fn get_user_helper(db: &Db, token: String) -> Result<Json<User>, (StatusCode, String)> {
     let user: User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
@@ -83,54 +83,70 @@ pub async fn scout_request_team(
 
     match headers.get("requested_color") {
         Some(color) => {
-            match color.to_str().expect("requested_color was an invalid string") {
+            match color
+                .to_str()
+                .expect("requested_color was an invalid string")
+            {
                 "blue" => {
                     team_key = match robot_queue.scout_get_blue() {
                         Some(team) => team,
                         None => {
                             info!("No robots in queue for scout {}", user.name.clone());
-                            return Err((StatusCode::NO_CONTENT, "No robots in blue queue :D".to_string()))
+                            return Err((
+                                StatusCode::NO_CONTENT,
+                                "No robots in blue queue :D".to_string(),
+                            ));
                         }
                     };
-                    
+
                     team_color = AllianceColor::Blue;
-                },
+                }
                 "red" => {
                     team_key = match robot_queue.scout_get_red() {
                         Some(team) => team,
                         None => {
                             info!("No robots in queue for scout {}", user.name.clone());
-                            return Err((StatusCode::NO_CONTENT, "No robots in red queue :D".to_string()))
+                            return Err((
+                                StatusCode::NO_CONTENT,
+                                "No robots in red queue :D".to_string(),
+                            ));
                         }
                     };
                     team_color = AllianceColor::Red;
-                },
-                "none" => {
-                    match robot_queue.scout_get_robot(access_token.clone()) {
-                        Some(team) => {
-                            team_key = team.0;
-                            team_color = team.1
-                        },
-                        None => {
-                            info!("No robots in queue for scout {}", user.name.clone());
-                            return Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()))
-                        }
+                }
+                "none" => match robot_queue.scout_get_robot(access_token.clone()) {
+                    Some(team) => {
+                        team_key = team.0;
+                        team_color = team.1
+                    }
+                    None => {
+                        info!("No robots in queue for scout {}", user.name.clone());
+                        return Err((StatusCode::NO_CONTENT, "No robots in queue :D".to_string()));
                     }
                 },
-                _ => return Err((StatusCode::BAD_REQUEST, "Invalid requested_color, only red, blue, and none are accepted values".to_string()))
+                _ => {
+                    return Err((
+                        StatusCode::BAD_REQUEST,
+                        "Invalid requested_color, only red, blue, and none are accepted values"
+                            .to_string(),
+                    ))
+                }
             }
-        },
+        }
         None => {
             error!("Robot requested without requested_color");
-            return Err((StatusCode::BAD_REQUEST, "No request_color provided (try none if you don't care)".to_string()));
+            return Err((
+                StatusCode::BAD_REQUEST,
+                "No request_color provided (try none if you don't care)".to_string(),
+            ));
         }
     }
-        info!("Robot {}, served to user {}", team_key, user.name);
-        let res = ScoutResponse {
-            team_key: team_key,
-            color: team_color,
-        };
-        Ok(Json(res).into_response())
+    info!("Robot {}, served to user {}", team_key, user.name);
+    let res = ScoutResponse {
+        team_key: team_key,
+        color: team_color,
+    };
+    Ok(Json(res).into_response())
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -158,10 +174,11 @@ pub async fn new_match_auto(
         .await;
 
     let upstream = state.sse_upstream.lock().await;
-    match upstream.send(Ok(Event::default().data("match_ready".to_string()))){
+    match upstream.send(Ok(Event::default().data("match_ready".to_string()))) {
         Ok(_) => {
-            info!("Notified queued scouts"); Ok(())
-        },
+            info!("Notified queued scouts");
+            Ok(())
+        }
         Err(err) => {
             error!("Error sending new match downstream: {}", err);
             Err((
@@ -341,8 +358,8 @@ pub async fn get_scouts_and_scouted(
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "Failed to select total team_match count from Db".to_string(),
-            )); 
-        } 
+            ));
+        }
     };
     for scout in scouts.iter() {
         let id = scout.id.clone();
@@ -354,9 +371,7 @@ pub async fn get_scouts_and_scouted(
         .fetch_all(&state.db.pool)
         .await
         {
-            Ok(res) => {
-                res.len() as f64
-            }
+            Ok(res) => res.len() as f64,
             Err(e) => {
                 error!("Error getting teammatches: {}", e);
                 return Err((
@@ -372,9 +387,8 @@ pub async fn get_scouts_and_scouted(
 }
 
 pub async fn scout_sse_connect(
-    State(state): State<AppState>
+    State(state): State<AppState>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-
     let upstream = state.sse_upstream.lock().await;
 
     let downstream = WatchStream::new(upstream.subscribe());
@@ -409,13 +423,58 @@ pub async fn get_unpitscouted_teams(
 
     // info!("res: {:?}", res);
     //let team_keys = match res {
-     //   Ok(res) => res.map(|val| -> val.team_key),
-     //   Err(err) => {
-      //      error!("Error getting unpitscouting team, {:?}", err);
-       //     return Err(StatusCode::INTERNAL_SERVER_ERROR);
-       // }
+    //   Ok(res) => res.map(|val| -> val.team_key),
+    //   Err(err) => {
+    //      error!("Error getting unpitscouting team, {:?}", err);
+    //     return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    // }
     //};
-    Ok(Json(
-        res.unwrap_or(vec![])
-    ))
+    Ok(Json(res.unwrap_or(vec![])))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TBATeamEventRet {
+    _key: String,
+    team_number: i32,
+    nickname: String,
+    _name: String,
+    _city: String,
+    _state_prov: String,
+    _country: String,
+}
+
+pub async fn insert_teams(State(state): State<AppState>) -> StatusCode {
+    let api_key = std::env::var("VITE_TBA_API_KEY").expect("VITE TBA API KEY NOT SET");
+    let res: Vec<TBATeamEventRet> = match state
+        .ctx
+        .get("https://www.thebluealliance.com/api/v3/event/2024pnpcmp/teams/simple")
+        .header("X-TBA-Auth-Key", api_key)
+        .send()
+        .await
+    {
+        Ok(res) => res.json().await.expect("Invalid json from TBA"),
+        Err(err) => {
+            error!("Failed to insert team: {:?}", err);
+            return StatusCode::INTERNAL_SERVER_ERROR;
+        }
+    };
+
+    for team in res.into_iter() {
+        match sqlx::query(
+            "INSERT INTO \"Teams\" (team_key, nickname) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+        )
+        .bind(team.team_number.to_string())
+        .bind(team.nickname)
+        .execute(&state.db.pool)
+        .await
+        {
+            Ok(_) => {}
+            Err(err) => {
+                error!("Error enter team to db: {:?}", err);
+                return StatusCode::INTERNAL_SERVER_ERROR;
+            }
+        }
+    }
+
+    StatusCode::OK
 }
