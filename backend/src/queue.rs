@@ -452,7 +452,10 @@ pub async fn insert_teams(State(state): State<AppState>) -> StatusCode {
         .send()
         .await
     {
-        Ok(res) => res.json().await.expect("Invalid json from TBA"),
+        Ok(res) => res
+            .json::<Vec<TBATeamEventRet>>()
+            .await
+            .expect("Invalid json from TBA"),
         Err(err) => {
             error!("Failed to insert team: {:?}", err);
             return StatusCode::INTERNAL_SERVER_ERROR;
