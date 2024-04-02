@@ -8,7 +8,6 @@
     import SubmitButton from "$lib/components/SubmitButton.svelte";
     import TeamsRemainingPopup from "$lib/components/TeamsRemainingPopup.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
-    import ImageUpload from "$lib/components/ImageUpload.svelte";
     import { Modal, Content, Trigger } from "sv-popup";
     import { pit } from "$lib/stores";
     import { goto } from "$app/navigation";
@@ -78,8 +77,6 @@
     </Trigger>
 </Modal>
 <TextInput name="Team Number" bind:value={$pit.team_key} />
-<NumberInput name="Width (in)" bind:value={$pit.width} />
-<NumberInput name="Length (in)" bind:value={$pit.length} />
 <!-- We don't care about binding value and buttonon to both of these, since we want a boolean from one and a string for the other -->
 <Toggle
     text1="Under Stage"
@@ -99,6 +96,9 @@
     text3="Both"
     bind:value={intake}
 />
+<NumberInput name="Amp Side" bind:value={$pit.ampside} />
+<NumberInput name="Center" bind:value={$pit.center} />
+<NumberInput name="Source Side" bind:value={$pit.sourceside} />
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
 <SubmitButton text="Submit!" onClick={handle_submit} />

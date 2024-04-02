@@ -42,7 +42,7 @@ export const default_match_data: TeamMatchData = {
     scout_id: "",
     match_key: "",
     team_key: "",
-    is_fielded: false,//prematch done
+    is_fielded: true,//prematch done
     is_leave_start: false,//auto done
     auto_speaker_succeed: 0, //auto done
     auto_speaker_missed: 0, //auto done
@@ -81,9 +81,10 @@ export type Match = {
 }
 
 export type Pit = {
+    ampside: number
+    center: number
+    sourceside: number
     team_key: string
-    length: number
-    width: number
     is_short: boolean
     drivetrain_enum: DrivetrainEnum
     polish: number
@@ -94,9 +95,10 @@ export type Pit = {
 }
 
 export const default_pit_data: Pit = {
+    ampside: 0, //auto done
+    center: 0, //auto done
+    sourceside: 0, //auto done
     team_key: "",//oiajdsofuhasoidhufaosd
-    length: 0,
-    width: 0,
     is_short: true,//iuhoidhufaosdihufoaishudfoa
     polish: 3,//iuhoidhufaosdihufoaishudfoa
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
