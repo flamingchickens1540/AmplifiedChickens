@@ -1,183 +1,257 @@
-use crate::model;
+use crate::model::{self, AppState};
 use axum::{
-    extract::{Extension, Query, Request, State},
+    extract::{Json, Query, State},
     http::StatusCode,
-    middleware::Next,
-    response::{IntoResponse, Redirect},
+    response::IntoResponse,
 };
-use axum_extra::extract::PrivateCookieJar;
-use cookie::Cookie;
+use http::header::{LOCATION, SET_COOKIE};
 
-use oauth2::{
-    basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
-    ClientSecret, RedirectUrl, TokenResponse, TokenUrl,
-};
+use jsonwebtoken::*;
 
+use serde::Deserialize;
 use tracing::{error, info};
 
-pub fn build_oauth_client(client_id: String, client_secret: String) -> BasicClient {
-    let auth_url = AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
-        .expect("Invalid authorization endpoint URL");
-    let token_url = TokenUrl::new("https://www.googleapis.com/oauth2/v3/token".to_string())
-        .expect("Invalid token endpoint URL");
-    let redirect_url = "http://localhost:3007/auth";
-
-    BasicClient::new(
-        ClientId::new(client_id),
-        Some(ClientSecret::new(client_secret)),
-        auth_url,
-        Some(token_url),
-    )
-    .set_redirect_uri(RedirectUrl::new(redirect_url.to_string()).unwrap())
-}
-
-pub async fn google_callback(
+#[axum::debug_handler]
+pub async fn slack_callback(
     State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
     Query(query): Query<model::AuthRequest>,
-    Extension(oauth_client): Extension<BasicClient>,
-) -> Result<impl IntoResponse, impl IntoResponse> {
-    let token = match oauth_client
-        .exchange_code(AuthorizationCode::new(query.code))
-        .request_async(async_http_client)
-        .await
-    {
-        Ok(res) => res,
-        Err(e) => {
-            error!("An error occurred while exchanging the code: {e}");
-            return Err((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
-        }
-    };
+) -> Result<axum::http::Response<String>, (axum::http::StatusCode, String)> {
+    let client_secret = dotenv::var("SLACK_CLIENT_SECRET").unwrap();
+    let client_id = dotenv::var("SLACK_CLIENT_ID").unwrap();
+    let _signing_secret = dotenv::var("SLACK_SIGNING_SECRET").unwrap();
+    let frontend_url = format!("{}/app/home", dotenv::var("FRONTEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
+    let backend_url = format!("{}/auth/slack", dotenv::var("BACKEND_URL_FOR_BACKEND").expect("REDIRECT_URL"));
 
-    let profile = match state
+    let token_res: serde_json::Value = state
         .ctx
-        .get("https://openidconnect.googleapis.com/v1/userinfo")
-        .bearer_auth(token.access_token().secret().to_owned())
+        .post("https://slack.com/api/openid.connect.token")
+        .query(&[
+            ("client_id", client_id),
+            ("client_secret", client_secret),
+            ("code", query.code),
+            ("redirect_uri", backend_url),
+            ("grant_type", "authorization_code".to_string()),
+        ])
         .send()
         .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+
+    if !token_res.get("ok").unwrap().as_bool().unwrap() {
+        return Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "Authentication failed".to_string(),
+        ));
+    }
+
+    let access_token = token_res.get("access_token").unwrap().to_string();
+    let id_token = token_res.get("id_token").unwrap().as_str().unwrap();
+
+    let key = DecodingKey::from_secret(&[]);
+    let mut validation: Validation = Validation::new(Algorithm::HS256);
+    validation.insecure_disable_signature_validation();
+    validation.validate_exp = false;
+    validation.validate_aud = false;
+
+    let data: TokenData<serde_json::Value> =
+        decode::<serde_json::Value>(id_token, &key, &validation).unwrap();
+
+    let name = data.claims.get("name").unwrap().as_str().unwrap();
+    let exp = data.claims.get("exp").unwrap().as_i64().unwrap();
+    let sub = data
+        .claims
+        .get("sub")
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    let _max_age = chrono::Local::now().naive_local() + chrono::Duration::seconds(exp);
+
+    let profile = model::User::new(
+        sub.clone(),
+        name.to_string(),
+        false,
+        false,
+        None,
+        None,
+        None,
+        access_token.clone().replace("\"", ""),
+    );
+
+    let current_event_key =
+        match sqlx::query_as::<_, model::EventState>("SELECT * FROM \"EventState\"")
+            .fetch_one(&state.db.pool)
+            .await
+        {
+            Ok(state) => state.event_key,
+            Err(_) => {
+                error!("Failed to get current event key");
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to get current event key".to_string(),
+                ));
+            }
+        };
+
+    info!("{} logged in", profile.name);
+
+    let _id = insert_user(profile.clone(), state.db).await?;
+
+    Ok(axum::http::Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(LOCATION, frontend_url) 
+        .header(
+            SET_COOKIE,
+            format!(
+                "access_token={}; Path=/; SameSite=None; Secure",
+                access_token
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!("scout_name={}; Path=/; SameSite=None; Secure", name),
+        )
+        .header(
+            SET_COOKIE,
+            format!("scout_id={}; Path=/; SameSite=None; Secure", sub),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "current_event_key={}; Path=/; SameSite=None; Secure",
+                current_event_key
+            ),
+        )
+        .body("Redirecting...".to_string())
+        .unwrap())
+
+    //let mut response = axum::http::Response::new(axum::http::StatusCode::OK);
+    //response.headers_mut().insert(
+    //   "Set-Cookie",
+    //   axum::http::HeaderValue::from_str(&format!("user_data={}; Path=/; HttpOnly", profile.id))
+    //       .unwrap(),
+    //);
+}
+
+pub async fn logout(
+    State(state): State<model::AppState>,
+    Json(access_token): Json<String>,
+) -> Result<impl IntoResponse, (String, StatusCode)> {
+    let frontend_url = std::env::var("REDIRECT_URL_TO_FRONTEND").expect("redirect to frontend not set");
+    if let Err(err) = sqlx::query("DELETE FROM \"Users\" WHERE acess_token = $1 LIMIT 1")
+        .bind(access_token)
+        .execute(&state.db.pool)
+        .await
     {
-        Ok(res) => res,
-        Err(_e) => {
+        error!("Failed to remove user from db: {err}");
+        return Err((
+            "Failed to remove user form db".to_string(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ));
+    }
+
+    let response = axum::http::Response::builder()
+        .status(StatusCode::SEE_OTHER)
+        .header(LOCATION, frontend_url) 
+        .header(
+            SET_COOKIE,
+            format!(
+                "access_token=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "scout_name=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "scout_id=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .header(
+            SET_COOKIE,
+            format!(
+                "current_event_key=deleted; Path=/; SameSite=None; expires=Thu, 01 Jan 1970 00:00:00 GMT"
+            ),
+        )
+        .body("Redirecting...".to_string())
+        .unwrap();
+
+    Ok(response)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct AuthRequest {
+    access_token: String,
+    is_admin: bool,
+}
+
+pub async fn check_auth(
+    State(state): State<AppState>,
+    Json(req): Json<AuthRequest>,
+) -> Result<(), (StatusCode, String)> {
+
+    let user: model::User = match sqlx::query_as("SELECT * FROM \"Users\" WHERE access_token = $1")
+        .bind(format!("{}", req.access_token))
+        .fetch_optional(&state.db.pool)
+        .await
+    {
+        Ok(user) => match user {
+            Some(val) => val,
+            None => {
+                error!("User is not in DB");
+                return Err((
+                    StatusCode::UNAUTHORIZED,
+                    "User does not exist in DB".to_string(),
+                ));
+            }
+        },
+        Err(err) => {
+            error!("ERROR LOOKING USER UP FOR AUTH: {}", err);
             return Err((
                 StatusCode::INTERNAL_SERVER_ERROR,
-                String::from("Reqwest Error"),
-            ))
+                "Failed to lookup user".to_string(),
+            ));
         }
     };
 
-    // FIXME: Google doens't have a complete model of user; create a sub-model
-    let profile: model::User = profile.json::<model::User>().await.unwrap();
+    if !user.is_admin && req.is_admin {
+        error!("Not Admin User attepted to access admin route");
+        return Err((StatusCode::UNAUTHORIZED, "User is not an admin".to_string()));
+    }
 
-    let secs: i64 = token.expires_in().unwrap().as_secs().try_into().unwrap();
+    Ok(())
+}
 
-    let max_age = chrono::Local::now() + chrono::Duration::seconds(secs);
-
-    let cookie = Cookie::build(("sid", token.access_token().secret().to_owned()))
-        .domain(".app.localhost") // change to production url
-        .path("/")
-        .secure(true)
-        .http_only(true)
-        .max_age(cookie::time::Duration::seconds(secs));
+// token_res: (expires_in, access_token)
+async fn insert_user(profile: model::User, db: model::Db) -> Result<(), (StatusCode, String)> {
+    //let max_age: i64 = chrono::Local::now().timestamp_millis() * 100 + secs;
+    //cookie.set_max_age(max_age);
 
     if let Err(e) =
-        sqlx::query("INSERT INTO users (id, name, avatar_url, coins, scout, coins, points, is_admin) VALUES ($1) ON CONFLICT (id) DO NOTHING")
+        sqlx::query("INSERT INTO \"Users\" (id, name, is_notify, is_admin, endpoint, p256dh, auth, access_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT(id) DO NOTHING")
             .bind(profile.id.clone())
             .bind(profile.name.clone())
-            .bind(profile.avatar_url.clone())
-            .bind(profile.coins)
-            .bind(profile.points)
+            .bind(profile.is_notify)
             .bind(profile.is_admin)
-            .execute(&state.db.pool)
+            .bind(profile.endpoint)
+            .bind(profile.p256dh)
+            .bind(profile.auth)
+            .bind(profile.access_token)
+            .execute(&db.pool)
             .await
     {
-        error!("Error while trying to make account: {e}");
+        error!("Error trying to create account: {e}");
         return Err((
             StatusCode::INTERNAL_SERVER_ERROR,
             format!("Error trying to create account: {e}"),
         ));
-    }
-
-    if let Err(e) = sqlx::query("INSERT INTO sessions (user_id, session_id, expires_at) VALUES ((SELECT ID FROM USERS WHERE id = $1 LIMIT 1), $2, $3) ON CONFLICT (user_id) DO UPDATE SET session_id = excluded.session_id, expires_at: excluded.expires_at")
-        .bind(profile.id.clone())
-        .bind(token.access_token().secret().to_owned())
-        .bind(max_age)
-        .execute(&state.db.pool)
-        .await
-    {
-        error!("Error while trying to make session: {e}");
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error trying to create session: {e}"),
-        ));
-    }
-
-    Ok((jar.add(cookie), Redirect::to("/")))
-}
-
-pub async fn admin_auth(
-    State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
-    mut req: Request,
-    next: Next,
-) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
-    let user: model::User = match get_user(&jar, &state.db).await {
-        Ok(user) => user,
-        Err(e) => return Err(e),
     };
-
-    if !user.is_admin {
-        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/protected")));
-    }
-
-    req.extensions_mut().insert(user);
-    Ok(next.run(req).await)
-}
-
-pub async fn user_auth(
-    State(state): State<model::AppState>,
-    jar: PrivateCookieJar,
-    mut req: Request,
-    next: Next,
-) -> Result<impl IntoResponse, (StatusCode, Redirect)> {
-    let user: model::User = match get_user(&jar, &state.db).await {
-        Ok(user) => user,
-        Err(e) => return Err(e),
-    };
-
-    req.extensions_mut().insert(user);
-    Ok(next.run(req).await)
-}
-
-async fn get_user(
-    jar: &PrivateCookieJar,
-    db: &model::Db,
-) -> Result<model::User, (StatusCode, Redirect)> {
-    let Some(cookie) = jar.get("sid").map(|cookie| cookie.value().to_owned()) else {
-        return Err((StatusCode::UNAUTHORIZED, Redirect::to("/")));
-    };
-    let res = match sqlx::query_as::<_, model::User>(
-        "SELECT 
-        users
-        FROM sessions 
-        LEFT JOIN USERS ON sessions.user_id = users.id
-        WHERE sessions.session_id = $1 
-        LIMIT 1",
-    )
-    .bind(cookie)
-    .fetch_one(&(db.pool))
-    .await
-    {
-        Ok(res) => res,
-        Err(_e) => return Err((StatusCode::INTERNAL_SERVER_ERROR, Redirect::to("/"))),
-    };
-
-    Ok(model::User {
-        id: res.id,
-        name: res.name,
-        avatar_url: res.avatar_url,
-        scout: res.scout,
-        coins: res.coins,
-        points: res.points,
-        is_admin: res.is_admin,
-    })
+    Ok(())
 }

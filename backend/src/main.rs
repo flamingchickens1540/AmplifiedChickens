@@ -1,163 +1,188 @@
 use axum::{
-    handler::HandlerWithoutStateExt, http::StatusCode, middleware, response::Html, routing::get,
-    Extension, Router,
+    extract::{DefaultBodyLimit, Host},
+    handler::HandlerWithoutStateExt,
+    http::{StatusCode, Uri},
+    response::{sse::Event, IntoResponse, Redirect},
+    routing::{get, post},
+    BoxError, Json, Router,
 };
-use cookie::Key;
-use dotenv::dotenv;
-use oauth2::basic::BasicClient;
-use reqwest::Client as ReqwestClient;
-use socketioxide::layer::SocketIoLayer;
 
-use tower_http::{services::ServeDir, trace::TraceLayer};
+use axum_server::tls_rustls::RustlsConfig;
+use dotenv::dotenv;
+
+use reqwest::Client as ReqwestClient;
+
+use std::{collections::HashMap, sync::Arc};
+use std::{convert::Infallible, net::SocketAddr};
+use tokio::sync::Mutex;
+use tower_http::cors::CorsLayer;
 use tracing::{error, info};
 use tracing_subscriber::FmtSubscriber;
 
+use self::model::TeamMatch;
+
 mod auth;
-mod error;
 mod model;
-mod ws;
+mod queue;
+mod submit;
+mod upload;
+
+#[allow(dead_code)]
+#[derive(Clone, Copy)]
+struct Ports {
+    http: u16,
+    https: u16,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
-    let server_host = std::env::var("SERVER_HOST").expect("SERVER_HOST is not set");
-    let server_port = std::env::var("SERVER_PORT").expect("SERVER_PORT is not set");
-
-    let client_id = std::env::var("GOOGLE_CLIENT_ID").expect("Missing GOOGLE_CLIENT_ID from .env");
-    let client_secret =
-        std::env::var("GOOGLE_CLIENT_SECRET").expect("Missing GOOGLE_CLIENT_SECRET from .env");
-
+    let mode = std::env::var("MODE").expect("MODE not set");
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not set");
     let db: model::Db = model::Db::new(db_url).await.unwrap();
 
     tracing::subscriber::set_global_default(FmtSubscriber::default())?;
-    let (ws_layer, io) = ws::create_layer();
-
-    io.ns("/", ws::on_connect);
 
     let ctx = ReqwestClient::new();
+
+    let (tx, _rx) = tokio::sync::watch::channel(Ok(Event::default())); // tx is the upstream, while rx is the downstream
+
+    let queue = Arc::new(Mutex::new(model::RoboQueue {
+        match_keys: vec![],
+        assigned: HashMap::new(),
+        red_robots: vec![],
+        blue_robots: vec![],
+        curr_match_type: model::CurrentMatchType::Auto,
+    }));
 
     let state = model::AppState {
         db, // Database
         ctx,
-        key: Key::generate(), // Cookie key
+        queue,
+        sse_upstream: Arc::new(Mutex::new(tx)),
     };
-    let oauth_client = auth::build_oauth_client(client_id.clone(), client_secret);
-    let router = init_router(state, ws_layer, oauth_client, client_id);
-    let listener =
-        tokio::net::TcpListener::bind(format!("{}:{}", server_host, server_port).as_str())
-            .await
-            .unwrap();
+    let router = init_router(state);
 
-    info!("Starting Server");
-    info!("Listening on port {}", server_port);
+    if mode == "PROD" {
+        return prod_server(router).await;
+    }
 
-    axum::serve(listener, router).await.unwrap();
+    error!("NOT IN PROD");
+
+    let ports: Ports = Ports {
+        http: 7878,
+        https: 3021,
+    };
+
+    let config = RustlsConfig::from_pem_file("cert.pem", "key.pem")
+        .await
+        .unwrap();
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3021));
+
+    tokio::spawn(redirect_http_to_https(ports));
+
+    info!("Starting Test Server");
+    info!("Listening on {}", addr);
+
+    axum_server::bind_rustls(addr, config)
+        .serve(router.into_make_service())
+        .await
+        .unwrap();
+
     Ok(())
 }
 
-fn init_router(
-    state: model::AppState,
-    _ws: SocketIoLayer,
-    oauth_client: BasicClient,
-    oauth_id: String,
-) -> Router {
-    // this router has state
-    let auth = Router::new().route("/", get(auth::google_callback));
+async fn prod_server(app: Router) -> Result<(), Box<dyn std::error::Error>> {
+    let addr = std::env::var("SERVER_URL").expect("Server url not set");
+    let listener = tokio::net::TcpListener::bind(addr.clone()).await.unwrap();
 
-    let unprotected: Router<model::AppState> = Router::new()
-        .route("/", get(homepage))
-        .layer(Extension(oauth_id));
+    info!("Starting Prod Server");
+    info!("Listening on {}", addr);
 
-    let protected =
-        Router::new()
-            .route("/", get(protected))
-            .route_layer(middleware::from_fn_with_state(
-                state.clone(),
-                auth::user_auth,
-            ));
+    axum::serve(listener, app).await.unwrap();
 
-    let admin = Router::new()
-        .route("/", get(admin))
-        .route_layer(middleware::from_fn_with_state(
-            state.clone(),
-            auth::admin_auth,
-        ));
-
-    //let frontend = front_public_route().layer(Extension(oauth_client));
-
-    // this router doesn't
-    Router::new()
-        .nest("/auth/", auth)
-        .nest("/protected", protected)
-        .nest("/admin", admin)
-        .nest("/", unprotected)
-        .layer(Extension(oauth_client))
-        .with_state(state)
-    //.layer(
-    //    ServiceBuilder::new()
-    //        .layer(CorsLayer::permissive()) // Enable CORS policy
-    //        .layer(ws),
-    //)
+    Ok(())
 }
 
-// FrontEnd Routing
-// FrontEnd to server svelte build bundle, css and index.html from public folder
-pub fn front_public_route() -> Router {
-    let front_public = "./frontend/dist"; //std::env::var("FRONT_PUBLIC").expect("FRONT_PUBLIC is not set");
+fn init_router(state: model::AppState) -> Router {
+    let max_image_size: usize = std::env::var("MAX_IMAGE_SIZE")
+        .expect("MAX_IMAGE_SIZE not set")
+        .parse()
+        .unwrap_or(50)
+        * 1024
+        * 1024;
+    // post for json data, any request involving sending an access code should be such
     Router::new()
-        .fallback_service(
-            ServeDir::new(front_public).not_found_service(handle_error.into_service()),
+        .route("/health", get(health))
+        .route("/dummyData", get(dummy_data))
+        .route("/auth/check", post(auth::check_auth))
+        .route("/submit/image/:image", get(upload::image))
+        .route("/submit/upload", post(upload::upload))
+        .layer(DefaultBodyLimit::max(max_image_size))
+        .route("/auth/slack", get(auth::slack_callback))
+        .route("/submit/pit", post(submit::submit_pit_data))
+        .route("/submit/match", post(submit::submit_team_match))
+        .route("/admin/new/match/auto", post(queue::new_match_auto))
+        .route("/admin/new/event", post(queue::new_event))
+        .route(
+            "/admin/users/setPermissions",
+            post(queue::set_user_permissions),
         )
-        .layer(TraceLayer::new_for_http())
+        .route("/admin/sse/get/stream", get(submit::admin_sse_connect))
+        .route("/admin/users/get/all", get(queue::get_scouts_and_scouted)) // tested
+        .route("/scout/sse/get/stream", get(queue::scout_sse_connect))
+        .route("/scout/get/unpitted", get(queue::get_unpitscouted_teams))
+        .route("/scout/get/current_match", get(queue::get_current_match))
+        .route("/scout/get/queued_teams", get(queue::get_current_teams))
+        .route("/scout/request_team", get(queue::scout_request_team))
+        .route("/scout/check/queue", get(queue::check_queue))
+        .route("/admin/teams/insert/pnw", post(queue::insert_teams))
+        .with_state(state)
+        .layer(CorsLayer::permissive())
 }
 
-async fn handle_error() -> (StatusCode, &'static str) {
-    (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        "Something went wrong accessing static files...",
-    )
+async fn health() -> Result<impl IntoResponse, Infallible> {
+    info!("Health");
+    Ok(())
 }
 
-#[axum::debug_handler]
-async fn homepage(Extension(oauth_id): Extension<String>) -> Html<String> {
-    Html(format!("<p>Welcome!</p>
-    
-    <a href=\"https://accounts.google.com/o/oauth2/v2/auth?scope=openid%20profile%20email&client_id={oauth_id}&response_type=code&redirect_uri=http://localhost:3007/auth/\">
-    Click here to sign into Google!
-     </a>"))
+async fn dummy_data() -> Result<Json<TeamMatch>, Infallible> {
+    let team_match = TeamMatch::default();
+
+    Ok(Json(team_match))
 }
 
-#[axum::debug_handler]
-async fn protected(Extension(user): Extension<model::User>) -> Html<String> {
-    Html(format!("<p>Welcome {}<p>", user.name))
+async fn redirect_http_to_https(ports: Ports) {
+    fn make_https(host: String, uri: Uri, ports: Ports) -> Result<Uri, BoxError> {
+        let mut parts = uri.into_parts();
+
+        parts.scheme = Some(axum::http::uri::Scheme::HTTPS);
+
+        if parts.path_and_query.is_none() {
+            parts.path_and_query = Some("/".parse().unwrap());
+        }
+
+        let https_host = host.replace(&ports.http.to_string(), &ports.https.to_string());
+        parts.authority = Some(https_host.parse()?);
+
+        Ok(Uri::from_parts(parts)?)
+    }
+
+    let redirect = move |Host(host): Host, uri: Uri| async move {
+        match make_https(host, uri, ports) {
+            Ok(uri) => Ok(Redirect::permanent(&uri.to_string())),
+            Err(error) => {
+                tracing::warn!(%error, "failed to convert URI to HTTPS");
+                Err(StatusCode::BAD_REQUEST)
+            }
+        }
+    };
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], ports.http));
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    tracing::debug!("listening on {}", listener.local_addr().unwrap());
+    axum::serve(listener, redirect.into_make_service())
+        .await
+        .unwrap();
 }
-
-#[axum::debug_handler]
-async fn admin(Extension(user): Extension<model::User>) -> Html<String> {
-    Html(format!("<p>Welcome Admin {}<p>", user.name))
-}
-
-// With a form of auth
-// // ********
-// // BACK END
-// // ********
-// // Back end server built form various routes that are either public, require auth, or secure login
-// pub fn backend<Store: SessionStore>(
-//     session_layer: SessionManagerLayer<Store>,
-//     shared_state: Arc<store::Store>,
-// ) -> Router {
-//     let session_service = ServiceBuilder::new()
-//         .layer(HandleErrorLayer::new(|_: BoxError| async {
-//             StatusCode::BAD_REQUEST
-//         }))
-//         .layer(session_layer);
-
-//     // could add tower::ServiceBuilder here to group layers, especially if you add more layers.
-//     // see https://docs.rs/axum/latest/axum/middleware/index.html#ordering
-//     Router::new()
-//         .merge(back_public_route())
-//         .merge(back_auth_route())
-//         .merge(back_token_route(shared_state))
-//         .layer(session_service)
-// }
