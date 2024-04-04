@@ -11,11 +11,19 @@
     // The purpose of removing onMount is to make this code run before the onMOunts of mounted components run
     // onMount(() => {
     $manual = data.manual || false
+    console.log("color: " + $team_color)
 
     if (browser) {
         console.log(JSON.stringify($match_data))
         console.log(JSON.stringify(default_match_data))
-        if (data.reload || JSON.stringify($match_data) != JSON.stringify(default_match_data)) {
+
+        if ($manual) {
+            console.log("scout manual")
+            console.log("color2 " + $team_color)
+            
+            $match_data.match_key = "2024pnpsc_pm" + Math.floor(Math.random() * 1000)
+            $match_data.scout_id = data.scout_id as string;
+        } else if (data.reload || JSON.stringify($match_data) != JSON.stringify(default_match_data)) {
             $team_color = localStorage.getItem("team_color") as
                 | ""
                 | "blue"
@@ -27,11 +35,7 @@
             $match_data.match_key = data.match_key;
             $team_color = data.team_color;
             localStorage.setItem("team_color", data.team_color);
-        }
-        if (data.manual) {
-            console.log("scout manual")
-            $match_data.scout_id = data.scout_id as string;
-        }
+        } 
     }
     // });
 </script>

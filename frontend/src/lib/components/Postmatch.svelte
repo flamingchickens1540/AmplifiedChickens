@@ -29,11 +29,11 @@
                     "match_data_check: ",
                     localStorage.getItem("match_data"),
                 );
-                $match_data = default_match_data;
+                $match_data = JSON.parse(JSON.stringify(default_match_data));
                 goto("/app/match");
             } else {
                 let match_key = $match_data.match_key;
-                $match_data = default_match_data;
+                $match_data = JSON.parse(JSON.stringify(default_match_data));
                 $match_data.match_key = match_key;
                 goto("/app/manual_match")
             }

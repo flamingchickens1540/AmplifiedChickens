@@ -1,4 +1,4 @@
-use crate::model::{AppState, TeamEvent, TeamMatch, User};
+use crate::model::{self, AppState, TeamEvent, TeamMatch, User};
 use axum::response::{
     sse::{Event, KeepAlive, Sse},
     IntoResponse,
@@ -42,6 +42,28 @@ pub async fn submit_team_match(
     Json(form): Json<TeamMatch>,
 ) -> impl IntoResponse {
     info!("Submitted: {:?}", form);
+
+    let check_match_res: Option<model::Match> = match sqlx::query_as::<_, model::Match>("SELECT * FROM \"Matches\" WHERE match_key = $1")
+        .bind(form.match_key.clone())
+        .fetch_optional(&state.db.pool).await
+        {
+            Ok(m) => m,
+            Err(e) => {
+                error!("Err checking DB for match {}", e);
+                return StatusCode::INTERNAL_SERVER_ERROR;
+            }
+        };
+
+    if check_match_res.is_none() {
+        let event_key = form.match_key.split("_").collect::<Vec<&str>>()[0];
+        match sqlx::query("INSERT INTO \"Matches\" (match_key, event_key) VALUES ($1, $2)").bind(form.match_key.clone()).bind(event_key).execute(&state.db.pool).await {
+            Ok(_) => {},
+            Err(e) => {
+                error!("Err inserting match into db {}", e);
+                return StatusCode::INTERNAL_SERVER_ERROR;
+            }
+        };
+    }
 
     let result = sqlx::query("INSERT INTO \"TeamMatches\" (match_key, team_key, is_fielded, is_leave_start, auto_speaker_succeed, auto_speaker_missed, auto_amp_succeed, auto_amp_missed, auto_piece_succeed, auto_piece_missed, tele_speaker_succeed, tele_speaker_missed, tele_amp_succeed, tele_amp_missed, trap_succeed, trap_missed, stage_enum, skill, notes, is_broke, is_died, scout_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22);").bind(form.match_key.clone()).bind(form.team_key.clone()).bind(form.is_fielded).bind(form.is_leave_start).bind(form.auto_speaker_succeed).bind(form.auto_speaker_missed).bind(form.auto_amp_succeed).bind(form.auto_amp_missed).bind(form.auto_piece_succeed).bind(form.auto_piece_missed).bind(form.tele_speaker_succeed).bind(form.tele_speaker_missed).bind(form.tele_amp_succeed).bind(form.tele_amp_missed).bind(form.trap_succeed).bind(form.trap_missed).bind(form.stage_enum).bind(form.skill).bind(form.notes).bind(form.is_broke).bind(form.is_died).bind(form.scout_id.clone()).execute(&state.db.pool).await;
 

@@ -434,28 +434,24 @@ pub async fn get_unpitscouted_teams(
 
 #[derive(Debug, Deserialize)]
 pub struct TBATeamEventRet {
-    _key: String,
     team_number: i32,
     nickname: String,
-    _name: String,
-    _city: String,
-    _state_prov: String,
-    _country: String,
 }
 
 pub async fn insert_teams(State(state): State<AppState>) -> StatusCode {
     let api_key = std::env::var("VITE_TBA_API_KEY").expect("VITE TBA API KEY NOT SET");
     let res: Vec<TBATeamEventRet> = match state
         .ctx
-        .get("https://www.thebluealliance.com/api/v3/event/2024pnpcmp/teams/simple")
+        .get("https://www.thebluealliance.com/api/v3/event/2024pncmp/teams/simple")
         .header("X-TBA-Auth-Key", api_key)
         .send()
         .await
     {
-        Ok(res) => res
-            .json::<Vec<TBATeamEventRet>>()
-            .await
-            .expect("Invalid json from TBA"),
+        Ok(res) => {
+            let text = res.text().await.expect("Invalid json from TBA");
+            info!("TBA RES: {}", text);
+            serde_json::from_str::<Vec<TBATeamEventRet>>(&text).unwrap()
+        }
         Err(err) => {
             error!("Failed to insert team: {:?}", err);
             return StatusCode::INTERNAL_SERVER_ERROR;
