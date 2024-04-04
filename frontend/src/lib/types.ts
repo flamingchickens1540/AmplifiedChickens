@@ -29,6 +29,8 @@ export type TeamMatchData = {
     tele_speaker_missed: number //
     tele_amp_succeed: number //
     tele_amp_missed: number //
+    shuffle_succeed: number
+    shuffle_missed: number
     trap_succeed: number //
     trap_missed: number //
     stage_enum: StageEnum //
@@ -54,6 +56,8 @@ export const default_match_data: TeamMatchData = {
     tele_speaker_missed: 0, //tele done
     tele_amp_succeed: 0, //tele done
     tele_amp_missed: 0, //tele done
+    shuffle_succeed: 0,
+    shuffle_missed: 0,
     trap_succeed: 0, //tele done
     trap_missed: 0, //tele done
     stage_enum: "onstage", //did it
