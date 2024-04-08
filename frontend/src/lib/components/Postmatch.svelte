@@ -24,7 +24,7 @@
         });
 
         if (res.status == 200 || res.status == 500) {
-            if ($manual) {
+            if ($manual == false) {
                 console.log(
                     "match_data_check: ",
                     localStorage.getItem("match_data"),
@@ -32,9 +32,8 @@
                 $match_data = JSON.parse(JSON.stringify(default_match_data));
                 goto("/app/match");
             } else {
-                let match_key = $match_data.match_key;
                 $match_data = JSON.parse(JSON.stringify(default_match_data));
-                $match_data.match_key = match_key;
+		$manual = false;
                 goto("/app/manual_match")
             }
         } else {

@@ -81,16 +81,10 @@ export type Match = {
 }
 
 export type Pit = {
-<<<<<<< HEAD
-    team_key: string
-    length: number
-    width: number
-=======
     ampside: number
     center: number
     sourceside: number
     team_key: string
->>>>>>> 8b724a0d2be7c2bb6c9e8cc111e383b4bb102137
     is_short: boolean
     drivetrain_enum: DrivetrainEnum
     polish: number
@@ -101,16 +95,10 @@ export type Pit = {
 }
 
 export const default_pit_data: Pit = {
-<<<<<<< HEAD
-    team_key: "",//oiajdsofuhasoidhufaosd
-    length: 0,
-    width: 0,
-=======
     ampside: 0, //auto done
     center: 0, //auto done
     sourceside: 0, //auto done
     team_key: "",//oiajdsofuhasoidhufaosd
->>>>>>> 8b724a0d2be7c2bb6c9e8cc111e383b4bb102137
     is_short: true,//iuhoidhufaosdihufoaishudfoa
     polish: 3,//iuhoidhufaosdihufoaishudfoa
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa

@@ -15,7 +15,7 @@
     let name = data.scout_name;
     let scout_data = data.scout_data_sorted;
 
-    $current_event_key = data.current_event_key?.toString() || "2024orwil";
+    $current_event_key = data.current_event_key?.toString() || "2024pncmp";
     let subscription = "";
 
     onMount(() => {
