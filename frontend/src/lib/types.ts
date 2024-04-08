@@ -29,11 +29,8 @@ export type TeamMatchData = {
     tele_speaker_missed: number //
     tele_amp_succeed: number //
     tele_amp_missed: number //
-<<<<<<< HEAD
     shuffle_succeed: number
     shuffle_missed: number
-=======
->>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
     trap_succeed: number //
     trap_missed: number //
     stage_enum: StageEnum //
@@ -47,11 +44,7 @@ export const default_match_data: TeamMatchData = {
     scout_id: "",
     match_key: "",
     team_key: "",
-<<<<<<< HEAD
     is_fielded: true,//prematch done
-=======
-    is_fielded: false,//prematch done
->>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
     is_leave_start: false,//auto done
     auto_speaker_succeed: 0, //auto done
     auto_speaker_missed: 0, //auto done
@@ -63,11 +56,8 @@ export const default_match_data: TeamMatchData = {
     tele_speaker_missed: 0, //tele done
     tele_amp_succeed: 0, //tele done
     tele_amp_missed: 0, //tele done
-<<<<<<< HEAD
     shuffle_succeed: 0,
     shuffle_missed: 0,
-=======
->>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
     trap_succeed: 0, //tele done
     trap_missed: 0, //tele done
     stage_enum: "onstage", //did it
@@ -95,16 +85,10 @@ export type Match = {
 }
 
 export type Pit = {
-<<<<<<< HEAD
     ampside: number
     center: number
     sourceside: number
     team_key: string
-=======
-    team_key: string
-    length: number
-    width: number
->>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
     is_short: boolean
     drivetrain_enum: DrivetrainEnum
     polish: number
@@ -115,16 +99,10 @@ export type Pit = {
 }
 
 export const default_pit_data: Pit = {
-<<<<<<< HEAD
     ampside: 0, //auto done
     center: 0, //auto done
     sourceside: 0, //auto done
     team_key: "",//oiajdsofuhasoidhufaosd
-=======
-    team_key: "",//oiajdsofuhasoidhufaosd
-    length: 0,
-    width: 0,
->>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
     is_short: true,//iuhoidhufaosdihufoaishudfoa
     polish: 3,//iuhoidhufaosdihufoaishudfoa
     is_ground_intake: false,//iuhoidhufaosdihufoaishudfoa
