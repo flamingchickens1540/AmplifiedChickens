@@ -18,7 +18,6 @@
     export let access_token = "";
 
     async function auto_populate() {
-        console.log(TBA_API_KEY);
         let res = await fetch(
             `https://www.thebluealliance.com/api/v3/match/${$match_data.match_key}`,
             {

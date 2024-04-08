@@ -43,7 +43,7 @@
             id: 0,
             ...$pit,
             scout_id: data.scout_id,
-            event_key: "2024orwil",
+            event_key: "2024pncmp",
         };
 
         console.log(req);
@@ -94,9 +94,9 @@
 />
 <Toggle text1="Has Camera" text2="No Camera" bind:buttonon={$pit.is_camera} />
 <Threeoption
-    text1="Swerve"
-    text2="Tank"
-    text3="Other"
+    text1="swerve"
+    text2="tank"
+    text3="other"
     bind:value={$pit.drivetrain_enum}
 />
 <Threeoption
