@@ -31,4 +31,7 @@
         transform: scale(1.2);
     }
 </style>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8b9fd2011fb74ca56abd6dc6f46f77c5993b4960
