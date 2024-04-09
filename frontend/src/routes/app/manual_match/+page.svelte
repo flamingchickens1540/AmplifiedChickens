@@ -1,26 +1,49 @@
 <script>
     import { goto } from "$app/navigation";
     import { team_color, match_data } from "$lib/stores";
+    import { default_match_data } from "$lib/types";
+    import { onMount } from "svelte";
+    
+    onMount(() => {
+        $team_color = ""
+        $match_data = JSON.parse(JSON.stringify(default_match_data))
+    })
 </script>
 
 <div class="grid place-items-center pt-10">
-    <input
+    <!-- <input
         bind:value={$match_data.match_key}
         type="text"
         name="Match Key"
         id=""
         placeholder="MatchKey"
+    /> -->
+
+    <input
+        bind:value={$match_data.team_key}
+        type="text"
+        name="Team Key"
+        placeholder="TeamKey"
     />
 
-    <input bind:value={$match_data.team_key} type="text" name="Team Key" placeholder="TeamKey" />
-
-    <input bind:value={$team_color} type="text" name="Team Color" id="" placeholder="TeamColor"/>
+    <!-- <div class="grid place-items-center" id="team">
+        <label for="team_color">Team Color:</label>
+        <select bind:value={$team_color} name="team_color" class="outline" id="">
+            <option value="blue">Blue</option>
+            <option value="red">Red</option>
+        </select>
+    </div> -->
 
     <button on:click={() => goto("/app/scout/manual")}>Scout</button>
 </div>
 
 <style lang="postcss">
-    button, input {
+    button,
+    input,
+    select,
+    option,
+    label,
+    #team { 
         font-family: "Poppins-Bold";
         padding: 15px;
         margin: 15px;
