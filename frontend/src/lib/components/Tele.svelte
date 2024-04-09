@@ -30,6 +30,13 @@
         bind:valuesuc={$match_data.trap_succeed}
         bind:valuefail={$match_data.trap_missed}
     />
+    {:else if shuffle == true}
+    <Confirm
+        title="Shuffle (Tele)"
+        bind:notover={shuffle}
+        bind:valuesuc={$match_data.shuffle_succeed}
+        bind:valuefail={$match_data.shuffle_missed}
+    />
 {:else}
     <Header phase="Teleop" />
     <div class="grid grid-cols-2 gap-3 m-4">
