@@ -18,6 +18,9 @@
     function H() {
         list.push({letter: "H", time: timer});
     }
+    function P() {
+        list.push({letter: "P", time: timer});
+    }
     function G() {
         list.push({letter: "G", time: timer});
     }
@@ -54,6 +57,7 @@
     {teamNumber}
 </h2>
 <button class="realbutton" on:click={onclick}>Reset Timer</button>
+<button style="background-color: orange;" class="realbutton" on:click={P}>Preload</button>
 <div class="grid grid-cols-2 grid-rows-5 gap-4 hello">
 {#if locationkinda == "onstage"}
 <button style="background-color: orange;" on:click={H}>H</button>
@@ -108,6 +112,13 @@
         font-family: Poppins-bold;
         
     }
+     h3 {
+        font-size: 30px;
+        color: white;
+        margin: 15px;
+        font-family: Poppins-bold;
+        
+    }
     p {
         @apply font-medium text-xl;
     }
@@ -116,14 +127,18 @@
         margin: 15px;
         margin-top: 8px;
         margin-bottom: 8px;
-        font-size: 20px;
+        font-size: 30px;
         padding: 1rem;
         @apply text-text_white bg-btn_grey py-2 rounded-md;
+        
     }
     .realbutton{
-        width: calc(100% - 30px)
+        width: calc(100% - 30px);
+        font-size: 20px
     }
     .hello{
-        height: 70vh
+        height: 60vh;
+        margin-top: 25px;
+        margin-bottom: 25px;
     }
 </style>
