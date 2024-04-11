@@ -43,6 +43,11 @@
     function A() {
         list.push({letter: "A", time: timer});
     }
+    function submit() {
+        const json = JSON.stringify(list);
+        console.log(json);
+        //dont forget to put team number
+    }
     setInterval(updateTimer, 10)
 </script>
 {#if pressed == false}
@@ -58,7 +63,7 @@
 </h2>
 <button class="realbutton" on:click={onclick}>Reset Timer</button>
 <button style="background-color: orange;" class="realbutton" on:click={P}>Preload</button>
-<div class="grid grid-cols-2 grid-rows-5 gap-1 hello">
+<div style="" class="grid grid-cols-2 grid-rows-5 gap-1 hello">
 {#if locationkinda == "onstage"}
 <button style="background-color: orange;" on:click={H}>H</button>
 <button style="background-color: orange;" on:click={G} class="col-start-1 row-start-2">G</button>
@@ -97,7 +102,7 @@
 <button style="background-color: orange;" on:click={C} class="col-start-2 row-start-4">C</button>
 {/if}
 </div>
-<button style="background-color: #00D586;" class="realbutton">Submit!</button>
+<button on:click={submit} style="background-color: #00D586;" class="realbutton">Submit!</button>
 {/if}
 
 
