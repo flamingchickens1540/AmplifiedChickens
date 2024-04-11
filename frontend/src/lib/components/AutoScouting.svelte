@@ -58,7 +58,7 @@
 </h2>
 <button class="realbutton" on:click={onclick}>Reset Timer</button>
 <button style="background-color: orange;" class="realbutton" on:click={P}>Preload</button>
-<div class="grid grid-cols-2 grid-rows-5 gap-4 hello">
+<div class="grid grid-cols-2 grid-rows-5 gap-1 hello">
 {#if locationkinda == "onstage"}
 <button style="background-color: orange;" on:click={H}>H</button>
 <button style="background-color: orange;" on:click={G} class="col-start-1 row-start-2">G</button>
@@ -134,7 +134,8 @@
     }
     .realbutton{
         width: calc(100% - 30px);
-        font-size: 20px
+        font-size: 20px; 
+        padding: 0.3rem;
     }
     .hello{
         height: 60vh;
