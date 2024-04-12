@@ -39,6 +39,36 @@ export type TeamMatchData = {
     is_broke: boolean
     is_died: boolean
 }
+export type AutoScoutData = {
+    id: number
+            team_key: string
+            match_key: string   
+            scout_id: string
+            a: number
+            b: number
+            c: number
+            d: number
+            e: number
+            f: number
+            g: number
+            h: number
+            p: number
+}
+export const default_auto_data: AutoScoutData = {
+    id: 0,
+    team_key: "",
+    match_key: "",
+    scout_id: "",
+    a: -1,
+    b: -1,
+    c: -1,
+    d: -1,
+    e: -1,
+    f: -1,
+    g: -1,
+    h: -1,
+    p: -1
+}
 
 export const default_match_data: TeamMatchData = {
     scout_id: "",

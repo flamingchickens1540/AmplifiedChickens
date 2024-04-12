@@ -1,4 +1,4 @@
-<!-- <center>
+<center>
     <img src="/logo.png" alt="Flaming Chicken Logo"/>
     <h2>Welcome</h2>
     <h3>to Amplified Chickens</h3>
@@ -30,9 +30,4 @@
         margin: auto;
         transform: scale(1.2);
     }
-</style> -->
-<script>
-    import TeamSummary from "$lib/components/AutoScouting.svelte";
-</script>
-
-<TeamSummary/>
+</style>
