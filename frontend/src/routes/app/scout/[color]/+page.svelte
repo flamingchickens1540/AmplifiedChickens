@@ -1,7 +1,7 @@
 <script lang="ts">
     import Carousel from "$lib/components/Carousel.svelte";
     import { match_data, team_color, manual } from "$lib/stores";
-    import { onMount } from "svelte";
+    import { onMount } from "svelte"
     import type { PageData } from "./$types";
     import { default_match_data, type TeamMatchData } from "$lib/types";
     import { browser } from "$app/environment";
