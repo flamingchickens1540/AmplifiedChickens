@@ -148,6 +148,25 @@ pub struct ScoutEventTeam {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow, Default)]
+pub struct TeamAuto {
+    pub id: i64,
+    pub scout_id: String,
+    pub match_key: String,
+    pub team_key: String,
+    pub a: i16,
+    pub b: i16,
+    pub c: i16,
+    pub d: i16,
+    pub e: i16,
+    pub f: i16,
+    pub g: i16,
+    pub h: i16,
+    pub p: i16,
+
+}
+
+
+#[derive(Debug, Deserialize, Serialize, Clone, sqlx::FromRow, Default)]
 pub struct TeamMatch {
     pub id: i64,  
     pub scout_id: String,
@@ -165,6 +184,8 @@ pub struct TeamMatch {
     pub tele_speaker_missed: i16,  //
     pub tele_amp_succeed: i16,     //
     pub tele_amp_missed: i16,      //
+    pub shuffle_succeed: Option<i16>,
+    pub shuffle_missed: Option<i16>,
     pub trap_succeed: i16,         // 
     pub trap_missed: i16,          //
     pub stage_enum: Stage,
