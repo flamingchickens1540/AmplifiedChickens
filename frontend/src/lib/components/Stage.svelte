@@ -108,7 +108,7 @@
             style="color: #FFFFFF;"
             on:click={() => {
                 value = "failed";
-            }}>Falied</button
+            }}>Failed</button
         >
         <button
             style="background-color: #00D586; color: #353839; border-bottom-left-radius: 0.2rem; border-bottom-right-radius: 0.2rem"

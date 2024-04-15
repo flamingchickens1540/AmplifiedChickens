@@ -122,6 +122,7 @@ fn init_router(state: model::AppState) -> Router {
         .layer(DefaultBodyLimit::max(max_image_size))
         .route("/auth/slack", get(auth::slack_callback))
         .route("/submit/pit", post(submit::submit_pit_data))
+        .route("/submit/auto", post(submit::submit_team_auto))
         .route("/submit/match", post(submit::submit_team_match))
         .route("/admin/new/match/auto", post(queue::new_match_auto))
         .route("/admin/new/event", post(queue::new_event))

@@ -65,7 +65,7 @@ pub async fn submit_team_match(
         };
     }
 
-    let result = sqlx::query("INSERT INTO \"TeamMatches\" (match_key, team_key, is_fielded, is_leave_start, auto_speaker_succeed, auto_speaker_missed, auto_amp_succeed, auto_amp_missed, auto_piece_succeed, auto_piece_missed, tele_speaker_succeed, tele_speaker_missed, tele_amp_succeed, tele_amp_missed, shuffle_succeed, shuffle_missed, trap_succeed, trap_missed, stage_enum, skill, notes, is_broke, is_died, scout_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24);").bind(form.match_key.clone()).bind(form.team_key.clone()).bind(form.is_fielded).bind(form.is_leave_start).bind(form.auto_speaker_succeed).bind(form.auto_speaker_missed).bind(form.auto_amp_succeed).bind(form.auto_amp_missed).bind(form.auto_piece_succeed).bind(form.auto_piece_missed).bind(form.tele_speaker_succeed).bind(form.tele_speaker_missed).bind(form.tele_amp_succeed).bind(form.tele_amp_missed).bind(form.shuffle_succeed).bind(form.shuffle_missed).bind(form.trap_succeed).bind(form.trap_missed).bind(form.stage_enum).bind(form.skill).bind(form.notes).bind(form.is_broke).bind(form.is_died).bind(form.scout_id.clone()).execute(&state.db.pool).await;
+    let result = sqlx::query("INSERT INTO \"TeamMatches\" (match_key, team_key, is_fielded, is_leave_start, auto_speaker_succeed, auto_speaker_missed, auto_amp_succeed, auto_amp_missed, auto_piece_succeed, auto_piece_missed, tele_speaker_succeed, tele_speaker_missed, tele_amp_succeed, tele_amp_missed, shuffle_succeed, shuffle_missed, trap_succeed, trap_missed, stage_enum, skill, notes, is_broke, is_died, scout_id, role) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25);").bind(form.match_key.clone()).bind(form.team_key.clone()).bind(form.is_fielded).bind(form.is_leave_start).bind(form.auto_speaker_succeed).bind(form.auto_speaker_missed).bind(form.auto_amp_succeed).bind(form.auto_amp_missed).bind(form.auto_piece_succeed).bind(form.auto_piece_missed).bind(form.tele_speaker_succeed).bind(form.tele_speaker_missed).bind(form.tele_amp_succeed).bind(form.tele_amp_missed).bind(form.shuffle_succeed).bind(form.shuffle_missed).bind(form.trap_succeed).bind(form.trap_missed).bind(form.stage_enum).bind(form.skill).bind(form.notes).bind(form.is_broke).bind(form.is_died).bind(form.scout_id.clone()).bind(form.role).execute(&state.db.pool).await;
 
     match result {
         Ok(_) => {}
@@ -106,7 +106,7 @@ pub async fn submit_team_match(
     }
 }
 
-pub async fn submit_auto_data(State(state): State<AppState>, Json(form): Json<model::TeamAuto>) -> impl IntoResponse {
+pub async fn submit_team_auto(State(state): State<AppState>, Json(form): Json<model::TeamAuto>) -> impl IntoResponse {
     match sqlx::query("INSERT INTO \"TeamAutos\" (match_key, scout_id, team_key, a, b, c, d, e, f, g, h, p) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)").bind(form.match_key).bind(form.team_key).bind(form.scout_id.clone()).bind(form.a).bind(form.b).bind(form.c).bind(form.d).bind(form.e).bind(form.f).bind(form.g).bind(form.h).bind(form.p).execute(&state.db.pool).await {
         Ok(_) => {
             info!("TeamEvent submitted by {}", form.scout_id);

@@ -102,6 +102,17 @@
 <Rating name="Robot Polish" bind:value={$pit.polish} />
 <Textarea bind:value={$pit.notes} />
 <SubmitButton text="Submit!" onClick={handle_submit} />
-<footer>
+<footer class="bottom-div">
     <Navbar page="pit" />
 </footer>
+
+<style>
+    .bottom-div {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f0f0f0; /* Just for visualization */
+        text-align: center;
+    }
+</style>

@@ -26,7 +26,7 @@
     });
 </script>
 
-<main class="bg-bg_gray h-screen flex flex-col justify-between">
+<main class="bg-bg_gray flex h-screen flex-col justify-between">
     <div class="grid content-end">
         <h1 class="px-3 text-text_white pt-10">Good Afternoon</h1>
         <h1 class="px-3 text-cresc_green">{name}.</h1>
@@ -97,12 +97,23 @@
             on:click={() => goto("/app/match")}>Match Scout</button
         >
     </div>
-    <footer>
+    <footer class="">
         <Navbar page="home" />
     </footer>
 </main>
 
 <style lang="postcss">
+    main {
+        height: 200%;
+    }
+    .bottom-div {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f0f0f0; /* Just for visualization */
+        text-align: center;
+    }
     h1 {
         @apply font-bold text-4xl;
     }

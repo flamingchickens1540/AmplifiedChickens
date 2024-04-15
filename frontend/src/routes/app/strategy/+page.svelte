@@ -1,15 +1,11 @@
 <script lang="ts">
     import type { PageData } from "./$types";
-    import Navba from "$lib/components/AutoScouting.svelte";
+    import AutoScouting from "$lib/components/AutoScouting.svelte";
     import Navbar from "$lib/components/Navbar.svelte";
     export let data: PageData;
     console.log(data);
-    let dataa = JSON.stringify(data);
 </script>
-<Navba teamkey = {dataa}/>
-<footer class="bottom-div">
-    <Navbar page="strategy" />
-</footer>
+<AutoScouting scout_id = {data.scout_id}/>
 
 <style lang="postcss">
     .bottom-div {

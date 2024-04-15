@@ -87,13 +87,9 @@
 
     onMount(() => {
         console.log("cached_match: ", $match_data);
-        if (JSON.stringify($match_data) != JSON.stringify(default_match_data)) {
-            goto("/app/scout/reload");
-        } else {
-            server_source = new EventSource(
-                `${BACKEND_URL}/scout/sse/get/stream`,
-            );
-        }
+        server_source = new EventSource(
+            `${BACKEND_URL}/scout/sse/get/stream`,
+        )
     });
 </script>
 

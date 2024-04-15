@@ -8,11 +8,7 @@ export const load = (async ({ cookies, params }) => {
 
     let color = params.color
 
-    if (color == "reload") {
-        console.log("reload detected")
-        let reload = true
-        return { reload }
-    } else if (color == "manual") {
+    if (color == "manual") {
         console.log("manual detected")
         let scout_id = cookies.get("scout_id")
         return { manual: true, scout_id }
@@ -39,8 +35,7 @@ export const load = (async ({ cookies, params }) => {
         let team_key = team_data.team_key
         let team_color = team_data.color
         console.log("received team info: ", team_data)
-        let reload = false
-        return { team_key, team_color, scout_id, match_key, reload };
+        return { manual: false, team_key, team_color, scout_id, match_key };
     } else if (res.status == 204) {
         redirect(303, "/app/match")
     } else {

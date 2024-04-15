@@ -3,6 +3,7 @@
     import { team_color, match_data } from "$lib/stores";
     import { default_match_data } from "$lib/types";
     import { onMount } from "svelte";
+    import Navbar from "$lib/components/Navbar.svelte";
     
     onMount(() => {
         $team_color = ""
@@ -37,7 +38,20 @@
     <button on:click={() => goto("/app/scout/manual")}>Scout</button>
 </div>
 
+<footer class="bottom-div">
+    <Navbar page="match"/>
+
+</footer>
+
 <style lang="postcss">
+    .bottom-div {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #f0f0f0; /* Just for visualization */
+        text-align: center;
+    }
     button,
     input,
     select,

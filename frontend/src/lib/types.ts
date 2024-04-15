@@ -38,7 +38,11 @@ export type TeamMatchData = {
     notes: string
     is_broke: boolean
     is_died: boolean
+    role: TeamMatchRole
 }
+
+export type TeamMatchRole = "shuffler" | "receiver" | "cycler" | "defender" | "combo"
+
 export type AutoScoutData = {
     id: number
             team_key: string
@@ -94,6 +98,7 @@ export const default_match_data: TeamMatchData = {
     skill: 0, //did it
     is_broke: false,
     is_died: false,
+    role: "combo",
     notes: "" //did it
 }
 

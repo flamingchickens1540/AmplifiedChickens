@@ -39,20 +39,6 @@
             }
         }
     }
-
-    // Optional: Add this if you want to prevent scrolling during swipe
-    function preventDefault(event: any) {
-        event.preventDefault();
-    }
-
-    onMount(() => {
-        document.addEventListener("touchmove", preventDefault, {
-            passive: false,
-        });
-        return () => {
-            document.removeEventListener("touchmove", preventDefault);
-        };
-    });
 </script>
 
 <div
@@ -71,7 +57,6 @@
     .carousel-container {
         width: 100%;
         overflow-x: hidden;
-        overflow-y: scroll;
         position: relative;
     }
 
@@ -82,7 +67,6 @@
 
     .carousel-item {
         min-width: 100%;
-        /* min-height: 90%; */
         box-sizing: border-box;
     }
 </style>

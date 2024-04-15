@@ -4,6 +4,7 @@
     import Toggle from "$lib/components/Toggle.svelte";
     import TextArea from "$lib/components/TextArea.svelte";
     import Rating from "$lib/components/Rating.svelte";
+    import TeamRole from "$lib/components/TeamRole.svelte";
     import { manual, match_data } from "$lib/stores";
     import { goto } from "$app/navigation";
     import SubmitButton from "./SubmitButton.svelte";
@@ -55,5 +56,6 @@
     text2="Functional"
     bind:buttonon={$match_data.is_died}
 />
+<TeamRole bind:value={$match_data.role} />
 <TextArea bind:value={$match_data.notes} />
 <SubmitButton text="Submit" onClick={submit_match} />

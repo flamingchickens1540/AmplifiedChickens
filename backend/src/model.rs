@@ -193,6 +193,19 @@ pub struct TeamMatch {
     pub notes: String,
     pub is_broke: bool,
     pub is_died: bool,
+    pub role: TeamMatchRole,
+}
+
+#[derive(Serialize, Debug, Clone, Type, PartialEq, Deserialize, Default)]
+#[sqlx(type_name = "rolesenum", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
+pub enum TeamMatchRole {
+    #[default]
+    Combo,
+    Receiver,
+    Shuffler,
+    Defender,
+    Cycler
 }
 
 #[derive(Serialize, Debug, Clone, Type, PartialEq, Deserialize, Default)]
